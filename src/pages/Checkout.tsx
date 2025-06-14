@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, CreditCard, MapPin } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
+
+type OrderInsert = Database['public']['Tables']['orders']['Insert'];
 
 interface CartItem {
   id: number;
@@ -110,17 +113,19 @@ const Checkout = () => {
       const orderNumber = 'DS' + Math.random().toString().substr(2, 8).padStart(8, '0');
       const totalAmount = getTotalPrice();
 
+      const orderData: OrderInsert = {
+        user_id: user.id,
+        order_number: orderNumber,
+        total_amount: totalAmount,
+        status: 'pending',
+        payment_status: 'pending',
+        shipping_address: shippingAddress as any,
+        billing_address: shippingAddress as any
+      };
+
       const { data: order, error: orderError } = await supabase
         .from('orders')
-        .insert({
-          user_id: user.id,
-          order_number: orderNumber,
-          total_amount: totalAmount,
-          status: 'pending',
-          payment_status: 'pending',
-          shipping_address: shippingAddress,
-          billing_address: shippingAddress
-        })
+        .insert(orderData)
         .select()
         .single();
 
