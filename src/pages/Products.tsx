@@ -61,8 +61,156 @@ const Products = () => {
       if (error) throw error;
       return data;
     },
-    enabled: categories.length > 0 // Only run when categories are loaded
+    enabled: categories.length > 0
   });
+
+  // Update products with proper images
+  useEffect(() => {
+    const updateProductImages = async () => {
+      console.log('Updating product images...');
+      
+      const productUpdates = [
+        // Smartphones
+        {
+          name: "iPhone 14 Pro Max",
+          images: [
+            "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500",
+            "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500",
+            "https://images.unsplash.com/photo-1605236453806-6ff36851218e?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500"
+        },
+        {
+          name: "Samsung Galaxy S23 Ultra",
+          images: [
+            "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500",
+            "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=500",
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=500"
+        },
+        // Laptops
+        {
+          name: "MacBook Pro 16-inch M2",
+          images: [
+            "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500",
+            "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500",
+            "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500"
+        },
+        {
+          name: "Dell XPS 13",
+          images: [
+            "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500",
+            "https://images.unsplash.com/photo-1484788984921-03950022c9ef?w=500",
+            "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500"
+        },
+        // Tablets
+        {
+          name: "iPad Air 5th Generation",
+          images: [
+            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500",
+            "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=500",
+            "https://images.unsplash.com/photo-1585790050230-5dd28404ccb9?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500"
+        },
+        {
+          name: "Samsung Galaxy Tab S8",
+          images: [
+            "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=500",
+            "https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=500",
+            "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=500"
+        },
+        // Headphones
+        {
+          name: "Sony WH-1000XM4",
+          images: [
+            "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500",
+            "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=500",
+            "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500"
+        },
+        {
+          name: "Apple AirPods Pro 2nd Generation",
+          images: [
+            "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=500",
+            "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?w=500",
+            "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=500"
+        },
+        // Gaming
+        {
+          name: "PlayStation 5",
+          images: [
+            "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=500",
+            "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500",
+            "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?w=500"
+        },
+        {
+          name: "Xbox Series X",
+          images: [
+            "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500",
+            "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=500",
+            "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=500"
+        },
+        // Accessories
+        {
+          name: "Anker PowerCore 10000",
+          images: [
+            "/lovable-uploads/01f5dee9-0b3f-4b4e-aaa8-dc52b099224b.png",
+            "/lovable-uploads/7191890f-99d1-4b4c-9662-dbad1c7a405d.png",
+            "https://images.unsplash.com/photo-1609081219090-a6d81d3085bf?w=500"
+          ],
+          image_url: "/lovable-uploads/01f5dee9-0b3f-4b4e-aaa8-dc52b099224b.png"
+        },
+        {
+          name: "Logitech MX Master 3",
+          images: [
+            "https://images.unsplash.com/photo-1527814050087-3793815479db?w=500",
+            "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=500",
+            "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=500"
+          ],
+          image_url: "https://images.unsplash.com/photo-1527814050087-3793815479db?w=500"
+        }
+      ];
+
+      for (const update of productUpdates) {
+        try {
+          const { error } = await supabase
+            .from('products')
+            .update({
+              images: update.images,
+              image_url: update.image_url
+            })
+            .eq('name', update.name);
+
+          if (error) {
+            console.error(`Error updating ${update.name}:`, error);
+          } else {
+            console.log(`Successfully updated ${update.name} with images`);
+          }
+        } catch (err) {
+          console.error(`Error updating ${update.name}:`, err);
+        }
+      }
+    };
+
+    if (products.length > 0) {
+      updateProductImages();
+    }
+  }, [products.length]);
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
@@ -81,7 +229,6 @@ const Products = () => {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    // Update URL params
     const params = new URLSearchParams(searchParams);
     if (category === "All") {
       params.delete('category');
@@ -93,7 +240,6 @@ const Products = () => {
 
   const handleSearchChange = (search: string) => {
     setSearchTerm(search);
-    // Update URL params
     const params = new URLSearchParams(searchParams);
     if (search) {
       params.set('search', search);
@@ -112,32 +258,21 @@ const Products = () => {
       image: product.image_url
     };
     
-    // Get existing cart from localStorage
     const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Check if item already exists in cart
     const existingItemIndex = existingCart.findIndex((item: any) => item.id === product.id);
     
     if (existingItemIndex > -1) {
-      // Update quantity if item exists
       existingCart[existingItemIndex].quantity += 1;
     } else {
-      // Add new item to cart
       existingCart.push(cartItem);
     }
     
-    // Save updated cart to localStorage
     localStorage.setItem('cart', JSON.stringify(existingCart));
-    
-    // Dispatch custom event to update cart count
     window.dispatchEvent(new Event('cartUpdated'));
-    
-    // Show success message
     alert(`Added ${product.name} to cart!`);
   };
 
   const handleAddToWishlist = (product: any) => {
-    // This could be enhanced to check authentication status
     alert('Please sign in to add items to your wishlist');
   };
 
