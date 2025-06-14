@@ -1,7 +1,9 @@
 
 import { useState } from "react";
-import { Package, Search, CheckCircle, Clock, Truck, MapPin } from "lucide-react";
+import { Package, Search, CheckCircle, Clock, Truck, MapPin, Phone, Mail } from "lucide-react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 
 const TrackOrder = () => {
@@ -182,6 +184,8 @@ const TrackOrder = () => {
           </div>
         </div>
       </main>
+      <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

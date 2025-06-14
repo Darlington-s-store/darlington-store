@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 
 // Mock product data
@@ -55,6 +57,39 @@ const ProductDetail = () => {
     } else if (type === "decrease" && quantity > 1) {
       setQuantity(quantity - 1);
     }
+  };
+
+  const handleAddToCart = () => {
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: quantity,
+      image: product.images[0]
+    };
+    
+    // Get existing cart from localStorage
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if item already exists in cart
+    const existingItemIndex = existingCart.findIndex((item: any) => item.id === product.id);
+    
+    if (existingItemIndex > -1) {
+      // Update quantity if item exists
+      existingCart[existingItemIndex].quantity += quantity;
+    } else {
+      // Add new item to cart
+      existingCart.push(cartItem);
+    }
+    
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    // Dispatch custom event to update cart count
+    window.dispatchEvent(new Event('cartUpdated'));
+    
+    // Show success message
+    alert(`Added ${quantity} ${product.name} to cart!`);
   };
 
   return (
@@ -144,7 +179,10 @@ const ProductDetail = () => {
               </div>
 
               <div className="flex gap-4">
-                <Button className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2">
+                <Button 
+                  onClick={handleAddToCart}
+                  className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2"
+                >
                   <ShoppingCart className="w-5 h-5" />
                   Add to Cart
                 </Button>
@@ -219,7 +257,7 @@ const ProductDetail = () => {
                   {Object.entries(product.specifications).map(([key, value]) => (
                     <div key={key} className="border-b border-gray-200 pb-2">
                       <dt className="font-medium text-gray-900">{key}</dt>
-                      <dd className="text-gray-700">{value}</dd>
+                      <dd className="text-gray-700">{String(value)}</dd>
                     </div>
                   ))}
                 </div>
@@ -267,6 +305,8 @@ const ProductDetail = () => {
           </div>
         </div>
       </main>
+      <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

@@ -1,7 +1,8 @@
-
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 
 const Contact = () => {
@@ -30,7 +31,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -177,6 +178,8 @@ const Contact = () => {
           </div>
         </div>
       </main>
+      <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

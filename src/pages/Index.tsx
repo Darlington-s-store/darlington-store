@@ -1,22 +1,24 @@
 
-// Home page based closely on the provided UI screenshot
-
-import Header from "../components/Header";
 import HeroSection from "../components/HeroSection";
-import FeaturesRow from "../components/FeaturesRow";
 import CategoryGrid from "../components/CategoryGrid";
 import ProductGrid from "../components/ProductGrid";
+import FeaturesRow from "../components/FeaturesRow";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="flex flex-col flex-1 w-full">
+      <main>
         <HeroSection />
-        <FeaturesRow />
         <CategoryGrid />
         <ProductGrid />
+        <FeaturesRow />
       </main>
+      <Footer />
+      <WhatsAppButton />
     </div>
   );
 };

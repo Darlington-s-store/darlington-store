@@ -1,12 +1,13 @@
-
 import { Store, Users, Award, Shield } from "lucide-react";
 import Header from "../components/Header";
+import Footer from "../components/Footer";
+import WhatsAppButton from "../components/WhatsAppButton";
 
 const About = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-6xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">About Darlington Store</h1>
@@ -86,6 +87,8 @@ const About = () => {
           </div>
         </div>
       </main>
+      <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
