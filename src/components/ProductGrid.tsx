@@ -45,6 +45,39 @@ const products = [
 export default function ProductGrid() {
   const navigate = useNavigate();
 
+  const handleAddToCart = (product: any) => {
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image
+    };
+    
+    // Get existing cart from localStorage
+    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    
+    // Check if item already exists in cart
+    const existingItemIndex = existingCart.findIndex((item: any) => item.id === product.id);
+    
+    if (existingItemIndex > -1) {
+      // Update quantity if item exists
+      existingCart[existingItemIndex].quantity += 1;
+    } else {
+      // Add new item to cart
+      existingCart.push(cartItem);
+    }
+    
+    // Save updated cart to localStorage
+    localStorage.setItem('cart', JSON.stringify(existingCart));
+    
+    // Dispatch custom event to update cart count
+    window.dispatchEvent(new Event('cartUpdated'));
+    
+    // Show success message
+    alert(`Added ${product.name} to cart!`);
+  };
+
   return (
     <section className="w-full py-10 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -72,7 +105,10 @@ export default function ProductGrid() {
                   </div>
                 </div>
                 <div className="text-xs text-gray-500 mb-2">Brand: {p.brand}</div>
-                <Button className="bg-red-700 hover:bg-red-800 text-white w-full mt-2 flex items-center justify-center gap-2 text-base font-medium">
+                <Button 
+                  onClick={() => handleAddToCart(p)}
+                  className="bg-red-700 hover:bg-red-800 text-white w-full mt-2 flex items-center justify-center gap-2 text-base font-medium"
+                >
                   <ShoppingCart className="w-5 h-5" />
                   Add to Cart
                 </Button>
