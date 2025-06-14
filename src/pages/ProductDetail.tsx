@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -20,6 +19,10 @@ const ProductDetail = () => {
     queryFn: async () => {
       if (!id) throw new Error('Product ID is required');
       
+      // Convert string ID to number for the database query
+      const productId = parseInt(id, 10);
+      if (isNaN(productId)) throw new Error('Invalid product ID');
+      
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -28,7 +31,7 @@ const ProductDetail = () => {
             name
           )
         `)
-        .eq('id', id)
+        .eq('id', productId)
         .eq('is_active', true)
         .single();
       
@@ -118,8 +121,23 @@ const ProductDetail = () => {
     );
   }
 
-  // Parse images from JSON array or use single image
-  const images = product.images && Array.isArray(product.images) ? product.images : [product.image_url];
+  // Parse images from JSON array or use single image, with proper type handling
+  const parseImages = (images: any): string[] => {
+    if (Array.isArray(images)) {
+      return images.map(img => String(img));
+    }
+    if (typeof images === 'string') {
+      try {
+        const parsed = JSON.parse(images);
+        return Array.isArray(parsed) ? parsed.map(img => String(img)) : [product.image_url].filter(Boolean);
+      } catch {
+        return [product.image_url].filter(Boolean);
+      }
+    }
+    return [product.image_url].filter(Boolean);
+  };
+
+  const images = parseImages(product.images);
   const specifications = product.specifications || {};
 
   return (
