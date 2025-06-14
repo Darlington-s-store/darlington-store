@@ -21,16 +21,16 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
   if (!images || images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
+      <div className="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
         <span className="text-gray-500">No image available</span>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="w-full space-y-4">
       {/* Main Image Display */}
-      <div className="relative aspect-square bg-white rounded-lg overflow-hidden group">
+      <div className="relative w-full aspect-square bg-white rounded-lg overflow-hidden group">
         <img
           src={images[selectedImage]}
           alt={`${productName} ${selectedImage + 1}`}
@@ -44,7 +44,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
               variant="ghost"
               size="icon"
               onClick={prevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
@@ -52,7 +52,7 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
               variant="ghost"
               size="icon"
               onClick={nextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -69,12 +69,12 @@ export default function ImageGallery({ images, productName }: ImageGalleryProps)
 
       {/* Thumbnail Navigation - only show if more than 1 image */}
       {images.length > 1 && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="w-full grid grid-cols-3 gap-2 md:gap-4">
           {images.map((image: string, index: number) => (
             <button
               key={index}
               onClick={() => setSelectedImage(index)}
-              className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+              className={`w-full aspect-square rounded-lg overflow-hidden border-2 transition-colors touch-manipulation ${
                 selectedImage === index ? "border-red-700" : "border-gray-200 hover:border-gray-300"
               }`}
             >
