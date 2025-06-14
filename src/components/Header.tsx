@@ -1,10 +1,11 @@
 
-import { LogOut, ShoppingCart, Search, Store } from "lucide-react";
+import { ShoppingCart, Search, Store } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Cart from "./Cart";
+import UserMenu from "./UserMenu";
 
 const navLinks = [
   { label: "Home", href: "/", color: "bg-red-700 text-white" },
@@ -58,6 +59,7 @@ export default function Header() {
             <Store size={28} className="text-red-700" />
             <span className="font-bold text-lg md:text-xl text-gray-900">Darlington Store</span>
           </Link>
+          
           {/* Nav */}
           <ul className="flex items-center gap-2 md:gap-3">
             {navLinks.map((link, idx) => {
@@ -79,6 +81,7 @@ export default function Header() {
               );
             })}
           </ul>
+          
           {/* Search/Cart/User section */}
           <div className="flex items-center gap-2">
             <form onSubmit={handleSearch} className="relative hidden md:flex">
@@ -94,6 +97,7 @@ export default function Header() {
                 <Search size={18} />
               </button>
             </form>
+            
             <Button
               variant="ghost"
               className="rounded-full px-2 py-2 relative"
@@ -108,11 +112,8 @@ export default function Header() {
                 </span>
               )}
             </Button>
-            <span className="hidden md:inline text-sm text-gray-700">Welcome, Rawlings Junior</span>
-            <Button variant="outline" className="ml-1 flex items-center gap-1 border">
-              <LogOut className="mr-1 h-4 w-4" />
-              Logout
-            </Button>
+            
+            <UserMenu />
           </div>
         </nav>
         <div className="h-2 w-full bg-red-700" />
