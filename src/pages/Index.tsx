@@ -1,12 +1,22 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+// Home page based closely on the provided UI screenshot
+
+import Header from "../components/Header";
+import HeroSection from "../components/HeroSection";
+import FeaturesRow from "../components/FeaturesRow";
+import CategoryGrid from "../components/CategoryGrid";
+import ProductGrid from "../components/ProductGrid";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <main className="flex flex-col flex-1 w-full">
+        <HeroSection />
+        <FeaturesRow />
+        <CategoryGrid />
+        <ProductGrid />
+      </main>
     </div>
   );
 };
