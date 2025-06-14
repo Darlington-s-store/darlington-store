@@ -1,6 +1,6 @@
 
 import { LogOut, ShoppingCart, Search, Store } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,10 @@ const navLinks = [
 
 export default function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const updateCartCount = () => {
@@ -39,6 +41,13 @@ export default function Header() {
       window.removeEventListener('cartUpdated', updateCartCount);
     };
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   return (
     <>
@@ -72,15 +81,19 @@ export default function Header() {
           </ul>
           {/* Search/Cart/User section */}
           <div className="flex items-center gap-2">
-            <div className="relative hidden md:flex">
+            <form onSubmit={handleSearch} className="relative hidden md:flex">
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="rounded-md bg-white pl-10 pr-3 py-2 border border-gray-200 focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
                 placeholder="Search products..."
                 style={{ minWidth: 200 }}
               />
-              <Search className="absolute left-2 top-2.5 text-gray-400" size={18} />
-            </div>
+              <button type="submit" className="absolute left-2 top-2.5 text-gray-400 hover:text-gray-600">
+                <Search size={18} />
+              </button>
+            </form>
             <Button
               variant="ghost"
               className="rounded-full px-2 py-2 relative"

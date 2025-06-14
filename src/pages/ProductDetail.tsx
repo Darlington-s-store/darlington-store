@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -12,7 +11,7 @@ const productData: { [key: string]: any } = {
   "1": {
     id: 1,
     name: "Sony PlayStation 5",
-    desc: "Next-generation gaming console with 4K gaming capability",
+    desc: "Experience lightning-fast loading with an ultra-high speed SSD, deeper immersion with support for haptic feedback, adaptive triggers and 3D Audio, and an all-new generation of incredible PlayStation games.",
     price: "₵3,800",
     originalPrice: "₵4,200",
     brand: "Sony",
@@ -27,18 +26,81 @@ const productData: { [key: string]: any } = {
       "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80"
     ],
     features: [
-      "4K gaming at up to 120fps",
-      "Ray tracing support",
-      "Ultra-high speed SSD",
-      "Backward compatibility",
-      "3D audio technology"
+      "4K gaming at up to 120fps with ray tracing",
+      "Ultra-high speed SSD for instant loading",
+      "Backward compatibility with PS4 games",
+      "3D audio technology for immersive gaming",
+      "DualSense wireless controller with haptic feedback"
     ],
     specifications: {
       "CPU": "AMD Zen 2-based CPU with 8 cores at 3.5GHz",
       "GPU": "AMD Radeon RDNA 2-based graphics engine",
       "Memory": "16GB GDDR6/256-bit",
       "Storage": "825GB SSD",
-      "Dimensions": "390mm x 104mm x 260mm"
+      "Dimensions": "390mm x 104mm x 260mm",
+      "Weight": "4.5kg"
+    }
+  },
+  "2": {
+    id: 2,
+    name: "Samsung 980 PRO 4TB NVMe",
+    desc: "Maximum speed for heavy computing. Get read speeds up to 7,000 MB/s and write speeds up to 5,100 MB/s with Samsung's fastest SSD.",
+    price: "₵2,800",
+    originalPrice: "₵3,200",
+    brand: "Samsung",
+    rating: 4.7,
+    reviewCount: 89,
+    category: "Storage",
+    inStock: true,
+    stockCount: 25,
+    images: [
+      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80"
+    ],
+    features: [
+      "PCIe 4.0 NVMe interface for maximum performance",
+      "Up to 7,000 MB/s sequential read speeds",
+      "Advanced thermal control with heat spreader",
+      "Samsung Magician software for optimization",
+      "5-year limited warranty"
+    ],
+    specifications: {
+      "Capacity": "4TB",
+      "Interface": "PCIe Gen 4.0 x4, NVMe 1.3c",
+      "Form Factor": "M.2 2280",
+      "Sequential Read": "Up to 7,000 MB/s",
+      "Sequential Write": "Up to 5,100 MB/s",
+      "Warranty": "5 years limited"
+    }
+  },
+  "5": {
+    id: 5,
+    name: "MacBook Pro 16-inch",
+    desc: "The most powerful MacBook Pro ever is here. With the blazing-fast M2 Pro or M2 Max chip — the first Apple silicon designed for pros — you get groundbreaking performance and amazing battery life.",
+    price: "₵12,500",
+    originalPrice: "₵14,000",
+    brand: "Apple",
+    rating: 4.8,
+    reviewCount: 234,
+    category: "Laptops",
+    inStock: true,
+    stockCount: 8,
+    images: [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
+    ],
+    features: [
+      "Apple M2 Pro chip with 12-core CPU and 19-core GPU",
+      "16.2-inch Liquid Retina XDR display",
+      "32GB unified memory, 1TB SSD storage",
+      "1080p FaceTime HD camera",
+      "Six-speaker sound system with force-cancelling woofers"
+    ],
+    specifications: {
+      "Chip": "Apple M2 Pro with 12-core CPU, 19-core GPU",
+      "Display": "16.2-inch Liquid Retina XDR",
+      "Memory": "32GB unified memory",
+      "Storage": "1TB SSD",
+      "Battery": "Up to 22 hours video playback",
+      "Weight": "2.15 kg"
     }
   }
 };
@@ -106,19 +168,21 @@ const ProductDetail = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              {product.images.map((image: string, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? "border-red-700" : "border-gray-200"
-                  }`}
-                >
-                  <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {product.images.length > 1 && (
+              <div className="grid grid-cols-3 gap-4">
+                {product.images.map((image: string, index: number) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 ${
+                      selectedImage === index ? "border-red-700" : "border-gray-200"
+                    }`}
+                  >
+                    <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -182,9 +246,10 @@ const ProductDetail = () => {
                 <Button 
                   onClick={handleAddToCart}
                   className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2"
+                  disabled={!product.inStock}
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
+                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
                 <Button variant="outline" size="icon">
                   <Heart className="w-5 h-5" />
@@ -279,8 +344,7 @@ const ProductDetail = () => {
                       <span className="text-gray-500 text-sm">Verified Purchase</span>
                     </div>
                     <p className="text-gray-700">
-                      Amazing console! The graphics are incredible and the load times are so fast. 
-                      Highly recommend for any gaming enthusiast.
+                      Amazing product! Exceeded my expectations. Fast delivery from Darlington Store and excellent customer service.
                     </p>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
@@ -296,7 +360,21 @@ const ProductDetail = () => {
                     </div>
                     <p className="text-gray-700">
                       Great product, fast delivery from Darlington Store. Only minor issue was the packaging 
-                      could be better, but the console works perfectly.
+                      could be better, but the product works perfectly.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-yellow-400 stroke-yellow-500" />
+                        ))}
+                      </div>
+                      <span className="font-medium">Mike R.</span>
+                      <span className="text-gray-500 text-sm">Verified Purchase</span>
+                    </div>
+                    <p className="text-gray-700">
+                      Highly recommend! Quality is top-notch and the customer support team was very helpful.
                     </p>
                   </div>
                 </div>

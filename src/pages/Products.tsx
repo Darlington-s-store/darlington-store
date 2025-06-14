@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ShoppingCart, Star, Filter, Search } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -72,13 +73,22 @@ const allProducts = [
 const categories = ["All", "Laptops", "Smartphones", "Tablets", "Gaming", "Storage"];
 
 const Products = () => {
+  const [searchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch) {
+      setSearchTerm(urlSearch);
+    }
+  }, [searchParams]);
 
   const filteredProducts = allProducts.filter((product) => {
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.brand.toLowerCase().includes(searchTerm.toLowerCase());
+                         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         product.desc.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -197,6 +207,14 @@ const Products = () => {
         {filteredProducts.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
+            {searchTerm && (
+              <button 
+                onClick={() => setSearchTerm("")}
+                className="mt-4 text-red-700 hover:text-red-800 font-medium"
+              >
+                Clear search
+              </button>
+            )}
           </div>
         )}
       </main>

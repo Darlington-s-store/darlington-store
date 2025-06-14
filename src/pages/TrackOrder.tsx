@@ -1,53 +1,117 @@
 
 import { useState } from "react";
-import { Package, Search, CheckCircle, Clock, Truck, MapPin, Phone, Mail } from "lucide-react";
+import { Search, Package, Truck, CheckCircle, Clock, MapPin } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 
-const TrackOrder = () => {
-  const [orderNumber, setOrderNumber] = useState("");
-  const [orderData, setOrderData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+interface OrderStatus {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  items: Array<{
+    name: string;
+    quantity: number;
+    price: string;
+  }>;
+  total: string;
+  status: "processing" | "shipped" | "delivered";
+  orderDate: string;
+  estimatedDelivery: string;
+  trackingSteps: Array<{
+    status: string;
+    date: string;
+    location: string;
+    completed: boolean;
+  }>;
+}
 
-  // Mock order data
-  const mockOrderData = {
-    orderNumber: "DS-2024-001234",
-    status: "In Transit",
-    customer: "John Doe",
+// Mock order data
+const mockOrders: { [key: string]: OrderStatus } = {
+  "DS001234": {
+    id: "DS001234",
+    customerName: "John Doe",
+    customerEmail: "john.doe@email.com",
     items: [
       { name: "Sony PlayStation 5", quantity: 1, price: "₵3,800" },
-      { name: "Wireless Controller", quantity: 2, price: "₵450" }
+      { name: "iPhone 15 Pro", quantity: 1, price: "₵8,900" }
     ],
-    total: "₵4,700",
+    total: "₵12,700",
+    status: "shipped",
     orderDate: "2024-01-15",
-    estimatedDelivery: "2024-01-18",
-    timeline: [
-      { status: "Order Placed", date: "2024-01-15 10:30 AM", completed: true, icon: CheckCircle },
-      { status: "Processing", date: "2024-01-15 2:45 PM", completed: true, icon: Package },
-      { status: "Shipped", date: "2024-01-16 9:20 AM", completed: true, icon: Truck },
-      { status: "In Transit", date: "2024-01-17 11:15 AM", completed: true, icon: MapPin },
-      { status: "Delivered", date: "Expected: 2024-01-18", completed: false, icon: CheckCircle }
+    estimatedDelivery: "2024-01-20",
+    trackingSteps: [
+      { status: "Order Confirmed", date: "2024-01-15 10:30", location: "Darlington Store", completed: true },
+      { status: "Processing", date: "2024-01-15 14:00", location: "Warehouse", completed: true },
+      { status: "Shipped", date: "2024-01-16 09:00", location: "Accra Distribution Center", completed: true },
+      { status: "Out for Delivery", date: "", location: "Local Delivery Hub", completed: false },
+      { status: "Delivered", date: "", location: "Customer Address", completed: false }
     ]
+  },
+  "DS001235": {
+    id: "DS001235",
+    customerName: "Jane Smith",
+    customerEmail: "jane.smith@email.com",
+    items: [
+      { name: "MacBook Pro 16-inch", quantity: 1, price: "₵12,500" }
+    ],
+    total: "₵12,500",
+    status: "delivered",
+    orderDate: "2024-01-10",
+    estimatedDelivery: "2024-01-15",
+    trackingSteps: [
+      { status: "Order Confirmed", date: "2024-01-10 11:00", location: "Darlington Store", completed: true },
+      { status: "Processing", date: "2024-01-10 15:30", location: "Warehouse", completed: true },
+      { status: "Shipped", date: "2024-01-11 08:00", location: "Accra Distribution Center", completed: true },
+      { status: "Out for Delivery", date: "2024-01-15 07:30", location: "Local Delivery Hub", completed: true },
+      { status: "Delivered", date: "2024-01-15 16:45", location: "Customer Address", completed: true }
+    ]
+  }
+};
+
+const TrackOrder = () => {
+  const [orderNumber, setOrderNumber] = useState("");
+  const [orderStatus, setOrderStatus] = useState<OrderStatus | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleTrackOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setOrderStatus(null);
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const foundOrder = mockOrders[orderNumber.toUpperCase()];
+    
+    if (foundOrder) {
+      setOrderStatus(foundOrder);
+    } else {
+      setError("Order not found. Please check your order number and try again.");
+    }
+    
+    setIsLoading(false);
   };
 
-  const handleTrackOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!orderNumber.trim()) return;
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "processing": return "text-yellow-600 bg-yellow-100";
+      case "shipped": return "text-blue-600 bg-blue-100";
+      case "delivered": return "text-green-600 bg-green-100";
+      default: return "text-gray-600 bg-gray-100";
+    }
+  };
 
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      if (orderNumber.toLowerCase().includes("ds-") || orderNumber === "001234") {
-        setOrderData(mockOrderData);
-      } else {
-        setOrderData(null);
-        alert("Order not found. Please check your order number and try again.");
-      }
-      setIsLoading(false);
-    }, 1000);
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "processing": return <Clock className="w-5 h-5" />;
+      case "shipped": return <Truck className="w-5 h-5" />;
+      case "delivered": return <CheckCircle className="w-5 h-5" />;
+      default: return <Package className="w-5 h-5" />;
+    }
   };
 
   return (
@@ -55,134 +119,135 @@ const TrackOrder = () => {
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Track Your Order</h1>
-          <p className="text-xl text-gray-600">
-            Enter your order number to get real-time updates on your delivery status
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Track Your Order</h1>
+          <p className="text-gray-600">Enter your order number to track your package</p>
         </div>
 
         {/* Order Tracking Form */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <form onSubmit={handleTrackOrder} className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
+              <label htmlFor="orderNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                Order Number
+              </label>
               <input
                 type="text"
+                id="orderNumber"
                 value={orderNumber}
                 onChange={(e) => setOrderNumber(e.target.value)}
-                placeholder="Enter your order number (e.g., DS-2024-001234)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:outline-none text-lg"
+                placeholder="e.g., DS001234"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:outline-none"
+                required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                You can find your order number in your confirmation email
+              </p>
             </div>
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="bg-red-700 hover:bg-red-800 text-white px-8 py-3 text-lg flex items-center gap-2"
-            >
-              {isLoading ? (
-                <Clock className="w-5 h-5 animate-spin" />
-              ) : (
-                <Search className="w-5 h-5" />
-              )}
-              {isLoading ? "Tracking..." : "Track Order"}
-            </Button>
+            <div className="flex items-end">
+              <Button 
+                type="submit" 
+                disabled={isLoading || !orderNumber.trim()}
+                className="bg-red-700 hover:bg-red-800 text-white px-8 py-2 flex items-center gap-2"
+              >
+                <Search className="w-4 h-4" />
+                {isLoading ? "Tracking..." : "Track Order"}
+              </Button>
+            </div>
           </form>
+
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700">{error}</p>
+              <p className="text-sm text-red-600 mt-1">
+                Try using order numbers: DS001234 or DS001235 for demo purposes
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Order Details */}
-        {orderData && (
+        {/* Order Status */}
+        {orderStatus && (
           <div className="space-y-6">
             {/* Order Summary */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Order Details</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <p className="text-sm text-gray-600">Order Number</p>
-                  <p className="font-semibold text-lg">{orderData.orderNumber}</p>
+                  <h2 className="text-xl font-bold text-gray-900">Order #{orderStatus.id}</h2>
+                  <p className="text-gray-600">Placed on {new Date(orderStatus.orderDate).toLocaleDateString()}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Order Status</p>
-                  <p className="font-semibold text-lg text-red-700">{orderData.status}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Order Date</p>
-                  <p className="font-semibold">{orderData.orderDate}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Estimated Delivery</p>
-                  <p className="font-semibold">{orderData.estimatedDelivery}</p>
+                <div className={`px-4 py-2 rounded-full font-medium capitalize ${getStatusColor(orderStatus.status)}`}>
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(orderStatus.status)}
+                    {orderStatus.status}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Order Timeline */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Order Timeline</h3>
-              <div className="space-y-4">
-                {orderData.timeline.map((step: any, index: number) => {
-                  const Icon = step.icon;
-                  return (
-                    <div key={index} className="flex items-start gap-4">
-                      <div className={`p-2 rounded-full ${step.completed ? 'bg-green-100' : 'bg-gray-100'}`}>
-                        <Icon className={`w-5 h-5 ${step.completed ? 'text-green-600' : 'text-gray-400'}`} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h4 className={`font-semibold ${step.completed ? 'text-gray-900' : 'text-gray-500'}`}>
-                            {step.status}
-                          </h4>
-                          <span className={`text-sm ${step.completed ? 'text-gray-600' : 'text-gray-400'}`}>
-                            {step.date}
-                          </span>
-                        </div>
-                        {index < orderData.timeline.length - 1 && (
-                          <div className={`w-px h-6 ml-2 mt-2 ${step.completed ? 'bg-green-300' : 'bg-gray-300'}`} />
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Customer Information</h3>
+                  <p className="text-gray-600">{orderStatus.customerName}</p>
+                  <p className="text-gray-600">{orderStatus.customerEmail}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Delivery Information</h3>
+                  <p className="text-gray-600">Estimated Delivery: {new Date(orderStatus.estimatedDelivery).toLocaleDateString()}</p>
+                  <p className="text-gray-600">Total: {orderStatus.total}</p>
+                </div>
               </div>
             </div>
 
             {/* Order Items */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Order Items</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Order Items</h3>
               <div className="space-y-3">
-                {orderData.items.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center py-2 border-b border-gray-200 last:border-b-0">
+                {orderStatus.items.map((item, index) => (
+                  <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200 last:border-b-0">
                     <div>
-                      <p className="font-medium">{item.name}</p>
+                      <p className="font-medium text-gray-900">{item.name}</p>
                       <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                     </div>
                     <p className="font-semibold text-red-700">{item.price}</p>
                   </div>
                 ))}
-                <div className="flex justify-between items-center pt-4 border-t border-gray-300">
-                  <p className="text-lg font-bold">Total</p>
-                  <p className="text-lg font-bold text-red-700">{orderData.total}</p>
-                </div>
+              </div>
+            </div>
+
+            {/* Tracking Timeline */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-6">Tracking Timeline</h3>
+              <div className="space-y-4">
+                {orderStatus.trackingSteps.map((step, index) => (
+                  <div key={index} className="flex items-start gap-4">
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      step.completed ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'
+                    }`}>
+                      {step.completed ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        <Clock className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className={`font-medium ${step.completed ? 'text-gray-900' : 'text-gray-500'}`}>
+                          {step.status}
+                        </h4>
+                        {step.date && (
+                          <span className="text-sm text-gray-500">{step.date}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        {step.location}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         )}
-
-        {/* Help Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Need Help?</h3>
-          <p className="text-gray-600 mb-4">
-            If you can't find your order or have questions about your delivery, please contact our customer service team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button variant="outline" className="flex items-center gap-2">
-              <Phone className="w-4 h-4" />
-              Call: +233 24 123 4567
-            </Button>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Mail className="w-4 h-4" />
-              Email: support@darlingtonstore.com
-            </Button>
-          </div>
-        </div>
       </main>
       <Footer />
       <WhatsAppButton />

@@ -35,12 +35,18 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
     );
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // Dispatch custom event to update cart count
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const removeItem = (id: number) => {
     const updatedCart = cartItems.filter(item => item.id !== id);
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
+    
+    // Dispatch custom event to update cart count
+    window.dispatchEvent(new Event('cartUpdated'));
   };
 
   const getTotalPrice = () => {
@@ -56,12 +62,19 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
       return;
     }
     
+    // Generate a mock order number
+    const orderNumber = 'DS' + Math.random().toString().substr(2, 6).padStart(6, '0');
+    
     // Simulate checkout process
-    alert(`Proceeding to checkout with ${cartItems.length} items. Total: ₵${getTotalPrice().toFixed(2)}`);
+    alert(`Order placed successfully! Your order number is: ${orderNumber}\n\nTotal: ₵${getTotalPrice().toFixed(2)}\n\nYou can track your order using the Track Order page.`);
     
     // Clear cart after checkout
     setCartItems([]);
     localStorage.removeItem('cart');
+    
+    // Dispatch custom event to update cart count
+    window.dispatchEvent(new Event('cartUpdated'));
+    
     onClose();
   };
 
