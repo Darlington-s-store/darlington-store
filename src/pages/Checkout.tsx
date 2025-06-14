@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -94,6 +93,39 @@ const Checkout = () => {
     });
   };
 
+  const updateOrderAfterPayment = async (response: any, orderId: string, orderNumber: string) => {
+    try {
+      console.log('Updating order after payment:', response);
+      
+      // Update order with payment info
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          payment_status: 'completed',
+          payment_reference: response.reference,
+          paystack_reference: response.reference,
+          status: 'processing'
+        })
+        .eq('id', orderId);
+
+      if (updateError) {
+        console.error('Failed to update order:', updateError);
+      } else {
+        console.log('Order updated successfully');
+        
+        // Clear cart
+        localStorage.removeItem('cart');
+        window.dispatchEvent(new Event('cartUpdated'));
+
+        alert(`Payment successful! Your order number is: ${orderNumber}`);
+        navigate('/orders');
+      }
+    } catch (error) {
+      console.error('Error updating order after payment:', error);
+      alert('Payment was successful but there was an issue updating your order. Please contact support.');
+    }
+  };
+
   const processPayment = async () => {
     if (!user) return;
 
@@ -173,30 +205,10 @@ const Checkout = () => {
             }
           ]
         },
-        callback: async function(response: any) {
+        callback: function(response: any) {
           console.log('Payment successful:', response);
-          
-          // Update order with payment info
-          const { error: updateError } = await supabase
-            .from('orders')
-            .update({
-              payment_status: 'completed',
-              payment_reference: response.reference,
-              paystack_reference: response.reference,
-              status: 'processing'
-            })
-            .eq('id', order.id);
-
-          if (updateError) {
-            console.error('Failed to update order:', updateError);
-          }
-
-          // Clear cart
-          localStorage.removeItem('cart');
-          window.dispatchEvent(new Event('cartUpdated'));
-
-          alert(`Payment successful! Your order number is: ${orderNumber}`);
-          navigate('/orders');
+          // Call the async function to update the order
+          updateOrderAfterPayment(response, order.id, orderNumber);
         },
         onClose: function() {
           console.log('Payment window closed');
