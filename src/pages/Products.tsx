@@ -1,12 +1,12 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ShoppingCart, Star, Filter, Search } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
-import { Button } from "@/components/ui/button";
+import ProductCard from "../components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 
 const Products = () => {
@@ -136,6 +136,11 @@ const Products = () => {
     alert(`Added ${product.name} to cart!`);
   };
 
+  const handleAddToWishlist = (product: any) => {
+    // This could be enhanced to check authentication status
+    alert('Please sign in to add items to your wishlist');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -198,39 +203,12 @@ const Products = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {products.map((product) => (
-              <div
+              <ProductCard
                 key={product.id}
-                className="bg-white rounded-lg shadow-md border hover:shadow-lg transition group flex flex-col justify-between"
-              >
-                <img 
-                  src={product.image_url} 
-                  alt={product.name} 
-                  className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
-                  onClick={() => window.location.href = `/product/${product.id}`}
-                />
-                <div className="flex flex-col px-4 py-3 grow">
-                  <div className="font-semibold text-lg mb-1">{product.name}</div>
-                  <div className="text-gray-600 text-sm mb-2">{product.description}</div>
-                  <div className="flex items-center justify-between mt-auto mb-1">
-                    <div className="text-red-700 font-bold text-lg">₵{product.price}</div>
-                    <div className="flex items-center text-yellow-500 text-base font-semibold ml-2">
-                      <Star className="h-5 w-5 mr-1 fill-yellow-400 stroke-yellow-500" />
-                      4.5
-                    </div>
-                  </div>
-                  <div className="text-xs text-gray-500 mb-2">
-                    Brand: {product.brand} | Stock: {product.stock_quantity}
-                  </div>
-                  <Button 
-                    onClick={() => handleAddToCart(product)}
-                    className="bg-red-700 hover:bg-red-800 text-white w-full mt-2 flex items-center justify-center gap-2 text-base font-medium"
-                    disabled={product.stock_quantity === 0}
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                  </Button>
-                </div>
-              </div>
+                product={product}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+              />
             ))}
           </div>
         )}

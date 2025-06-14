@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -5,12 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
+import ImageGallery from "../components/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
 
@@ -124,12 +125,12 @@ const ProductDetail = () => {
   // Parse images from JSON array or use single image, with proper type handling
   const parseImages = (images: any): string[] => {
     if (Array.isArray(images)) {
-      return images.map(img => String(img));
+      return images.map(img => String(img)).filter(img => img && img.trim() !== '');
     }
     if (typeof images === 'string') {
       try {
         const parsed = JSON.parse(images);
-        return Array.isArray(parsed) ? parsed.map(img => String(img)) : [product.image_url].filter(Boolean);
+        return Array.isArray(parsed) ? parsed.map(img => String(img)).filter(img => img && img.trim() !== '') : [product.image_url].filter(Boolean);
       } catch {
         return [product.image_url].filter(Boolean);
       }
@@ -146,29 +147,8 @@ const ProductDetail = () => {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
           {/* Product Images */}
-          <div className="space-y-4">
-            <div className="aspect-square bg-white rounded-lg overflow-hidden">
-              <img
-                src={images[selectedImage]}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {images.length > 1 && (
-              <div className="grid grid-cols-3 gap-4">
-                {images.map((image: string, index: number) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 ${
-                      selectedImage === index ? "border-red-700" : "border-gray-200"
-                    }`}
-                  >
-                    <img src={image} alt={`${product.name} ${index + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+          <div>
+            <ImageGallery images={images} productName={product.name} />
           </div>
 
           {/* Product Info */}
