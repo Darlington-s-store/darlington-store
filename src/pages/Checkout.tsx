@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, CreditCard, MapPin, User } from "lucide-react";
+import { ShoppingCart, CreditCard, MapPin } from "lucide-react";
 
 interface CartItem {
   id: number;
@@ -150,9 +150,9 @@ const Checkout = () => {
       // Initialize Paystack
       await initializePaystack();
 
-      // Configure Paystack payment
+      // Configure Paystack payment with your live key
       const handler = (window as any).PaystackPop.setup({
-        key: 'pk_test_4f9d4e5e0f2f8c3e9b9c1e2d3f4g5h6i', // Replace with your Paystack public key
+        key: 'pk_live_595150e66d3a90b005ff10b96fbeeb4d59560058', // Your live public key
         email: shippingAddress.email,
         amount: totalAmount * 100, // Paystack expects amount in pesewas (kobo)
         currency: 'GHS',
