@@ -1,7 +1,8 @@
 
-import { ShoppingCart, Star } from "lucide-react";
+import { ShoppingCart, Star, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const products = [
   {
@@ -44,6 +45,7 @@ const products = [
 
 export default function ProductGrid() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleAddToCart = (product: any) => {
     const cartItem = {
@@ -78,6 +80,34 @@ export default function ProductGrid() {
     alert(`Added ${product.name} to cart!`);
   };
 
+  const handleAddToWishlist = (product: any) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image,
+      brand: product.brand,
+      rating: product.rating
+    };
+
+    const existingWishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
+    const isAlreadyInWishlist = existingWishlist.some((item: any) => item.id === product.id);
+
+    if (isAlreadyInWishlist) {
+      alert('Item is already in your wishlist!');
+      return;
+    }
+
+    const updatedWishlist = [...existingWishlist, wishlistItem];
+    localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
+    alert(`Added ${product.name} to wishlist!`);
+  };
+
   return (
     <section className="w-full py-10 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -88,12 +118,20 @@ export default function ProductGrid() {
               key={p.id}
               className="bg-white rounded-lg shadow-md border hover:shadow-lg transition group flex flex-col justify-between"
             >
-              <img 
-                src={p.image} 
-                alt={p.name} 
-                className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
-                onClick={() => navigate(`/product/${p.id}`)}
-              />
+              <div className="relative">
+                <img 
+                  src={p.image} 
+                  alt={p.name} 
+                  className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
+                  onClick={() => navigate(`/product/${p.id}`)}
+                />
+                <button
+                  onClick={() => handleAddToWishlist(p)}
+                  className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition"
+                >
+                  <Heart className="w-5 h-5 text-gray-600 hover:text-red-600" />
+                </button>
+              </div>
               <div className="flex flex-col px-4 py-3 grow">
                 <div className="font-semibold text-lg mb-1">{p.name}</div>
                 <div className="text-gray-600 text-sm mb-2">{p.desc}</div>
