@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface SMSData {
   phone: string;
   message: string;
-  type: 'welcome' | 'order_confirmation';
+  type: 'welcome' | 'order_confirmation' | 'owner_notification';
 }
 
 export const useSMS = () => {
@@ -51,9 +51,22 @@ export const useSMS = () => {
     });
   };
 
+  const sendOwnerNotificationSMS = async (orderNumber: string, amount: number, customerName: string, customerPhone?: string) => {
+    const ownerPhone = '0200000000'; // Replace with actual owner phone number
+    const customerInfo = customerPhone ? `${customerName} (${customerPhone})` : customerName;
+    const message = `New order received at Darlington Store! Order #${orderNumber} from ${customerInfo}. Amount: ₵${amount.toFixed(2)}. Please check your dashboard for details. 🛒`;
+    
+    return sendSMS({
+      phone: ownerPhone,
+      message,
+      type: 'owner_notification'
+    });
+  };
+
   return {
     sendSMS,
     sendWelcomeSMS,
-    sendOrderConfirmationSMS
+    sendOrderConfirmationSMS,
+    sendOwnerNotificationSMS
   };
 };

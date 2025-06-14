@@ -37,7 +37,7 @@ interface ShippingAddress {
 const Checkout = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { sendOrderConfirmationSMS } = useSMS();
+  const { sendOrderConfirmationSMS, sendOwnerNotificationSMS } = useSMS();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
@@ -116,14 +116,16 @@ const Checkout = () => {
       } else {
         console.log('Order updated successfully');
         
+        const customerName = `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim();
+        const totalAmount = getTotalPrice();
+        
         // Send order confirmation SMS if phone is provided
         if (shippingAddress.phone && shippingAddress.phone.trim()) {
           try {
-            const customerName = `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim();
             await sendOrderConfirmationSMS(
               shippingAddress.phone, 
               orderNumber, 
-              getTotalPrice(), 
+              totalAmount, 
               customerName
             );
             console.log('Order confirmation SMS sent successfully');
@@ -131,6 +133,20 @@ const Checkout = () => {
             console.error('Failed to send order confirmation SMS:', smsError);
             // Don't block the order process if SMS fails
           }
+        }
+        
+        // Send owner notification SMS
+        try {
+          await sendOwnerNotificationSMS(
+            orderNumber, 
+            totalAmount, 
+            customerName,
+            shippingAddress.phone
+          );
+          console.log('Owner notification SMS sent successfully');
+        } catch (ownerSmsError) {
+          console.error('Failed to send owner notification SMS:', ownerSmsError);
+          // Don't block the order process if owner SMS fails
         }
         
         // Clear cart

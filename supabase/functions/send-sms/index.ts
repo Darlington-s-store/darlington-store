@@ -9,7 +9,7 @@ const corsHeaders = {
 interface SMSRequest {
   phone: string;
   message: string;
-  type: 'welcome' | 'order_confirmation';
+  type: 'welcome' | 'order_confirmation' | 'owner_notification';
 }
 
 serve(async (req) => {
