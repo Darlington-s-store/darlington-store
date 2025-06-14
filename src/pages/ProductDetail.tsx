@@ -1,120 +1,45 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
-
-// Mock product data
-const productData: { [key: string]: any } = {
-  "1": {
-    id: 1,
-    name: "Sony PlayStation 5",
-    desc: "Experience lightning-fast loading with an ultra-high speed SSD, deeper immersion with support for haptic feedback, adaptive triggers and 3D Audio, and an all-new generation of incredible PlayStation games.",
-    price: "₵3,800",
-    originalPrice: "₵4,200",
-    brand: "Sony",
-    rating: 4.5,
-    reviewCount: 156,
-    category: "Gaming",
-    inStock: true,
-    stockCount: 12,
-    images: [
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1607853202273-797f1c22a38e?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80"
-    ],
-    features: [
-      "4K gaming at up to 120fps with ray tracing",
-      "Ultra-high speed SSD for instant loading",
-      "Backward compatibility with PS4 games",
-      "3D audio technology for immersive gaming",
-      "DualSense wireless controller with haptic feedback"
-    ],
-    specifications: {
-      "CPU": "AMD Zen 2-based CPU with 8 cores at 3.5GHz",
-      "GPU": "AMD Radeon RDNA 2-based graphics engine",
-      "Memory": "16GB GDDR6/256-bit",
-      "Storage": "825GB SSD",
-      "Dimensions": "390mm x 104mm x 260mm",
-      "Weight": "4.5kg"
-    }
-  },
-  "2": {
-    id: 2,
-    name: "Samsung 980 PRO 4TB NVMe",
-    desc: "Maximum speed for heavy computing. Get read speeds up to 7,000 MB/s and write speeds up to 5,100 MB/s with Samsung's fastest SSD.",
-    price: "₵2,800",
-    originalPrice: "₵3,200",
-    brand: "Samsung",
-    rating: 4.7,
-    reviewCount: 89,
-    category: "Storage",
-    inStock: true,
-    stockCount: 25,
-    images: [
-      "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=800&q=80"
-    ],
-    features: [
-      "PCIe 4.0 NVMe interface for maximum performance",
-      "Up to 7,000 MB/s sequential read speeds",
-      "Advanced thermal control with heat spreader",
-      "Samsung Magician software for optimization",
-      "5-year limited warranty"
-    ],
-    specifications: {
-      "Capacity": "4TB",
-      "Interface": "PCIe Gen 4.0 x4, NVMe 1.3c",
-      "Form Factor": "M.2 2280",
-      "Sequential Read": "Up to 7,000 MB/s",
-      "Sequential Write": "Up to 5,100 MB/s",
-      "Warranty": "5 years limited"
-    }
-  },
-  "5": {
-    id: 5,
-    name: "MacBook Pro 16-inch",
-    desc: "The most powerful MacBook Pro ever is here. With the blazing-fast M2 Pro or M2 Max chip — the first Apple silicon designed for pros — you get groundbreaking performance and amazing battery life.",
-    price: "₵12,500",
-    originalPrice: "₵14,000",
-    brand: "Apple",
-    rating: 4.8,
-    reviewCount: 234,
-    category: "Laptops",
-    inStock: true,
-    stockCount: 8,
-    images: [
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=800&q=80"
-    ],
-    features: [
-      "Apple M2 Pro chip with 12-core CPU and 19-core GPU",
-      "16.2-inch Liquid Retina XDR display",
-      "32GB unified memory, 1TB SSD storage",
-      "1080p FaceTime HD camera",
-      "Six-speaker sound system with force-cancelling woofers"
-    ],
-    specifications: {
-      "Chip": "Apple M2 Pro with 12-core CPU, 19-core GPU",
-      "Display": "16.2-inch Liquid Retina XDR",
-      "Memory": "32GB unified memory",
-      "Storage": "1TB SSD",
-      "Battery": "Up to 22 hours video playback",
-      "Weight": "2.15 kg"
-    }
-  }
-};
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = productData[id || "1"] || productData["1"];
-  
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
 
+  const { data: product, isLoading } = useQuery({
+    queryKey: ['product', id],
+    queryFn: async () => {
+      if (!id) throw new Error('Product ID is required');
+      
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
+        .eq('id', id)
+        .eq('is_active', true)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id
+  });
+
   const handleQuantityChange = (type: "increase" | "decrease") => {
-    if (type === "increase" && quantity < product.stockCount) {
+    if (type === "increase" && quantity < (product?.stock_quantity || 0)) {
       setQuantity(quantity + 1);
     } else if (type === "decrease" && quantity > 1) {
       setQuantity(quantity - 1);
@@ -122,12 +47,14 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: `₵${product.price}`,
       quantity: quantity,
-      image: product.images[0]
+      image: product.image_url
     };
     
     // Get existing cart from localStorage
@@ -154,6 +81,47 @@ const ProductDetail = () => {
     alert(`Added ${quantity} ${product.name} to cart!`);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+            <div className="space-y-4">
+              <div className="aspect-square bg-gray-300 rounded-lg animate-pulse" />
+            </div>
+            <div className="space-y-6">
+              <div className="h-8 bg-gray-300 rounded animate-pulse" />
+              <div className="h-6 bg-gray-300 rounded animate-pulse" />
+              <div className="h-4 bg-gray-300 rounded animate-pulse w-1/2" />
+              <div className="h-12 bg-gray-300 rounded animate-pulse" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+          <p className="text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
+        </main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    );
+  }
+
+  // Parse images from JSON array or use single image
+  const images = product.images && Array.isArray(product.images) ? product.images : [product.image_url];
+  const specifications = product.specifications || {};
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -163,14 +131,14 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-lg overflow-hidden">
               <img
-                src={product.images[selectedImage]}
+                src={images[selectedImage]}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            {product.images.length > 1 && (
+            {images.length > 1 && (
               <div className="grid grid-cols-3 gap-4">
-                {product.images.map((image: string, index: number) => (
+                {images.map((image: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
@@ -188,34 +156,31 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-red-700 font-medium mb-2">{product.category}</p>
+              <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <p className="text-gray-600 text-lg">{product.desc}</p>
+              <p className="text-gray-600 text-lg">{product.description}</p>
             </div>
 
             {/* Rating */}
             <div className="flex items-center gap-4">
               <div className="flex items-center">
                 <Star className="w-5 h-5 fill-yellow-400 stroke-yellow-500" />
-                <span className="ml-1 font-semibold">{product.rating}</span>
-                <span className="ml-2 text-gray-600">({product.reviewCount} reviews)</span>
+                <span className="ml-1 font-semibold">4.5</span>
+                <span className="ml-2 text-gray-600">(No reviews yet)</span>
               </div>
               <span className="text-gray-600">Brand: {product.brand}</span>
             </div>
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              <span className="text-3xl font-bold text-red-700">{product.price}</span>
-              {product.originalPrice && (
-                <span className="text-xl text-gray-500 line-through">{product.originalPrice}</span>
-              )}
+              <span className="text-3xl font-bold text-red-700">₵{product.price}</span>
             </div>
 
             {/* Stock Status */}
             <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${product.inStock ? "bg-green-500" : "bg-red-500"}`} />
-              <span className={`font-medium ${product.inStock ? "text-green-600" : "text-red-600"}`}>
-                {product.inStock ? `In Stock (${product.stockCount} available)` : "Out of Stock"}
+              <div className={`w-3 h-3 rounded-full ${product.stock_quantity > 0 ? "bg-green-500" : "bg-red-500"}`} />
+              <span className={`font-medium ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
+                {product.stock_quantity > 0 ? `In Stock (${product.stock_quantity} available)` : "Out of Stock"}
               </span>
             </div>
 
@@ -235,7 +200,7 @@ const ProductDetail = () => {
                   <button
                     onClick={() => handleQuantityChange("increase")}
                     className="p-2 hover:bg-gray-100"
-                    disabled={quantity >= product.stockCount}
+                    disabled={quantity >= product.stock_quantity}
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -246,10 +211,10 @@ const ProductDetail = () => {
                 <Button 
                   onClick={handleAddToCart}
                   className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2"
-                  disabled={!product.inStock}
+                  disabled={product.stock_quantity === 0}
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {product.inStock ? 'Add to Cart' : 'Out of Stock'}
+                  {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
                 <Button variant="outline" size="icon">
                   <Heart className="w-5 h-5" />
@@ -282,7 +247,7 @@ const ProductDetail = () => {
         <div className="bg-white rounded-lg shadow-md">
           <div className="border-b">
             <nav className="flex gap-8 px-6">
-              {["description", "specifications", "reviews"].map((tab) => (
+              {["description", "specifications"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -302,82 +267,35 @@ const ProductDetail = () => {
             {activeTab === "description" && (
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 mb-6">{product.desc}</p>
-                <h4 className="font-semibold text-gray-900 mb-3">Key Features:</h4>
-                <ul className="space-y-2">
-                  {product.features.map((feature: string, index: number) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="w-2 h-2 bg-red-700 rounded-full mt-2 flex-shrink-0" />
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-gray-700 mb-6">{product.description}</p>
+                {product.model && (
+                  <div className="mb-4">
+                    <strong>Model:</strong> {product.model}
+                  </div>
+                )}
+                {product.brand && (
+                  <div className="mb-4">
+                    <strong>Brand:</strong> {product.brand}
+                  </div>
+                )}
               </div>
             )}
 
             {activeTab === "specifications" && (
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Technical Specifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="border-b border-gray-200 pb-2">
-                      <dt className="font-medium text-gray-900">{key}</dt>
-                      <dd className="text-gray-700">{String(value)}</dd>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === "reviews" && (
-              <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
-                <div className="space-y-6">
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-400 stroke-yellow-500" />
-                        ))}
+                {Object.keys(specifications).length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(specifications).map(([key, value]) => (
+                      <div key={key} className="border-b border-gray-200 pb-2">
+                        <dt className="font-medium text-gray-900 capitalize">{key.replace(/_/g, ' ')}</dt>
+                        <dd className="text-gray-700">{String(value)}</dd>
                       </div>
-                      <span className="font-medium">John D.</span>
-                      <span className="text-gray-500 text-sm">Verified Purchase</span>
-                    </div>
-                    <p className="text-gray-700">
-                      Amazing product! Exceeded my expectations. Fast delivery from Darlington Store and excellent customer service.
-                    </p>
+                    ))}
                   </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex">
-                        {[...Array(4)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-400 stroke-yellow-500" />
-                        ))}
-                        <Star className="w-4 h-4 stroke-yellow-500" />
-                      </div>
-                      <span className="font-medium">Sarah M.</span>
-                      <span className="text-gray-500 text-sm">Verified Purchase</span>
-                    </div>
-                    <p className="text-gray-700">
-                      Great product, fast delivery from Darlington Store. Only minor issue was the packaging 
-                      could be better, but the product works perfectly.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} className="w-4 h-4 fill-yellow-400 stroke-yellow-500" />
-                        ))}
-                      </div>
-                      <span className="font-medium">Mike R.</span>
-                      <span className="text-gray-500 text-sm">Verified Purchase</span>
-                    </div>
-                    <p className="text-gray-700">
-                      Highly recommend! Quality is top-notch and the customer support team was very helpful.
-                    </p>
-                  </div>
-                </div>
+                ) : (
+                  <p className="text-gray-500">No specifications available for this product.</p>
+                )}
               </div>
             )}
           </div>

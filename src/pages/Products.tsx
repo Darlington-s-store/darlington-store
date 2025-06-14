@@ -2,103 +2,114 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ShoppingCart, Star, Filter, Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
-
-const allProducts = [
-  {
-    id: 1,
-    name: "Sony PlayStation 5",
-    desc: "Next-generation gaming console with 4K gaming capability",
-    price: "₵3,800",
-    brand: "Sony",
-    rating: 4.5,
-    category: "Gaming",
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=420&q=80",
-  },
-  {
-    id: 2,
-    name: "Samsung 980 PRO 4TB NVMe",
-    desc: "Ultra-high capacity M.2 NVMe SSD for professionals",
-    price: "₵2,800",
-    brand: "Samsung",
-    rating: 4.5,
-    category: "Storage",
-    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=420&q=80",
-  },
-  {
-    id: 3,
-    name: "Samsung Galaxy Tab S9",
-    desc: "Premium Android tablet with S Pen included",
-    price: "₵4,500",
-    brand: "Samsung",
-    rating: 4.5,
-    category: "Tablets",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=420&q=80",
-  },
-  {
-    id: 4,
-    name: "Lenovo Tab P11 Plus",
-    desc: "Mid-range tablet perfect for entertainment and productivity",
-    price: "₵1,800",
-    brand: "Lenovo",
-    rating: 4.5,
-    category: "Tablets",
-    image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=420&q=80",
-  },
-  {
-    id: 5,
-    name: "MacBook Pro 16-inch",
-    desc: "Powerful laptop for professionals and creators",
-    price: "₵12,500",
-    brand: "Apple",
-    rating: 4.8,
-    category: "Laptops",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=420&q=80",
-  },
-  {
-    id: 6,
-    name: "iPhone 15 Pro",
-    desc: "Latest iPhone with titanium design and powerful A17 chip",
-    price: "₵8,900",
-    brand: "Apple",
-    rating: 4.7,
-    category: "Smartphones",
-    image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=420&q=80",
-  },
-];
-
-const categories = ["All", "Laptops", "Smartphones", "Tablets", "Gaming", "Storage"];
+import { supabase } from "@/integrations/supabase/client";
 
 const Products = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch categories
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch products
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products', selectedCategory, searchTerm],
+    queryFn: async () => {
+      let query = supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
+        .eq('is_active', true);
+
+      // Filter by category if not "All"
+      if (selectedCategory !== "All") {
+        const category = categories.find(cat => cat.name === selectedCategory);
+        if (category) {
+          query = query.eq('category_id', category.id);
+        }
+      }
+
+      // Search filter
+      if (searchTerm) {
+        query = query.or(`name.ilike.%${searchTerm}%, description.ilike.%${searchTerm}%, brand.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: categories.length > 0 // Only run when categories are loaded
+  });
+
   useEffect(() => {
     const urlSearch = searchParams.get('search');
+    const urlCategory = searchParams.get('category');
+    
     if (urlSearch) {
       setSearchTerm(urlSearch);
     }
+    
+    if (urlCategory) {
+      setSelectedCategory(urlCategory);
+    }
   }, [searchParams]);
 
-  const filteredProducts = allProducts.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.desc.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const categoryOptions = ["All", ...categories.map(cat => cat.name)];
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    // Update URL params
+    const params = new URLSearchParams(searchParams);
+    if (category === "All") {
+      params.delete('category');
+    } else {
+      params.set('category', category);
+    }
+    setSearchParams(params);
+  };
+
+  const handleSearchChange = (search: string) => {
+    setSearchTerm(search);
+    // Update URL params
+    const params = new URLSearchParams(searchParams);
+    if (search) {
+      params.set('search', search);
+    } else {
+      params.delete('search');
+    }
+    setSearchParams(params);
+  };
 
   const handleAddToCart = (product: any) => {
     const cartItem = {
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: `₵${product.price}`,
       quantity: 1,
-      image: product.image
+      image: product.image_url
     };
     
     // Get existing cart from localStorage
@@ -141,7 +152,7 @@ const Products = () => {
                 placeholder="Search products..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-600 focus:outline-none"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -152,10 +163,10 @@ const Products = () => {
 
           {/* Category Filter */}
           <div className="flex flex-wrap gap-2 mb-6">
-            {categories.map((category) => (
+            {categoryOptions.map((category) => (
               <button
                 key={category}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => handleCategoryChange(category)}
                 className={`px-4 py-2 rounded-full font-medium transition-colors ${
                   selectedCategory === category
                     ? "bg-red-700 text-white"
@@ -169,47 +180,67 @@ const Products = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white rounded-lg shadow-md border hover:shadow-lg transition group flex flex-col justify-between"
-            >
-              <img 
-                src={product.image} 
-                alt={product.name} 
-                className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
-                onClick={() => window.location.href = `/product/${product.id}`}
-              />
-              <div className="flex flex-col px-4 py-3 grow">
-                <div className="font-semibold text-lg mb-1">{product.name}</div>
-                <div className="text-gray-600 text-sm mb-2">{product.desc}</div>
-                <div className="flex items-center justify-between mt-auto mb-1">
-                  <div className="text-red-700 font-bold text-lg">{product.price}</div>
-                  <div className="flex items-center text-yellow-500 text-base font-semibold ml-2">
-                    <Star className="h-5 w-5 mr-1 fill-yellow-400 stroke-yellow-500" />
-                    {product.rating}
-                  </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="bg-gray-200 rounded-lg shadow-md border animate-pulse">
+                <div className="w-full h-44 bg-gray-300 rounded-t-lg" />
+                <div className="px-4 py-3">
+                  <div className="h-6 bg-gray-300 rounded mb-2" />
+                  <div className="h-4 bg-gray-300 rounded mb-2" />
+                  <div className="h-6 bg-gray-300 rounded mb-2" />
+                  <div className="h-4 bg-gray-300 rounded mb-4" />
+                  <div className="h-10 bg-gray-300 rounded" />
                 </div>
-                <div className="text-xs text-gray-500 mb-2">Brand: {product.brand}</div>
-                <Button 
-                  onClick={() => handleAddToCart(product)}
-                  className="bg-red-700 hover:bg-red-800 text-white w-full mt-2 flex items-center justify-center gap-2 text-base font-medium"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
-                </Button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-lg shadow-md border hover:shadow-lg transition group flex flex-col justify-between"
+              >
+                <img 
+                  src={product.image_url} 
+                  alt={product.name} 
+                  className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
+                  onClick={() => window.location.href = `/product/${product.id}`}
+                />
+                <div className="flex flex-col px-4 py-3 grow">
+                  <div className="font-semibold text-lg mb-1">{product.name}</div>
+                  <div className="text-gray-600 text-sm mb-2">{product.description}</div>
+                  <div className="flex items-center justify-between mt-auto mb-1">
+                    <div className="text-red-700 font-bold text-lg">₵{product.price}</div>
+                    <div className="flex items-center text-yellow-500 text-base font-semibold ml-2">
+                      <Star className="h-5 w-5 mr-1 fill-yellow-400 stroke-yellow-500" />
+                      4.5
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500 mb-2">
+                    Brand: {product.brand} | Stock: {product.stock_quantity}
+                  </div>
+                  <Button 
+                    onClick={() => handleAddToCart(product)}
+                    className="bg-red-700 hover:bg-red-800 text-white w-full mt-2 flex items-center justify-center gap-2 text-base font-medium"
+                    disabled={product.stock_quantity === 0}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {product.stock_quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {filteredProducts.length === 0 && (
+        {!isLoading && products.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No products found matching your criteria.</p>
             {searchTerm && (
               <button 
-                onClick={() => setSearchTerm("")}
+                onClick={() => handleSearchChange("")}
                 className="mt-4 text-red-700 hover:text-red-800 font-medium"
               >
                 Clear search

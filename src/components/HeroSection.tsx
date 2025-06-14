@@ -1,8 +1,11 @@
 
 import { ShoppingBag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
+  const navigate = useNavigate();
+
   return (
     <section className="w-full bg-red-700 text-white py-16 px-6 flex flex-col md:flex-row items-center justify-between gap-10">
       <div className="flex-1 max-w-xl">
@@ -14,7 +17,11 @@ export default function HeroSection() {
           Pay with Mobile Money, Paystack, or Bank Transfer.
         </p>
         <div className="flex gap-4 flex-wrap">
-          <Button size="lg" className="bg-white text-red-700 hover:bg-gray-100 font-semibold px-6 shadow"  >
+          <Button 
+            size="lg" 
+            className="bg-white text-red-700 hover:bg-gray-100 font-semibold px-6 shadow"
+            onClick={() => navigate('/products')}
+          >
             <ShoppingBag className="mr-2 h-5 w-5" />
             Shop Now
           </Button>
