@@ -1,9 +1,11 @@
 
 import { ShoppingCart, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const products = [
   {
+    id: 1,
     name: "Sony PlayStation 5",
     desc: "Next-generation gaming console with 4K gaming capability",
     price: "₵3,800",
@@ -12,6 +14,7 @@ const products = [
     image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=420&q=80",
   },
   {
+    id: 2,
     name: "Samsung 980 PRO 4TB NVMe",
     desc: "Ultra-high capacity M.2 NVMe SSD for professionals",
     price: "₵2,800",
@@ -20,6 +23,7 @@ const products = [
     image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=420&q=80",
   },
   {
+    id: 3,
     name: "Samsung Galaxy Tab S9",
     desc: "Premium Android tablet with S Pen included",
     price: "₵4,500",
@@ -28,6 +32,7 @@ const products = [
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=420&q=80",
   },
   {
+    id: 4,
     name: "Lenovo Tab P11 Plus",
     desc: "Mid-range tablet perfect for entertainment and productivity",
     price: "₵1,800",
@@ -38,6 +43,8 @@ const products = [
 ];
 
 export default function ProductGrid() {
+  const navigate = useNavigate();
+
   return (
     <section className="w-full py-10 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -45,10 +52,15 @@ export default function ProductGrid() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {products.map((p) => (
             <div
-              key={p.name}
+              key={p.id}
               className="bg-white rounded-lg shadow-md border hover:shadow-lg transition group flex flex-col justify-between"
             >
-              <img src={p.image} alt={p.name} className="w-full h-44 object-cover rounded-t-lg" />
+              <img 
+                src={p.image} 
+                alt={p.name} 
+                className="w-full h-44 object-cover rounded-t-lg cursor-pointer"
+                onClick={() => navigate(`/product/${p.id}`)}
+              />
               <div className="flex flex-col px-4 py-3 grow">
                 <div className="font-semibold text-lg mb-1">{p.name}</div>
                 <div className="text-gray-600 text-sm mb-2">{p.desc}</div>
