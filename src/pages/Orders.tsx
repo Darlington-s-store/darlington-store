@@ -3,28 +3,34 @@ import { useState, useEffect } from "react";
 import { Package, Calendar, DollarSign, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 
+interface OrderItem {
+  id: string;
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  price: number;
+}
+
 interface Order {
   id: string;
-  orderNumber: string;
-  date: string;
-  total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered';
-  items: Array<{
-    id: number;
-    name: string;
-    quantity: number;
-    price: string;
-  }>;
+  order_number: string;
+  created_at: string;
+  total_amount: number;
+  status: string;
+  payment_status: string | null;
+  order_items: OrderItem[];
 }
 
 const Orders = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,38 +38,37 @@ const Orders = () => {
       return;
     }
 
-    // Load mock orders from localStorage or generate some
-    const savedOrders = localStorage.getItem(`orders_${user?.id}`);
-    if (savedOrders) {
-      setOrders(JSON.parse(savedOrders));
-    } else {
-      // Generate some mock orders for demonstration
-      const mockOrders: Order[] = [
-        {
-          id: '1',
-          orderNumber: 'DS000123',
-          date: '2024-01-15',
-          total: 3800,
-          status: 'delivered',
-          items: [
-            { id: 1, name: 'Sony PlayStation 5', quantity: 1, price: '₵3,800' }
-          ]
-        },
-        {
-          id: '2',
-          orderNumber: 'DS000124',
-          date: '2024-01-20',
-          total: 2800,
-          status: 'shipped',
-          items: [
-            { id: 2, name: 'Samsung 980 PRO 4TB NVMe', quantity: 1, price: '₵2,800' }
-          ]
-        }
-      ];
-      setOrders(mockOrders);
-      localStorage.setItem(`orders_${user?.id}`, JSON.stringify(mockOrders));
+    if (user) {
+      fetchOrders();
     }
   }, [user, loading, navigate]);
+
+  const fetchOrders = async () => {
+    if (!user) return;
+
+    try {
+      const { data: ordersData, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          order_items (*)
+        `)
+        .eq('user_id', user.id)
+        .eq('payment_status', 'completed')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching orders:', error);
+        return;
+      }
+
+      setOrders(ordersData || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -85,7 +90,7 @@ const Orders = () => {
     }
   };
 
-  if (loading) {
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -125,11 +130,11 @@ const Orders = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      Order #{order.orderNumber}
+                      Order #{order.order_number}
                     </h3>
                     <div className="flex items-center text-sm text-gray-500 mt-1">
                       <Calendar className="w-4 h-4 mr-1" />
-                      {new Date(order.date).toLocaleDateString()}
+                      {new Date(order.created_at).toLocaleDateString()}
                     </div>
                   </div>
                   <div className="text-right">
@@ -139,21 +144,21 @@ const Orders = () => {
                     </div>
                     <div className="flex items-center text-lg font-bold text-gray-900 mt-1">
                       <DollarSign className="w-4 h-4 mr-1" />
-                      ₵{order.total.toFixed(2)}
+                      ₵{order.total_amount.toFixed(2)}
                     </div>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
-                  <h4 className="font-medium text-gray-900 mb-3">Items ({order.items.length})</h4>
+                  <h4 className="font-medium text-gray-900 mb-3">Items ({order.order_items.length})</h4>
                   <div className="space-y-2">
-                    {order.items.map((item) => (
+                    {order.order_items.map((item) => (
                       <div key={item.id} className="flex justify-between items-center">
                         <div>
-                          <span className="text-gray-900">{item.name}</span>
+                          <span className="text-gray-900">{item.product_name}</span>
                           <span className="text-gray-500 ml-2">x{item.quantity}</span>
                         </div>
-                        <span className="font-medium text-gray-900">{item.price}</span>
+                        <span className="font-medium text-gray-900">₵{item.price.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -162,7 +167,7 @@ const Orders = () => {
                 <div className="mt-4 pt-4 border-t flex justify-between items-center">
                   <Button
                     variant="outline"
-                    onClick={() => navigate(`/track?order=${order.orderNumber}`)}
+                    onClick={() => navigate(`/track?order=${order.order_number}`)}
                   >
                     Track Order
                   </Button>

@@ -75,6 +75,9 @@ export type Database = {
           id: string
           order_number: string
           payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          paystack_reference: string | null
           shipping_address: Json | null
           status: string
           total_amount: number
@@ -87,6 +90,9 @@ export type Database = {
           id?: string
           order_number: string
           payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          paystack_reference?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount: number
@@ -99,6 +105,9 @@ export type Database = {
           id?: string
           order_number?: string
           payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          paystack_reference?: string | null
           shipping_address?: Json | null
           status?: string
           total_amount?: number

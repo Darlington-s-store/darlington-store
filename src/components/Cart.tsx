@@ -1,7 +1,9 @@
+
 import { useState, useEffect } from "react";
 import { X, Minus, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface CartItem {
   id: number;
@@ -19,6 +21,7 @@ interface CartProps {
 const Cart = ({ isOpen, onClose }: CartProps) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -62,42 +65,15 @@ const Cart = ({ isOpen, onClose }: CartProps) => {
       alert('Your cart is empty');
       return;
     }
-    
-    // Generate a mock order number
-    const orderNumber = 'DS' + Math.random().toString().substr(2, 6).padStart(6, '0');
-    
-    // Save order to user's order history if logged in
-    if (user) {
-      const newOrder = {
-        id: Date.now().toString(),
-        orderNumber,
-        date: new Date().toISOString().split('T')[0],
-        total: getTotalPrice(),
-        status: 'pending' as const,
-        items: cartItems.map(item => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price
-        }))
-      };
 
-      const existingOrders = JSON.parse(localStorage.getItem(`orders_${user.id}`) || '[]');
-      const updatedOrders = [newOrder, ...existingOrders];
-      localStorage.setItem(`orders_${user.id}`, JSON.stringify(updatedOrders));
+    if (!user) {
+      onClose();
+      navigate('/auth');
+      return;
     }
     
-    // Simulate checkout process
-    alert(`Order placed successfully! Your order number is: ${orderNumber}\n\nTotal: ₵${getTotalPrice().toFixed(2)}\n\nYou can track your order using the Track Order page.`);
-    
-    // Clear cart after checkout
-    setCartItems([]);
-    localStorage.removeItem('cart');
-    
-    // Dispatch custom event to update cart count
-    window.dispatchEvent(new Event('cartUpdated'));
-    
     onClose();
+    navigate('/checkout');
   };
 
   if (!isOpen) return null;
