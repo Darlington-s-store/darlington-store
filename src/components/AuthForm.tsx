@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useSMS } from "@/hooks/useSMS";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +23,7 @@ const AuthForm = ({ mode, onToggleMode, onSuccess }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { sendWelcomeSMS } = useSMS();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +53,18 @@ const AuthForm = ({ mode, onToggleMode, onSuccess }: AuthFormProps) => {
           }
         } else {
           setError('');
+          
+          // Send welcome SMS if phone number is provided
+          if (phone && phone.trim()) {
+            try {
+              await sendWelcomeSMS(phone, firstName);
+              console.log('Welcome SMS sent successfully');
+            } catch (smsError) {
+              console.error('Failed to send welcome SMS:', smsError);
+              // Don't block signup if SMS fails
+            }
+          }
+          
           onSuccess();
         }
       } else {
@@ -127,11 +141,12 @@ const AuthForm = ({ mode, onToggleMode, onSuccess }: AuthFormProps) => {
                 <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="pl-10"
                 />
+                <p className="text-xs text-gray-500 mt-1">We'll send you a welcome SMS if provided</p>
               </div>
             </>
           )}

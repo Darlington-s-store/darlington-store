@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSMS } from "@/hooks/useSMS";
 import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -35,6 +37,7 @@ interface ShippingAddress {
 const Checkout = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { sendOrderConfirmationSMS } = useSMS();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
@@ -112,6 +115,23 @@ const Checkout = () => {
         console.error('Failed to update order:', updateError);
       } else {
         console.log('Order updated successfully');
+        
+        // Send order confirmation SMS if phone is provided
+        if (shippingAddress.phone && shippingAddress.phone.trim()) {
+          try {
+            const customerName = `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim();
+            await sendOrderConfirmationSMS(
+              shippingAddress.phone, 
+              orderNumber, 
+              getTotalPrice(), 
+              customerName
+            );
+            console.log('Order confirmation SMS sent successfully');
+          } catch (smsError) {
+            console.error('Failed to send order confirmation SMS:', smsError);
+            // Don't block the order process if SMS fails
+          }
+        }
         
         // Clear cart
         localStorage.removeItem('cart');
