@@ -96,8 +96,8 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+        <main className="max-w-7xl mx-auto px-4 py-4 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mb-8 md:mb-12">
             <div className="space-y-4">
               <div className="aspect-square bg-gray-300 rounded-lg animate-pulse" />
             </div>
@@ -119,8 +119,8 @@ const ProductDetail = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="max-w-7xl mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+        <main className="max-w-7xl mx-auto px-4 py-4 md:py-8 text-center">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
           <p className="text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
         </main>
         <Footer />
@@ -151,40 +151,40 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+      <main className="max-w-7xl mx-auto px-4 py-4 md:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mb-8 md:mb-12">
           {/* Product Images */}
           <div>
             <ImageGallery images={images} productName={product.name} />
           </div>
 
           {/* Product Info */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             <div>
               <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-              <p className="text-gray-600 text-lg">{product.description}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+              <p className="text-gray-600 text-base md:text-lg">{product.description}</p>
             </div>
 
             {/* Rating */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
               <div className="flex items-center">
                 <Star className="w-5 h-5 fill-yellow-400 stroke-yellow-500" />
                 <span className="ml-1 font-semibold">4.5</span>
-                <span className="ml-2 text-gray-600">(No reviews yet)</span>
+                <span className="ml-2 text-gray-600 text-sm">(No reviews yet)</span>
               </div>
-              <span className="text-gray-600">Brand: {product.brand}</span>
+              <span className="text-gray-600 text-sm">Brand: {product.brand}</span>
             </div>
 
             {/* Price */}
             <div className="flex items-center gap-4">
-              <span className="text-3xl font-bold text-red-700">₵{product.price}</span>
+              <span className="text-2xl md:text-3xl font-bold text-red-700">₵{product.price}</span>
             </div>
 
             {/* Stock Status */}
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${product.stock_quantity > 0 ? "bg-green-500" : "bg-red-500"}`} />
-              <span className={`font-medium ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
+              <span className={`font-medium text-sm md:text-base ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
                 {product.stock_quantity > 0 ? `In Stock (${product.stock_quantity} available)` : "Out of Stock"}
               </span>
             </div>
@@ -192,7 +192,7 @@ const ProductDetail = () => {
             {/* Quantity and Add to Cart */}
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <span className="font-medium">Quantity:</span>
+                <span className="font-medium text-sm md:text-base">Quantity:</span>
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange("decrease")}
@@ -212,26 +212,26 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-2 md:gap-4">
                 <Button 
                   onClick={handleAddToCart}
-                  className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2 text-sm md:text-base py-2 md:py-3"
                   disabled={product.stock_quantity === 0}
                 >
-                  <ShoppingCart className="w-5 h-5" />
+                  <ShoppingCart className="w-4 h-4 md:w-5 md:h-5" />
                   {product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </Button>
-                <Button variant="outline" size="icon">
-                  <Heart className="w-5 h-5" />
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <Heart className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
-                <Button variant="outline" size="icon">
-                  <Share2 className="w-5 h-5" />
+                <Button variant="outline" size="icon" className="shrink-0">
+                  <Share2 className="w-4 h-4 md:w-5 md:h-5" />
                 </Button>
               </div>
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t">
               <div className="flex items-center gap-2">
                 <Truck className="w-5 h-5 text-red-700" />
                 <span className="text-sm">Free Delivery</span>
@@ -251,12 +251,12 @@ const ProductDetail = () => {
         {/* Product Details Tabs */}
         <div className="bg-white rounded-lg shadow-md">
           <div className="border-b">
-            <nav className="flex gap-8 px-6">
+            <nav className="flex gap-4 md:gap-8 px-4 md:px-6 overflow-x-auto">
               {["description", "specifications", "reviews"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-2 border-b-2 font-medium capitalize ${
+                  className={`py-4 px-2 border-b-2 font-medium capitalize text-sm md:text-base whitespace-nowrap ${
                     activeTab === tab
                       ? "border-red-700 text-red-700"
                       : "border-transparent text-gray-500 hover:text-gray-700"
@@ -268,18 +268,18 @@ const ProductDetail = () => {
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {activeTab === "description" && (
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 mb-6">{product.description}</p>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Product Description</h3>
+                <p className="text-gray-700 mb-6 text-sm md:text-base">{product.description}</p>
                 {product.model && (
-                  <div className="mb-4">
+                  <div className="mb-4 text-sm md:text-base">
                     <strong>Model:</strong> {product.model}
                   </div>
                 )}
                 {product.brand && (
-                  <div className="mb-4">
+                  <div className="mb-4 text-sm md:text-base">
                     <strong>Brand:</strong> {product.brand}
                   </div>
                 )}
@@ -288,26 +288,26 @@ const ProductDetail = () => {
 
             {activeTab === "specifications" && (
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Technical Specifications</h3>
+                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Technical Specifications</h3>
                 {Object.keys(specifications).length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4">
                     {Object.entries(specifications).map(([key, value]) => (
                       <div key={key} className="border-b border-gray-200 pb-2">
-                        <dt className="font-medium text-gray-900 capitalize">{key.replace(/_/g, ' ')}</dt>
-                        <dd className="text-gray-700">{String(value)}</dd>
+                        <dt className="font-medium text-gray-900 capitalize text-sm md:text-base">{key.replace(/_/g, ' ')}</dt>
+                        <dd className="text-gray-700 text-sm md:text-base">{String(value)}</dd>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500">No specifications available for this product.</p>
+                  <p className="text-gray-500 text-sm md:text-base">No specifications available for this product.</p>
                 )}
               </div>
             )}
 
             {activeTab === "reviews" && (
-              <div className="space-y-8">
+              <div className="space-y-6 md:space-y-8">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
                   <ReviewsList 
                     productId={product.id} 
                     refreshTrigger={refreshReviews}
