@@ -7,6 +7,8 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import ImageGallery from "../components/ImageGallery";
+import ReviewForm from "../components/ReviewForm";
+import ReviewsList from "../components/ReviewsList";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,6 +16,7 @@ const ProductDetail = () => {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
+  const [refreshReviews, setRefreshReviews] = useState(0);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', id],
@@ -83,6 +86,10 @@ const ProductDetail = () => {
     
     // Show success message
     alert(`Added ${quantity} ${product.name} to cart!`);
+  };
+
+  const handleReviewSubmitted = () => {
+    setRefreshReviews(prev => prev + 1);
   };
 
   if (isLoading) {
@@ -245,7 +252,7 @@ const ProductDetail = () => {
         <div className="bg-white rounded-lg shadow-md">
           <div className="border-b">
             <nav className="flex gap-8 px-6">
-              {["description", "specifications"].map((tab) => (
+              {["description", "specifications", "reviews"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -294,6 +301,25 @@ const ProductDetail = () => {
                 ) : (
                   <p className="text-gray-500">No specifications available for this product.</p>
                 )}
+              </div>
+            )}
+
+            {activeTab === "reviews" && (
+              <div className="space-y-8">
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
+                  <ReviewsList 
+                    productId={product.id} 
+                    refreshTrigger={refreshReviews}
+                  />
+                </div>
+                
+                <div>
+                  <ReviewForm 
+                    productId={product.id}
+                    onReviewSubmitted={handleReviewSubmitted}
+                  />
+                </div>
               </div>
             )}
           </div>
