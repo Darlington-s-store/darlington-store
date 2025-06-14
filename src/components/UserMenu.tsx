@@ -1,13 +1,49 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { LogOut, User, Heart, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+
+interface UserProfile {
+  first_name: string | null;
+  last_name: string | null;
+}
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+
+      if (data) {
+        setProfile(data);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
 
   if (!user) {
     return (
@@ -23,6 +59,13 @@ const UserMenu = () => {
   const handleSignOut = async () => {
     await signOut();
     setIsOpen(false);
+  };
+
+  const getDisplayName = () => {
+    if (profile?.first_name || profile?.last_name) {
+      return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+    }
+    return user.email;
   };
 
   return (
@@ -46,7 +89,7 @@ const UserMenu = () => {
             <div className="py-1">
               <div className="px-4 py-2 border-b">
                 <p className="text-sm text-gray-500">Welcome back!</p>
-                <p className="text-sm font-medium truncate">{user.email}</p>
+                <p className="text-sm font-medium truncate">{getDisplayName()}</p>
               </div>
               
               <Link
