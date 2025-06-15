@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Package, Calendar, DollarSign, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -125,7 +126,7 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="max-w-4xl mx-auto py-8 px-4">
+      <main className="max-w-4xl mx-auto py-8 px-4 pt-32 md:pt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
           <p className="text-gray-600">Track and manage your orders</p>
