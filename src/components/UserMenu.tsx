@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LogOut, User, Heart, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ interface UserProfile {
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -57,8 +58,23 @@ const UserMenu = () => {
   }
 
   const handleSignOut = async () => {
-    await signOut();
-    setIsOpen(false);
+    try {
+      console.log('Starting sign out process...');
+      setIsOpen(false);
+      
+      // Use Supabase client directly for sign out
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+      } else {
+        console.log('Sign out successful');
+        // Navigate to home page after successful sign out
+        navigate('/');
+      }
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
   };
 
   const getDisplayName = () => {
