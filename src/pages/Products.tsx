@@ -34,7 +34,7 @@ const Products = () => {
     }
   });
 
-  // Fetch products - fixed the relationship conflict
+  // Fetch products with enhanced debugging
   const { data: allProducts = [], isLoading, refetch } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
@@ -61,8 +61,19 @@ const Products = () => {
       
       console.log('Products fetched:', data?.length, 'products');
       console.log('Sample product:', data?.[0]);
+      
+      // Log products with multiple images for debugging
+      data?.forEach(product => {
+        if (product.images && Array.isArray(product.images) && product.images.length > 1) {
+          console.log(`Product ${product.id} (${product.name}) has ${product.images.length} images:`, product.images);
+        }
+      });
+      
       return data || [];
-    }
+    },
+    // Add refetch interval to check for updates
+    refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 10000, // Consider data stale after 10 seconds
   });
 
   // Filter products on the client side with proper null safety
@@ -98,7 +109,7 @@ const Products = () => {
     return true;
   });
 
-  // Listen for real-time product updates
+  // Listen for real-time product updates with enhanced logging
   useEffect(() => {
     const channel = supabase
       .channel('products-changes')
@@ -111,6 +122,7 @@ const Products = () => {
         },
         (payload) => {
           console.log('Product change detected:', payload);
+          console.log('Triggering refetch...');
           refetch();
         }
       )
@@ -119,6 +131,19 @@ const Products = () => {
     return () => {
       supabase.removeChannel(channel);
     };
+  }, [refetch]);
+
+  // Force refetch when page becomes visible (helps with caching issues)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Page became visible, refetching products...');
+        refetch();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [refetch]);
 
   useEffect(() => {
@@ -188,14 +213,15 @@ const Products = () => {
     alert('Please sign in to add items to your wishlist');
   };
 
-  // Debug information
+  // Enhanced debug information
   console.log('Products page state:', {
     isLoading,
     allProductsCount: allProducts?.length,
     filteredProductsCount: products?.length,
     categoriesCount: categories?.length,
     selectedCategory,
-    searchTerm
+    searchTerm,
+    timestamp: new Date().toISOString()
   });
 
   return (
@@ -204,6 +230,20 @@ const Products = () => {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">All Products</h1>
+          
+          {/* Debug panel - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="bg-yellow-100 border border-yellow-300 rounded p-2 mb-4 text-xs">
+              <strong>Debug:</strong> {allProducts.length} total products, {products.length} filtered | 
+              Last fetch: {new Date().toLocaleTimeString()} | 
+              <button 
+                onClick={() => refetch()} 
+                className="ml-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
+              >
+                Force Refresh
+              </button>
+            </div>
+          )}
           
           {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">

@@ -24,25 +24,41 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist }: P
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
 
-  // Parse images from the product
+  // Parse images from the product with enhanced debugging
   const parseImages = (images: any): string[] => {
+    console.log(`Parsing images for product ${product.id} (${product.name}):`, images);
+    
     if (Array.isArray(images)) {
-      return images.map(img => String(img)).filter(img => img && img.trim() !== '');
+      const parsed = images.map(img => String(img)).filter(img => img && img.trim() !== '');
+      console.log(`Array format - parsed images:`, parsed);
+      return parsed;
     }
+    
     if (typeof images === 'string') {
       try {
         const parsed = JSON.parse(images);
-        return Array.isArray(parsed) ? parsed.map(img => String(img)).filter(img => img && img.trim() !== '') : [product.image_url].filter(Boolean);
-      } catch {
-        return [product.image_url].filter(Boolean);
+        if (Array.isArray(parsed)) {
+          const result = parsed.map(img => String(img)).filter(img => img && img.trim() !== '');
+          console.log(`String format - parsed images:`, result);
+          return result;
+        }
+      } catch (error) {
+        console.log(`Failed to parse images string:`, error);
       }
     }
-    return [product.image_url].filter(Boolean);
+    
+    const fallback = [product.image_url].filter(Boolean);
+    console.log(`Fallback to image_url:`, fallback);
+    return fallback;
   };
 
   const images = parseImages(product.images);
   const currentImage = images[currentImageIndex] || product.image_url;
+
+  // Log the final image being used
+  console.log(`Product ${product.id} - Current image:`, currentImage, `(index: ${currentImageIndex})`);
 
   const handleImageHover = () => {
     if (images.length > 1) {
@@ -52,6 +68,15 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist }: P
 
   const handleImageLeave = () => {
     setCurrentImageIndex(0);
+  };
+
+  const handleImageError = () => {
+    console.log(`Image failed to load for product ${product.id}:`, currentImage);
+    setImageError(true);
+  };
+
+  const handleImageLoad = () => {
+    setImageError(false);
   };
 
   const handleAddToCart = () => {
@@ -76,13 +101,23 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist }: P
           onClick={() => navigate(`/product/${product.id}`)}
           onMouseEnter={handleImageHover}
           onMouseLeave={handleImageLeave}
+          onError={handleImageError}
+          onLoad={handleImageLoad}
         />
+        
+        {imageError && (
+          <div className="absolute inset-0 bg-gray-200 rounded-t-lg flex items-center justify-center">
+            <span className="text-gray-500 text-sm">Image not available</span>
+          </div>
+        )}
+        
         <button
           onClick={handleAddToWishlist}
           className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition"
         >
           <Heart className="w-5 h-5 text-gray-600 hover:text-red-600" />
         </button>
+        
         {/* Image indicator dots */}
         {images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
@@ -94,6 +129,13 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist }: P
                 }`}
               />
             ))}
+          </div>
+        )}
+        
+        {/* Debug info - remove in production */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white text-xs p-1 rounded">
+            {images.length} img(s)
           </div>
         )}
       </div>
