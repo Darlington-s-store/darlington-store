@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import UserMenu from "./UserMenu";
 import CartDrawer from "./cart/CartDrawer";
+import { ModeToggle } from "./ModeToggle";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -48,7 +49,7 @@ export default function Header() {
   };
 
   return (
-    <header className={`bg-white shadow-sm border-b ${!isAuthPage ? 'sticky top-0 z-50' : ''}`}>
+    <header className={`bg-background shadow-sm border-b ${!isAuthPage ? 'fixed top-0 w-full z-50' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -57,7 +58,7 @@ export default function Header() {
               <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">D</span>
               </div>
-              <span className="hidden sm:block text-xl font-bold text-gray-900">
+              <span className="hidden sm:block text-xl font-bold text-foreground">
                 Darlington Store
               </span>
             </Link>
@@ -67,7 +68,7 @@ export default function Header() {
           <div className="hidden md:flex flex-1 max-w-md mx-8">
             <form onSubmit={handleSearch} className="w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <Input
                   type="text"
                   placeholder="Search products..."
@@ -83,19 +84,19 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <Link
               to="/products"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium"
             >
               Products
             </Link>
             <Link
               to="/about"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium"
             >
               About
             </Link>
             <Link
               to="/contact"
-              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-sm font-medium"
             >
               Contact
             </Link>
@@ -103,6 +104,7 @@ export default function Header() {
 
           {/* User Actions */}
           <div className="flex items-center space-x-2">
+            <ModeToggle />
             {/* Wishlist */}
             <Button
               variant="ghost"
@@ -149,7 +151,7 @@ export default function Header() {
         <div className="md:hidden pb-4">
           <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 type="text"
                 placeholder="Search products..."
@@ -167,21 +169,21 @@ export default function Header() {
             <div className="flex flex-col space-y-2">
               <Link
                 to="/products"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Products
               </Link>
               <Link
                 to="/about"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
               </Link>
               <Link
                 to="/contact"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
@@ -189,7 +191,7 @@ export default function Header() {
               {!user && (
                 <Link
                   to="/auth"
-                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Sign In
