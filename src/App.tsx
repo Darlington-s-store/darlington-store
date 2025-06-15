@@ -22,6 +22,9 @@ import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCustomers from "./pages/admin/AdminCustomers";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUserRoles from "./pages/admin/AdminUserRoles";
+import AdminCategories from "./pages/admin/AdminCategories";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,9 +50,12 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/products" element={<AdminProducts />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
             <Route path="/admin/customers" element={<AdminCustomers />} />
+            <Route path="/admin/user-roles" element={<AdminUserRoles />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
+            <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

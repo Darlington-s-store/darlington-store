@@ -8,7 +8,10 @@ import {
   ShoppingCart, 
   BarChart3, 
   Settings,
-  X
+  X,
+  Shield,
+  Folder,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,9 +27,12 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
     { id: "products", label: "Products", icon: Package, href: "/admin/products" },
+    { id: "categories", label: "Categories", icon: Folder, href: "/admin/categories" },
     { id: "orders", label: "Orders", icon: ShoppingCart, href: "/admin/orders" },
     { id: "customers", label: "Customers", icon: Users, href: "/admin/customers" },
+    { id: "user-roles", label: "User Roles", icon: Shield, href: "/admin/user-roles" },
     { id: "analytics", label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
+    { id: "audit-logs", label: "Audit Logs", icon: Activity, href: "/admin/audit-logs" },
     { id: "settings", label: "Settings", icon: Settings, href: "/admin/settings" },
   ];
 

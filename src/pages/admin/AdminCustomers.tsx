@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Users, Mail, Phone, Calendar } from "lucide-react";
+import { Users, Mail, Phone, Calendar, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import AdminLayout from "@/components/admin/AdminLayout";
 import {
@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 interface Customer {
   id: string;
@@ -27,6 +28,7 @@ interface Customer {
 const AdminCustomers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [stats, setStats] = useState({
     totalCustomers: 0,
     newThisMonth: 0,
@@ -83,10 +85,28 @@ const AdminCustomers = () => {
     }
   };
 
+  const filteredCustomers = customers.filter(customer => {
+    const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
+    const phone = customer.phone?.toLowerCase() || '';
+    const search = searchTerm.toLowerCase();
+    
+    return fullName.includes(search) || phone.includes(search);
+  });
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-gray-900">Customers Management</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Customers Management</h1>
+          <div className="flex items-center space-x-4">
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
+          </div>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>
@@ -101,7 +121,7 @@ const AdminCustomers = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">New This Month</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.newThisMonth}</div>
@@ -135,7 +155,7 @@ const AdminCustomers = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customers.map((customer) => (
+                {filteredCustomers.map((customer) => (
                   <TableRow key={customer.id}>
                     <TableCell>
                       <div className="font-medium">
