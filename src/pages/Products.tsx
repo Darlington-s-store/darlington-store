@@ -34,7 +34,7 @@ const Products = () => {
     }
   });
 
-  // Fetch products - removed the categories dependency to always fetch
+  // Fetch products - fixed the relationship conflict
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['products', selectedCategory, searchTerm],
     queryFn: async () => {
@@ -44,7 +44,7 @@ const Products = () => {
         .from('products')
         .select(`
           *,
-          categories (
+          categories!products_category_id_fkey (
             name
           )
         `)
@@ -185,16 +185,6 @@ const Products = () => {
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">All Products</h1>
-          
-          {/* Debug Info - Remove this after fixing */}
-          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
-            <p><strong>Debug Info:</strong></p>
-            <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
-            <p>Products found: {products?.length || 0}</p>
-            <p>Categories loaded: {categories?.length || 0}</p>
-            <p>Selected category: {selectedCategory}</p>
-            <p>Search term: {searchTerm || 'None'}</p>
-          </div>
           
           {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
