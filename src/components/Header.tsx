@@ -184,8 +184,38 @@ export default function Header() {
             <span className="font-bold text-lg text-gray-900">Darlington Store</span>
           </Link>
 
-          {/* User Menu Only - Cart moved to bottom */}
+          {/* Cart/Wishlist/User section for Mobile */}
           <div className="flex items-center gap-1 relative z-50">
+            <Button
+              variant="ghost"
+              className="rounded-full px-2 py-2 relative"
+              size="icon"
+              aria-label="Wishlist"
+              onClick={handleWishlistClick}
+            >
+              <Heart className="text-gray-700" />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistItemCount}
+                </span>
+              )}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              className="rounded-full px-2 py-2 relative"
+              size="icon"
+              aria-label="Cart"
+              onClick={() => setIsCartOpen(true)}
+            >
+              <ShoppingCart className="text-gray-700" />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </Button>
+            
             <UserMenu />
           </div>
         </nav>
@@ -241,41 +271,6 @@ export default function Header() {
 
         <div className="h-2 w-full bg-red-700" />
       </header>
-
-      {/* Mobile Bottom Navigation - Fixed at bottom of screen */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
-        <div className="flex justify-center gap-8 py-3">
-          <Button
-            variant="ghost"
-            className="rounded-full p-3 relative bg-red-700 hover:bg-red-800"
-            size="icon"
-            aria-label="Wishlist"
-            onClick={handleWishlistClick}
-          >
-            <Heart size={24} className="text-white" />
-            {wishlistItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-                {wishlistItemCount}
-              </span>
-            )}
-          </Button>
-          
-          <Button
-            variant="ghost"
-            className="rounded-full p-3 relative bg-red-700 hover:bg-red-800"
-            size="icon"
-            aria-label="Cart"
-            onClick={() => setIsCartOpen(true)}
-          >
-            <ShoppingCart size={24} className="text-white" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-                {cartItemCount}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
       
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
