@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Users, Shield, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -75,29 +74,28 @@ const AdminUserRoles = () => {
 
       console.log('Profiles fetched:', profiles);
 
-      // Try to fetch user roles, but handle gracefully if RLS blocks access
-      let userRoles: UserRole[] = [];
-      try {
-        const { data: rolesData, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('*');
+      // Fetch user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
 
-        if (rolesError) {
-          console.warn('Could not fetch user roles (may need RLS setup):', rolesError);
-          // Don't throw here, just continue with empty roles
-        } else {
-          userRoles = rolesData || [];
+      if (rolesError) {
+        console.error('Error fetching user roles:', rolesError);
+        if (rolesError.message.includes("permission denied")) {
+           toast({
+              title: "Permission Denied",
+              description: "You do not have permission to view user roles. Please contact an administrator.",
+              variant: "destructive",
+           });
         }
-      } catch (error) {
-        console.warn('Error accessing user_roles table:', error);
-        // Continue with empty roles
+        throw rolesError;
       }
 
       console.log('User roles fetched:', userRoles);
 
       // Combine profiles with roles
       const usersWithRoles: UserWithRole[] = profiles?.map(profile => {
-        const userRole = userRoles.find(role => role.user_id === profile.id);
+        const userRole = (userRoles || []).find(role => role.user_id === profile.id);
         return {
           ...profile,
           role: userRole?.role || null
