@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCart } from "@/hooks/useCart";
@@ -39,7 +38,8 @@ export const useCheckout = () => {
   const [paystackConfig, setPaystackConfig] = useState({
     reference: new Date().getTime().toString(),
     email: user?.email || "",
-    amount: getTotalPrice() * 100, // in kobo
+    amount: getTotalPrice() * 100, // in pesewas
+    currency: 'GHS',
     publicKey: 'pk_live_595150e66d3a90b005ff10b96fbeeb4d59560058',
     channels: ['card', 'mobile_money', 'bank'],
   });
@@ -189,6 +189,7 @@ export const useCheckout = () => {
           reference: order.order_number,
           email: data.email,
           amount: order.total_amount * 100,
+          currency: 'GHS',
           metadata: { order_id: order.id, user_id: user.id },
           channels: ['card', 'mobile_money', 'bank'],
         }));
@@ -237,4 +238,3 @@ export const useCheckout = () => {
     onSubmit,
   };
 };
-
