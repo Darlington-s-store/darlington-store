@@ -1,10 +1,10 @@
 
 import { useAuth } from "@/hooks/useAuth";
-import CheckoutForm from "@/components/checkout/CheckoutForm";
+import CartSummary from "@/components/cart/CartSummary";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-const Checkout = () => {
+const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -12,8 +12,8 @@ const Checkout = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Checkout</h1>
-          <p className="text-gray-600 mb-6">Please sign in to complete your order</p>
+          <h1 className="text-3xl font-bold mb-4">Shopping Cart</h1>
+          <p className="text-gray-600 mb-6">Please sign in to view your cart</p>
           <Button onClick={() => navigate('/auth')} className="bg-red-700 hover:bg-red-800">
             Sign In
           </Button>
@@ -24,9 +24,9 @@ const Checkout = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <CheckoutForm />
+      <CartSummary />
     </div>
   );
 };
 
-export default Checkout;
+export default Cart;

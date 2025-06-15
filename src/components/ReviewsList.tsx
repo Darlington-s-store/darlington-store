@@ -24,7 +24,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
         .from('reviews')
         .select(`
           *,
-          profiles (
+          profiles!inner (
             first_name,
             last_name
           )
@@ -124,11 +124,8 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
         });
       }
 
-      // Refresh queries
-      await Promise.all([
-        supabase.from('reviews').select('*').eq('product_id', productId),
-        user && supabase.from('review_helpful_votes').select('review_id').eq('user_id', user.id)
-      ]);
+      // Refresh queries to update the UI
+      window.location.reload();
 
     } catch (error) {
       console.error('Error voting on review:', error);
