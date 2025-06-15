@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Package, ShoppingCart, Users, TrendingUp, DollarSign } from "lucide-react";
@@ -168,24 +167,24 @@ const AdminDashboard = () => {
             </div>
             
             {!loading && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="font-medium text-blue-900 mb-2">Current Status</h3>
+              <div className="p-4 bg-secondary border rounded-lg">
+                <h3 className="font-medium text-secondary-foreground mb-2">Current Status</h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-700">Products: </span>
-                    <span className="font-medium">{stats.totalProducts} active</span>
+                    <span className="text-muted-foreground">Products: </span>
+                    <span className="font-medium text-secondary-foreground">{stats.totalProducts} active</span>
                   </div>
                   <div>
-                    <span className="text-blue-700">Orders: </span>
-                    <span className="font-medium">{stats.totalOrders} total</span>
+                    <span className="text-muted-foreground">Orders: </span>
+                    <span className="font-medium text-secondary-foreground">{stats.totalOrders} total</span>
                   </div>
                   <div>
-                    <span className="text-blue-700">Revenue: </span>
-                    <span className="font-medium">₵{stats.totalRevenue.toFixed(2)}</span>
+                    <span className="text-muted-foreground">Revenue: </span>
+                    <span className="font-medium text-secondary-foreground">₵{stats.totalRevenue.toFixed(2)}</span>
                   </div>
                   <div>
-                    <span className="text-blue-700">Users: </span>
-                    <span className="font-medium">{stats.totalUsers} registered</span>
+                    <span className="text-muted-foreground">Users: </span>
+                    <span className="font-medium text-secondary-foreground">{stats.totalUsers} registered</span>
                   </div>
                 </div>
               </div>
