@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Package, 
@@ -7,7 +8,6 @@ import {
   ShoppingCart, 
   BarChart3, 
   Settings,
-  Menu,
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,8 @@ interface AdminSidebarProps {
 }
 
 const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
-  const [activeItem, setActiveItem] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -28,6 +29,14 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
     { id: "analytics", label: "Analytics", icon: BarChart3, href: "/admin/analytics" },
     { id: "settings", label: "Settings", icon: Settings, href: "/admin/settings" },
   ];
+
+  const handleNavigation = (href: string) => {
+    navigate(href);
+    // Close mobile sidebar after navigation
+    if (window.innerWidth < 1024) {
+      onToggle();
+    }
+  };
 
   return (
     <>
@@ -65,13 +74,14 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
         <nav className="p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isActive = location.pathname === item.href;
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveItem(item.id)}
+                onClick={() => handleNavigation(item.href)}
                 className={cn(
                   "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
-                  activeItem === item.id
+                  isActive
                     ? "bg-red-50 text-red-700 border border-red-200"
                     : "text-gray-700 hover:bg-gray-50"
                 )}
