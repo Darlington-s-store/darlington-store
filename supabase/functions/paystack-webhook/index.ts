@@ -16,7 +16,14 @@ serve(async (req) => {
   try {
     const signature = req.headers.get('x-paystack-signature')
     const body = await req.text()
-    const secret = Deno.env.get('sk_live_019075696c0d1c62f3d822dccaf66b1eed7481f1')!
+    console.log('Received Paystack webhook.');
+
+    const secret = Deno.env.get('sk_live_019075696c0d1c62f3d822dccaf66b1eed7481f1')
+    if (!secret) {
+        console.error('Paystack secret key not found for webhook verification.');
+        return new Response(JSON.stringify({ error: 'Server configuration error' }), { status: 500, headers: corsHeaders })
+    }
+    console.log('Paystack secret for webhook loaded.');
 
     // Verify webhook signature
     const hash = createHmac('sha512', secret).update(body).digest('hex')
@@ -24,8 +31,10 @@ serve(async (req) => {
       console.warn('Invalid webhook signature');
       return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 400, headers: corsHeaders })
     }
+    console.log('Webhook signature verified.');
     
     const event = JSON.parse(body)
+    console.log('Webhook event:', event.event);
     
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -34,9 +43,10 @@ serve(async (req) => {
 
     if (event.event === 'charge.success') {
       const { reference } = event.data
+      console.log(`Processing charge.success for reference: ${reference}`);
       
       // Update order status in database
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .update({
           payment_status: 'completed',
@@ -44,6 +54,7 @@ serve(async (req) => {
           payment_reference: reference,
         })
         .eq('paystack_reference', reference)
+        .select()
 
       if (error) {
         console.error('Error updating order:', error)
@@ -56,7 +67,7 @@ serve(async (req) => {
         )
       }
 
-      console.log(`Order updated successfully for reference: ${reference}`)
+      console.log(`Order updated successfully for reference: ${reference}. Rows affected: ${data?.length || 0}`)
     }
 
     return new Response(
