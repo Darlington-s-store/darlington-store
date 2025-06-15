@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,17 +85,10 @@ const ProductForm = ({
     await onSubmit(formData);
   };
 
-  const handleImageAdd = (imageUrl: string) => {
+  const handleImagesChange = (images: string[]) => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, imageUrl]
-    }));
-  };
-
-  const handleImageRemove = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
+      images
     }));
   };
 
@@ -242,8 +234,7 @@ const ProductForm = ({
         <CardContent>
           <ImageUpload
             images={formData.images}
-            onImageAdd={handleImageAdd}
-            onImageRemove={handleImageRemove}
+            onChange={handleImagesChange}
             maxImages={5}
           />
         </CardContent>

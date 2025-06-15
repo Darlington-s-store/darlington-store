@@ -144,13 +144,15 @@ export default function ImageUpload({
     event.stopPropagation();
     
     const files = Array.from(event.dataTransfer.files);
-    if (files.length > 0) {
-      // Create a synthetic event to reuse existing logic
-      const syntheticEvent = {
-        target: { files }
-      } as React.ChangeEvent<HTMLInputElement>;
+    if (files.length > 0 && fileInputRef.current) {
+      // Set files to the file input and trigger change event
+      const dt = new DataTransfer();
+      files.forEach(file => dt.items.add(file));
+      fileInputRef.current.files = dt.files;
       
-      handleFileSelect(syntheticEvent);
+      // Create a proper change event
+      const changeEvent = new Event('change', { bubbles: true });
+      fileInputRef.current.dispatchEvent(changeEvent);
     }
   };
 
