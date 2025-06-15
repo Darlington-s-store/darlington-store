@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Package, Calendar, DollarSign, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -75,7 +74,11 @@ const Orders = () => {
         return;
       }
 
-      setOrders(ordersData || []);
+      // The type from Supabase (Json) for shipping_address is not compatible with
+      // the specific object type defined in the Order interface.
+      // We cast to `any` to bypass the type check. This assumes the data
+      // from the database has the correct structure.
+      setOrders((ordersData as any) || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
