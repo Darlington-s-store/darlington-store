@@ -22,13 +22,14 @@ const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
 
   useEffect(() => {
+    // Only redirect if we're not loading and there's no user
     if (!loading && !user) {
       navigate('/auth');
       return;
     }
 
-    if (user) {
-      // Load wishlist from localStorage
+    // Load wishlist only if user exists and we're not loading
+    if (!loading && user) {
       const savedWishlist = localStorage.getItem(`wishlist_${user.id}`);
       if (savedWishlist) {
         try {
@@ -86,23 +87,28 @@ const Wishlist = () => {
     alert(`Added ${item.name} to cart!`);
   };
 
+  // Show loading state while authentication is being checked
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         <Header />
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">Loading...</div>
+        <div className="flex items-center justify-center py-12 pt-[72px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
         </div>
         <Footer />
       </div>
     );
   }
 
-  if (!user) {
+  // Only show sign-in prompt if we're definitely not authenticated and not loading
+  if (!loading && !user) {
     return (
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         <Header />
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-12 pt-[72px]">
           <div className="text-center">
             <p className="text-gray-600 mb-4">Please sign in to view your wishlist</p>
             <Button onClick={() => navigate('/auth')} className="bg-red-700 hover:bg-red-800">
@@ -118,7 +124,7 @@ const Wishlist = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Header />
-      <main className="max-w-6xl mx-auto py-8 px-4">
+      <main className="max-w-6xl mx-auto py-8 px-4 pt-[80px]">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Wishlist</h1>
           <p className="text-gray-600">Items you've saved for later</p>
