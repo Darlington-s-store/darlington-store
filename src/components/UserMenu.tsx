@@ -47,7 +47,7 @@ const UserMenu = () => {
 
   if (!user) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="hidden md:flex items-center gap-2">
         <Link to="/admin">
           <Button variant="outline" className="flex items-center gap-1">
             <Shield className="h-4 w-4" />

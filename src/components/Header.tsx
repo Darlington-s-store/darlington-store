@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
@@ -127,16 +126,7 @@ export default function Header() {
             <CartDrawer />
 
             {/* User Menu */}
-            {user ? (
-              <UserMenu />
-            ) : (
-              <Button asChild variant="default">
-                <Link to="/auth">
-                  <User />
-                  Sign In
-                </Link>
-              </Button>
-            )}
+            <UserMenu />
 
             {/* Mobile Menu Button */}
             <Button
