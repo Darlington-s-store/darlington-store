@@ -4,20 +4,32 @@
 DROP POLICY IF EXISTS "Authenticated users can view user roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Admins can manage all user roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Allow authenticated users to read user_roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Allow authenticated users to insert their own roles" ON public.user_roles;
 
 -- Create more permissive policies that allow proper access
-CREATE POLICY "Allow authenticated users to read user_roles"
+-- This policy allows users to read their own roles
+CREATE POLICY "Users can read their own roles"
 ON public.user_roles
 FOR SELECT
 TO authenticated
-USING (true);
+USING (user_id = auth.uid());
 
-CREATE POLICY "Allow authenticated users to insert their own roles"
+-- This policy allows admins to read all roles
+CREATE POLICY "Admins can read all roles"
+ON public.user_roles
+FOR SELECT
+TO authenticated
+USING (public.has_role(auth.uid(), 'admin'));
+
+-- This policy allows users to insert their own roles (for admin setup)
+CREATE POLICY "Users can insert their own roles"
 ON public.user_roles
 FOR INSERT
 TO authenticated
 WITH CHECK (user_id = auth.uid());
 
+-- This policy allows admins to manage all user roles
 CREATE POLICY "Admins can manage all user roles"
 ON public.user_roles
 FOR ALL
