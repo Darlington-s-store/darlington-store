@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import HeroSection from "../components/HeroSection";
 import CategoryGrid from "../components/CategoryGrid";
@@ -30,7 +29,7 @@ const Index = () => {
       {showPreloader && <Preloader />}
       <div className={`min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0 transition-opacity duration-500 ${showPreloader ? 'opacity-0' : 'opacity-100'}`}>
         <Header />
-        <main className="w-full pt-[72px]">
+        <main className="w-full pt-32 md:pt-20">
           <HeroSection />
           <PromoBanner />
           <div className="px-4 md:px-6 lg:px-8 space-y-8 md:space-y-12 py-8">

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -199,7 +200,7 @@ const ProductDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="px-4 py-4">
+      <main className="px-4 py-8 pt-32 md:pt-20">
         <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-12 lg:max-w-7xl lg:mx-auto">
           <div className="w-full">
             <ImageGallery images={images} productName={product.name} />

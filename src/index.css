@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -207,10 +206,5 @@
     overflow-x: hidden !important;
     width: 100% !important;
     max-width: 100vw !important;
-  }
-  
-  * {
-    max-width: 100% !important;
-    box-sizing: border-box !important;
   }
 }
