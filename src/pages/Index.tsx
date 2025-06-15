@@ -9,13 +9,15 @@ import WhatsAppButton from "../components/WhatsAppButton";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
-      <main>
+      <main className="w-full">
         <HeroSection />
-        <CategoryGrid />
-        <ProductGrid />
-        <FeaturesRow />
+        <div className="px-4 md:px-6 lg:px-8 space-y-8 md:space-y-12 py-8">
+          <CategoryGrid />
+          <ProductGrid />
+          <FeaturesRow />
+        </div>
       </main>
       <Footer />
       <WhatsAppButton />
