@@ -193,11 +193,54 @@ const ProductDetail = () => {
           <div className="space-y-4 lg:space-y-6">
             <div>
               <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
-              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight break-words">{product.name}</h1>
-              <p className="text-gray-600 text-sm lg:text-base leading-relaxed break-words">{product.description}</p>
+              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight break-words hyphens-auto">{product.name}</h1>
+              {product.description && <p className="text-gray-600 text-sm lg:text-base leading-relaxed break-words mb-4">{product.description}</p>}
+              
+              <div className="text-sm text-gray-700 space-y-2 border-t pt-4 mt-4">
+                <h3 className="text-base font-semibold text-gray-800 mb-2">Key Features & Specs</h3>
+                <ul className="list-none space-y-2">
+                  {specifications.package_includes && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Package Includes:</strong> {specifications.package_includes}</div>
+                    </li>
+                  )}
+                  {(product.name.toLowerCase().includes('usb') || (product.description && product.description.toLowerCase().includes('usb'))) && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Convenience:</strong> Built-in USB charging port (power bank not included).</div>
+                    </li>
+                  )}
+                  {specifications.material && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Material:</strong> {specifications.material}</div>
+                    </li>
+                  )}
+                  {specifications.size && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Fits Laptops:</strong> Up to {specifications.size}</div>
+                    </li>
+                  )}
+                  {product.weight && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Weight:</strong> {`${product.weight} kg`}</div>
+                    </li>
+                  )}
+                  {product.dimensions && product.dimensions.width && (
+                    <li className="flex items-start">
+                      <span className="text-green-500 mr-2 mt-0.5">✓</span>
+                      <div><strong className="text-gray-800">Dimensions:</strong> {`${product.dimensions.width}cm x ${product.dimensions.height}cm x ${product.dimensions.depth}cm`}</div>
+                    </li>
+                  )}
+                </ul>
+                <p className="text-xs text-gray-500 pt-2">For full details, check the Technical Specifications tab.</p>
+              </div>
             </div>
 
-            <div className="space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-4 border-t">
               <div className="flex items-center">
                 <Star className="w-4 h-4 lg:w-5 lg:h-5 fill-yellow-400 stroke-yellow-500" />
                 <span className="ml-1 font-semibold text-sm lg:text-base">{reviewStats.averageRating.toFixed(1)}</span>
@@ -205,7 +248,9 @@ const ProductDetail = () => {
                   ({reviewStats.totalReviews} review{reviewStats.totalReviews !== 1 ? 's' : ''})
                 </span>
               </div>
-              <span className="text-gray-600 text-xs lg:text-sm block lg:inline">Brand: {product.brand}</span>
+              <div className="text-sm text-gray-600">
+                Brand: <span className="font-medium text-gray-800">{product.brand || 'Unbranded'}</span>
+              </div>
             </div>
 
             <div className="flex items-center">
@@ -230,7 +275,7 @@ const ProductDetail = () => {
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="px-3 py-2 font-medium min-w-[2.5rem] text-center text-sm lg:text-base">{quantity}</span>
+                  <span className="px-4 py-2 font-medium min-w-[3rem] text-center text-sm lg:text-base">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange("increase")}
                     className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
