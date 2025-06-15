@@ -2,12 +2,14 @@
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "./ProductCard";
 
 export default function ProductGrid() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem } = useCart();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['featured-products'],
@@ -25,36 +27,7 @@ export default function ProductGrid() {
   });
 
   const handleAddToCart = (product: any) => {
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: `₵${product.price}`,
-      quantity: 1,
-      image: product.image_url
-    };
-    
-    // Get existing cart from localStorage
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Check if item already exists in cart
-    const existingItemIndex = existingCart.findIndex((item: any) => item.id === product.id);
-    
-    if (existingItemIndex > -1) {
-      // Update quantity if item exists
-      existingCart[existingItemIndex].quantity += 1;
-    } else {
-      // Add new item to cart
-      existingCart.push(cartItem);
-    }
-    
-    // Save updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    
-    // Dispatch custom event to update cart count
-    window.dispatchEvent(new Event('cartUpdated'));
-    
-    // Show success message
-    alert(`Added ${product.name} to cart!`);
+    addItem(product);
   };
 
   const handleAddToWishlist = (product: any) => {
@@ -66,10 +39,10 @@ export default function ProductGrid() {
     const wishlistItem = {
       id: product.id,
       name: product.name,
-      price: `₵${product.price}`,
+      price: product.price,
       image: product.image_url,
       brand: product.brand,
-      rating: 4.5 // Default rating since we don't have reviews yet
+      rating: 4.5
     };
 
     const existingWishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
@@ -83,9 +56,7 @@ export default function ProductGrid() {
     const updatedWishlist = [...existingWishlist, wishlistItem];
     localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
     
-    // Dispatch custom event to update wishlist count
     window.dispatchEvent(new Event('wishlistUpdated'));
-    
     alert(`Added ${product.name} to wishlist!`);
   };
 

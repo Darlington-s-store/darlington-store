@@ -1,278 +1,202 @@
 
-import { ShoppingCart, Search, Store, Menu, X, Heart } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Cart from "./Cart";
-import UserMenu from "./UserMenu";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
-
-const navLinks = [
-  { label: "Home", href: "/", color: "bg-red-700 text-white" },
-  { label: "Products", href: "/products", color: "bg-yellow-400 text-red-900" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-  { label: "Track Order", href: "/track" }
-];
+import { useCart } from "@/hooks/useCart";
+import UserMenu from "./UserMenu";
+import CartDrawer from "./cart/CartDrawer";
 
 export default function Header() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartItemCount, setCartItemCount] = useState(0);
-  const [wishlistItemCount, setWishlistItemCount] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const { user } = useAuth();
+  const { getTotalItems } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const updateCartCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const totalItems = cart.reduce((sum: number, item: any) => sum + item.quantity, 0);
-      setCartItemCount(totalItems);
-    };
-
     const updateWishlistCount = () => {
       if (user) {
         const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
-        setWishlistItemCount(wishlist.length);
+        setWishlistCount(wishlist.length);
       } else {
-        setWishlistItemCount(0);
+        setWishlistCount(0);
       }
     };
 
-    updateCartCount();
     updateWishlistCount();
-    
-    // Listen for storage changes
-    window.addEventListener('storage', updateCartCount);
-    window.addEventListener('storage', updateWishlistCount);
-    
-    // Custom events for cart and wishlist updates
-    window.addEventListener('cartUpdated', updateCartCount);
     window.addEventListener('wishlistUpdated', updateWishlistCount);
-
-    return () => {
-      window.removeEventListener('storage', updateCartCount);
-      window.removeEventListener('storage', updateWishlistCount);
-      window.removeEventListener('cartUpdated', updateCartCount);
-      window.removeEventListener('wishlistUpdated', updateWishlistCount);
-    };
+    return () => window.removeEventListener('wishlistUpdated', updateWishlistCount);
   }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
-      setIsMobileMenuOpen(false);
+      setSearchTerm("");
     }
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
-
-  const handleWishlistClick = () => {
-    if (!user) {
-      navigate('/auth');
-    } else {
-      navigate('/wishlist');
-    }
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
   return (
-    <>
-      <header className="w-full border-b bg-white fixed top-0 left-0 right-0 z-50 shadow-sm">
-        {/* Desktop Header */}
-        <nav className="hidden md:flex items-center justify-between px-4 lg:px-8 py-4">
-          {/* Logo Section */}
-          <Link to="/" className="flex items-center gap-2">
-            <Store size={28} className="text-red-700" />
-            <span className="font-bold text-lg lg:text-xl text-gray-900">Darlington Store</span>
-          </Link>
-          
-          {/* Search Bar - Moved to center */}
-          <div className="flex-1 max-w-lg mx-8">
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full rounded-md bg-white pl-10 pr-3 py-2 border border-gray-200 focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
-                placeholder="Search products..."
-              />
-              <button type="submit" className="absolute left-2 top-2.5 text-gray-400 hover:text-gray-600">
-                <Search size={18} />
-              </button>
+    <header className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">D</span>
+              </div>
+              <span className="hidden sm:block text-xl font-bold text-gray-900">
+                Darlington Store
+              </span>
+            </Link>
+          </div>
+
+          {/* Search Bar */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <form onSubmit={handleSearch} className="w-full">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 w-full"
+                />
+              </div>
             </form>
           </div>
-          
-          {/* Nav Links */}
-          <ul className="flex items-center gap-2 lg:gap-3">
-            {navLinks.map((link) => {
-              const isActive = location.pathname === link.href;
-              return (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className={cn(
-                      "rounded px-3 lg:px-4 py-2 font-medium transition-colors text-sm lg:text-base",
-                      isActive ? "bg-red-700 text-white" : "",
-                      link.color && !isActive ? link.color : "",
-                      !isActive && !link.color ? "text-gray-700 hover:bg-gray-100" : ""
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          
-          {/* Cart/Wishlist/User section */}
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="rounded-full px-2 py-2 relative"
-              size="icon"
-              aria-label="Wishlist"
-              onClick={handleWishlistClick}
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              to="/products"
+              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
-              <Heart className="text-gray-700" />
-              {wishlistItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {wishlistItemCount}
-                </span>
-              )}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              className="rounded-full px-2 py-2 relative"
-              size="icon"
-              aria-label="Cart"
-              onClick={() => setIsCartOpen(true)}
+              Products
+            </Link>
+            <Link
+              to="/about"
+              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
-              <ShoppingCart className="text-gray-700" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </Button>
-            
-            <UserMenu />
+              About
+            </Link>
+            <Link
+              to="/contact"
+              className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Contact
+            </Link>
           </div>
-        </nav>
 
-        {/* Mobile Header */}
-        <nav className="md:hidden flex items-center justify-between px-4 py-3 relative bg-white min-h-[60px]">
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 z-50 flex-shrink-0"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </Button>
-
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-1 justify-center" onClick={closeMobileMenu}>
-            <Store size={24} className="text-red-700" />
-            <span className="font-bold text-lg text-gray-900">Darlington Store</span>
-          </Link>
-
-          {/* Cart/Wishlist/User section for Mobile */}
-          <div className="flex items-center gap-1 relative z-50 flex-shrink-0">
+          {/* User Actions */}
+          <div className="flex items-center space-x-2">
+            {/* Wishlist */}
             <Button
               variant="ghost"
-              className="rounded-full px-2 py-2 relative"
               size="icon"
-              aria-label="Wishlist"
-              onClick={handleWishlistClick}
+              className="relative"
+              onClick={() => navigate('/wishlist')}
             >
-              <Heart className="text-gray-700" size={20} />
-              {wishlistItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                  {wishlistItemCount}
-                </span>
+              <Heart className="h-5 w-5" />
+              {wishlistCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                >
+                  {wishlistCount}
+                </Badge>
               )}
             </Button>
-            
+
+            {/* Cart */}
+            <CartDrawer />
+
+            {/* User Menu */}
+            {user ? (
+              <UserMenu />
+            ) : (
+              <Button asChild variant="default">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            )}
+
+            {/* Mobile Menu Button */}
             <Button
               variant="ghost"
-              className="rounded-full px-2 py-2 relative"
               size="icon"
-              aria-label="Cart"
-              onClick={() => setIsCartOpen(true)}
+              className="md:hidden"
+              onClick={toggleMenu}
             >
-              <ShoppingCart className="text-gray-700" size={20} />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                  {cartItemCount}
-                </span>
-              )}
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            
-            <UserMenu />
           </div>
-        </nav>
+        </div>
 
-        {/* Mobile Menu Overlay */}
-        {isMobileMenuOpen && (
-          <>
-            {/* Background overlay */}
-            <div 
-              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-              onClick={closeMobileMenu}
-            />
-            {/* Menu content */}
-            <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white border-b shadow-lg z-40">
-              <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
-                {/* Mobile Search */}
-                <form onSubmit={handleSearch} className="relative">
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full rounded-md bg-white pl-10 pr-3 py-2 border border-gray-200 focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
-                    placeholder="Search products..."
-                  />
-                  <button type="submit" className="absolute left-2 top-2.5 text-gray-400 hover:text-gray-600">
-                    <Search size={18} />
-                  </button>
-                </form>
-
-                {/* Mobile Navigation Links */}
-                <nav className="space-y-2">
-                  {navLinks.map((link) => {
-                    const isActive = location.pathname === link.href;
-                    return (
-                      <Link
-                        key={link.label}
-                        to={link.href}
-                        onClick={closeMobileMenu}
-                        className={cn(
-                          "block rounded px-4 py-3 font-medium transition-colors text-base",
-                          isActive ? "bg-red-700 text-white" : "text-gray-700 hover:bg-gray-100"
-                        )}
-                      >
-                        {link.label}
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
+        {/* Mobile Search */}
+        <div className="md:hidden pb-4">
+          <form onSubmit={handleSearch}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 w-full"
+              />
             </div>
-          </>
-        )}
+          </form>
+        </div>
 
-        <div className="h-2 w-full bg-red-700" />
-      </header>
-      
-      <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-    </>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden pb-4 border-t pt-4">
+            <div className="flex flex-col space-y-2">
+              <Link
+                to="/products"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Products
+              </Link>
+              <Link
+                to="/about"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              {!user && (
+                <Link
+                  to="/auth"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-base font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </header>
   );
 }
