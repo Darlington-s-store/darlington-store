@@ -69,6 +69,7 @@ interface UserFormData {
 const AdminUserRoles = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
@@ -88,19 +89,31 @@ const AdminUserRoles = () => {
 
   const fetchUsersWithRoles = async () => {
     try {
+      console.log('Fetching users with roles...');
       // Get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('Profiles fetched:', profiles);
 
       // Get user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('*');
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        console.error('Error fetching roles:', rolesError);
+        throw rolesError;
+      }
+
+      console.log('User roles fetched:', userRoles);
 
       // Combine the data
       const usersWithRoles = profiles?.map(profile => {
@@ -111,6 +124,7 @@ const AdminUserRoles = () => {
         };
       }) || [];
 
+      console.log('Combined users with roles:', usersWithRoles);
       setUsers(usersWithRoles);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -122,6 +136,17 @@ const AdminUserRoles = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      first_name: '',
+      last_name: '',
+      phone: '',
+      role: 'user'
+    });
   };
 
   const updateUserRole = async (userId: string, newRole: string) => {
@@ -169,12 +194,25 @@ const AdminUserRoles = () => {
   };
 
   const handleAddUser = async () => {
+    if (!formData.email || !formData.password) {
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setCreating(true);
+    console.log('Creating user with data:', { ...formData, password: '[HIDDEN]' });
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('No active session');
       }
 
+      console.log('Making request to admin-users function...');
       const response = await fetch(`https://lomimruaagdsqbyrefwe.supabase.co/functions/v1/admin-users`, {
         method: 'POST',
         headers: {
@@ -184,7 +222,9 @@ const AdminUserRoles = () => {
         body: JSON.stringify(formData)
       });
 
+      console.log('Response status:', response.status);
       const result = await response.json();
+      console.log('Response result:', result);
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create user');
@@ -206,19 +246,15 @@ const AdminUserRoles = () => {
 
       toast({
         title: "Success",
-        description: "User created successfully",
+        description: `User ${formData.email} created successfully`,
       });
 
       setIsAddDialogOpen(false);
-      setFormData({
-        email: '',
-        password: '',
-        first_name: '',
-        last_name: '',
-        phone: '',
-        role: 'user'
-      });
-      fetchUsersWithRoles();
+      resetForm();
+      
+      // Refresh the users list to show the new user
+      await fetchUsersWithRoles();
+      
     } catch (error) {
       console.error('Error creating user:', error);
       toast({
@@ -226,6 +262,8 @@ const AdminUserRoles = () => {
         description: error instanceof Error ? error.message : "Failed to create user",
         variant: "destructive"
       });
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -386,11 +424,16 @@ const AdminUserRoles = () => {
     return email.charAt(0).toUpperCase();
   };
 
+  const handleDialogClose = () => {
+    setIsAddDialogOpen(false);
+    resetForm();
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={handleDialogClose}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
               <Plus className="w-4 h-4" />
@@ -407,7 +450,7 @@ const AdminUserRoles = () => {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="email" className="text-right">
-                  Email
+                  Email *
                 </Label>
                 <Input
                   id="email"
@@ -415,11 +458,12 @@ const AdminUserRoles = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="col-span-3"
+                  required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="password" className="text-right">
-                  Password
+                  Password *
                 </Label>
                 <Input
                   id="password"
@@ -427,6 +471,7 @@ const AdminUserRoles = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="col-span-3"
+                  required
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -482,7 +527,12 @@ const AdminUserRoles = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleAddUser}>Create User</Button>
+              <Button 
+                onClick={handleAddUser} 
+                disabled={creating || !formData.email || !formData.password}
+              >
+                {creating ? "Creating..." : "Create User"}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -493,6 +543,10 @@ const AdminUserRoles = () => {
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700 mx-auto"></div>
             <p className="mt-2 text-gray-600">Loading users...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="p-8 text-center">
+            <p className="text-gray-600">No users found. Create your first user above.</p>
           </div>
         ) : (
           <Table>
