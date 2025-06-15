@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -218,37 +217,37 @@ const ProductDetail = () => {
                   {specifications.package_includes && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Package Includes:</strong> {String(specifications.package_includes)}</div>
+                      <div className="break-words"><strong className="text-gray-800">Package Includes:</strong> {String(specifications.package_includes)}</div>
                     </li>
                   )}
                   {(product.name.toLowerCase().includes('usb') || (product.description && product.description.toLowerCase().includes('usb'))) && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Convenience:</strong> Built-in USB charging port (power bank not included).</div>
+                      <div className="break-words"><strong className="text-gray-800">Convenience:</strong> Built-in USB charging port (power bank not included).</div>
                     </li>
                   )}
                   {specifications.material && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Material:</strong> {String(specifications.material)}</div>
+                      <div className="break-words"><strong className="text-gray-800">Material:</strong> {String(specifications.material)}</div>
                     </li>
                   )}
                   {specifications.size && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Fits Laptops:</strong> Up to {String(specifications.size)}</div>
+                      <div className="break-words"><strong className="text-gray-800">Fits Laptops:</strong> Up to {String(specifications.size)}</div>
                     </li>
                   )}
                   {product.weight && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Weight:</strong> {`${product.weight} kg`}</div>
+                      <div className="break-words"><strong className="text-gray-800">Weight:</strong> {`${product.weight} kg`}</div>
                     </li>
                   )}
                   {dimensions && dimensions.width && dimensions.height && dimensions.depth && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Dimensions:</strong> {`${dimensions.width}cm x ${dimensions.height}cm x ${dimensions.depth}cm`}</div>
+                      <div className="break-words"><strong className="text-gray-800">Dimensions:</strong> {`${dimensions.width}cm x ${dimensions.height}cm x ${dimensions.depth}cm`}</div>
                     </li>
                   )}
                 </ul>
@@ -386,8 +385,8 @@ const ProductDetail = () => {
                   <div className="space-y-3">
                     {Object.entries(specifications).map(([key, value]) => (
                       <div key={key} className="border-b border-gray-200 pb-2">
-                        <dt className="font-medium text-gray-900 capitalize text-sm lg:text-base">{key.replace(/_/g, ' ')}</dt>
-                        <dd className="text-gray-700 text-sm lg:text-base">{String(value)}</dd>
+                        <dt className="font-medium text-gray-900 capitalize text-sm lg:text-base break-words">{key.replace(/_/g, ' ')}</dt>
+                        <dd className="text-gray-700 text-sm lg:text-base break-words">{String(value)}</dd>
                       </div>
                     ))}
                   </div>
