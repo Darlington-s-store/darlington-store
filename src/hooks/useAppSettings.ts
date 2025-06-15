@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -73,8 +72,8 @@ export const useAppSettings = () => {
 
     const mutation = useMutation({
         mutationFn: updateSettings,
-        onSuccess: (data) => {
-            queryClient.setQueryData(['appSettings'], data);
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['appSettings'] });
             toast({
                 title: 'Success!',
                 description: 'Settings have been saved successfully.',
