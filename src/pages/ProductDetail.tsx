@@ -179,7 +179,22 @@ const ProductDetail = () => {
   };
 
   const images = parseImages(product.images);
-  const specifications = product.specifications || {};
+
+  const specifications =
+    product.specifications &&
+    typeof product.specifications === "object" &&
+    !Array.isArray(product.specifications) &&
+    product.specifications !== null
+      ? (product.specifications as { [key: string]: unknown })
+      : {};
+
+  const dimensions =
+    product.dimensions &&
+    typeof product.dimensions === "object" &&
+    !Array.isArray(product.dimensions) &&
+    product.dimensions !== null
+      ? (product.dimensions as { [key: string]: unknown })
+      : {};
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -202,7 +217,7 @@ const ProductDetail = () => {
                   {specifications.package_includes && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Package Includes:</strong> {specifications.package_includes}</div>
+                      <div><strong className="text-gray-800">Package Includes:</strong> {String(specifications.package_includes)}</div>
                     </li>
                   )}
                   {(product.name.toLowerCase().includes('usb') || (product.description && product.description.toLowerCase().includes('usb'))) && (
@@ -214,13 +229,13 @@ const ProductDetail = () => {
                   {specifications.material && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Material:</strong> {specifications.material}</div>
+                      <div><strong className="text-gray-800">Material:</strong> {String(specifications.material)}</div>
                     </li>
                   )}
                   {specifications.size && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Fits Laptops:</strong> Up to {specifications.size}</div>
+                      <div><strong className="text-gray-800">Fits Laptops:</strong> Up to {String(specifications.size)}</div>
                     </li>
                   )}
                   {product.weight && (
@@ -229,10 +244,10 @@ const ProductDetail = () => {
                       <div><strong className="text-gray-800">Weight:</strong> {`${product.weight} kg`}</div>
                     </li>
                   )}
-                  {product.dimensions && product.dimensions.width && (
+                  {dimensions && dimensions.width && dimensions.height && dimensions.depth && (
                     <li className="flex items-start">
                       <span className="text-green-500 mr-2 mt-0.5">✓</span>
-                      <div><strong className="text-gray-800">Dimensions:</strong> {`${product.dimensions.width}cm x ${product.dimensions.height}cm x ${product.dimensions.depth}cm`}</div>
+                      <div><strong className="text-gray-800">Dimensions:</strong> {`${dimensions.width}cm x ${dimensions.height}cm x ${dimensions.depth}cm`}</div>
                     </li>
                   )}
                 </ul>
