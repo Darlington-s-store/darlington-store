@@ -11,21 +11,15 @@ interface UserProfile {
   last_name: string | null;
 }
 
-interface UserRole {
-  role: string;
-}
-
 const UserMenu = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchUserProfile();
-      fetchUserRole();
     }
   }, [user]);
 
@@ -46,29 +40,6 @@ const UserMenu = () => {
 
       if (data) {
         setProfile(data);
-      }
-    } catch (err) {
-      console.error('Error:', err);
-    }
-  };
-
-  const fetchUserRole = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user role:', error);
-        return;
-      }
-
-      if (data) {
-        setUserRole(data.role);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -113,7 +84,8 @@ const UserMenu = () => {
     return user.email;
   };
 
-  const isAdmin = userRole === 'admin';
+  // Simple email-based admin check instead of role system
+  const isAdmin = user.email === 'admin@darlingtonstore.com';
 
   return (
     <div className="relative">
@@ -137,8 +109,8 @@ const UserMenu = () => {
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
-                {userRole && (
-                  <p className="text-xs text-blue-600 capitalize">{userRole}</p>
+                {isAdmin && (
+                  <p className="text-xs text-blue-600">Administrator</p>
                 )}
               </div>
               

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopBar from "./AdminTopBar";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +13,6 @@ interface AdminLayoutProps {
 
 const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -32,52 +30,18 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       return;
     }
 
-    try {
-      console.log('Checking admin access for user:', user.id);
-      
-      // Check if user has admin role using maybeSingle to avoid 406 errors
-      const { data: roleData, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking user role:', error);
-        toast({
-          title: "Error",
-          description: "Failed to verify admin privileges.",
-          variant: "destructive"
-        });
-        navigate('/admin/login');
-        return;
-      }
-
-      const hasAdminRole = roleData && roleData.role === 'admin';
-      console.log('User role check:', { hasAdminRole, roleData });
-
-      if (!hasAdminRole) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin privileges.",
-          variant: "destructive"
-        });
-        navigate('/admin/login');
-        return;
-      }
-
-      console.log('Admin access confirmed');
-      setIsAdmin(true);
-    } catch (err) {
-      console.error('Error checking admin access:', err);
+    // Simple email-based admin check - no role system needed
+    if (user.email !== 'admin@darlingtonstore.com') {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred while verifying access.",
+        title: "Access Denied",
+        description: "You don't have admin privileges.",
         variant: "destructive"
       });
       navigate('/admin/login');
+      return;
     }
+
+    console.log('Admin access confirmed based on email');
   };
 
   const toggleSidebar = () => {
@@ -85,7 +49,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   };
 
   // Show loading while checking authentication
-  if (loading || isAdmin === null) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -96,8 +60,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     );
   }
 
-  // Only render admin layout if user is confirmed admin
-  if (!isAdmin) {
+  // Only render admin layout if user is admin email
+  if (!user || user.email !== 'admin@darlingtonstore.com') {
     return null;
   }
 
