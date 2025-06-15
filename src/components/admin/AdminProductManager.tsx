@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Package, Plus, Edit, Trash2, Search, Settings, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -149,7 +148,7 @@ const AdminProductManager = () => {
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
         status: formData.status,
-        is_active: formData.status === 'active'
+        is_active: formData.status === 'active' // Set is_active based on status
       };
 
       const { error } = await supabase
@@ -196,7 +195,7 @@ const AdminProductManager = () => {
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
         status: formData.status,
-        is_active: formData.status === 'active',
+        is_active: formData.status === 'active', // Set is_active based on status
         updated_at: new Date().toISOString()
       };
 
@@ -275,7 +274,10 @@ const AdminProductManager = () => {
     return category?.name || 'Unknown';
   };
 
-  const getStatusBadge = (status: string | null) => {
+  const getStatusBadge = (status: string | null, isActive: boolean | null) => {
+    if (isActive === false) {
+      return <Badge variant="destructive">Inactive</Badge>;
+    }
     switch (status) {
       case 'active':
         return <Badge variant="default">Active</Badge>;
@@ -399,7 +401,7 @@ const AdminProductManager = () => {
                       {product.stock_quantity || 0} in stock
                     </Badge>
                   </TableCell>
-                  <TableCell>{getStatusBadge(product.status)}</TableCell>
+                  <TableCell>{getStatusBadge(product.status, product.is_active)}</TableCell>
                   <TableCell>
                     {product.featured && <Badge variant="outline">Featured</Badge>}
                   </TableCell>
