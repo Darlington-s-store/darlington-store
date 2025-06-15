@@ -18,13 +18,20 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('AdminLayout - Auth state:', { user: user?.email, loading });
     checkAdminAccess();
   }, [user, loading]);
 
   const checkAdminAccess = async () => {
-    if (loading) return;
+    console.log('AdminLayout - Checking admin access...', { loading, userEmail: user?.email });
+    
+    if (loading) {
+      console.log('AdminLayout - Still loading, waiting...');
+      return;
+    }
 
     if (!user) {
+      console.log('AdminLayout - No user found, redirecting to auth');
       toast({
         title: "Authentication Required",
         description: "Please sign in to access admin features.",
@@ -36,6 +43,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
     // Simple email-based admin check
     if (user.email !== 'admin@darlingtonstore.com') {
+      console.log('AdminLayout - Access denied for email:', user.email);
       toast({
         title: "Access Denied",
         description: "You don't have admin privileges.",
@@ -45,7 +53,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       return;
     }
 
-    console.log('Admin access confirmed based on email');
+    console.log('AdminLayout - Admin access confirmed for:', user.email);
   };
 
   const toggleSidebar = () => {
@@ -54,6 +62,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   // Show loading while checking authentication
   if (loading) {
+    console.log('AdminLayout - Showing loading state');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -66,9 +75,11 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   // Only render admin layout if user is admin email
   if (!user || user.email !== 'admin@darlingtonstore.com') {
+    console.log('AdminLayout - Blocking access for:', user?.email || 'no user');
     return null;
   }
 
+  console.log('AdminLayout - Rendering admin interface for:', user.email);
   return (
     <div className="min-h-screen bg-gray-50">
       <AdminSidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />

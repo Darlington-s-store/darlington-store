@@ -86,6 +86,7 @@ const UserMenu = () => {
 
   // Simple email-based admin check
   const isAdmin = user.email === 'admin@darlingtonstore.com';
+  console.log('UserMenu - Admin check:', { userEmail: user.email, isAdmin });
 
   return (
     <div className="relative">
@@ -109,6 +110,7 @@ const UserMenu = () => {
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
+                <p className="text-xs text-gray-500">Email: {user.email}</p>
                 {isAdmin && (
                   <p className="text-xs text-blue-600">Administrator</p>
                 )}
