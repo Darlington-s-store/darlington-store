@@ -19,8 +19,8 @@ interface Customer {
   first_name: string;
   last_name: string;
   phone: string;
+  email: string;
   created_at: string;
-  email?: string;
   order_count?: number;
   total_spent?: number;
 }
@@ -88,9 +88,10 @@ const AdminCustomers = () => {
   const filteredCustomers = customers.filter(customer => {
     const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.toLowerCase();
     const phone = customer.phone?.toLowerCase() || '';
+    const email = customer.email?.toLowerCase() || '';
     const search = searchTerm.toLowerCase();
     
-    return fullName.includes(search) || phone.includes(search);
+    return fullName.includes(search) || phone.includes(search) || email.includes(search);
   });
 
   return (
