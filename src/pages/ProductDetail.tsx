@@ -94,18 +94,15 @@ const ProductDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mb-8 md:mb-12">
-            <div className="w-full">
-              <div className="aspect-square bg-gray-300 rounded-lg animate-pulse" />
-            </div>
-            <div className="w-full space-y-6">
-              <div className="h-8 bg-gray-300 rounded animate-pulse" />
+        <main className="px-4 py-4">
+          <div className="space-y-6">
+            <div className="aspect-square bg-gray-300 rounded-lg animate-pulse" />
+            <div className="space-y-4">
               <div className="h-6 bg-gray-300 rounded animate-pulse" />
-              <div className="h-4 bg-gray-300 rounded animate-pulse w-1/2" />
-              <div className="h-12 bg-gray-300 rounded animate-pulse" />
+              <div className="h-4 bg-gray-300 rounded animate-pulse" />
+              <div className="h-8 bg-gray-300 rounded animate-pulse" />
             </div>
           </div>
         </main>
@@ -117,10 +114,10 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8 text-center">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
+        <main className="px-4 py-8 text-center">
+          <h1 className="text-xl font-bold text-gray-900 mb-4">Product Not Found</h1>
           <p className="text-gray-600">The product you're looking for doesn't exist or has been removed.</p>
         </main>
         <Footer />
@@ -149,62 +146,63 @@ const ProductDetail = () => {
   const specifications = product.specifications || {};
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="w-full max-w-7xl mx-auto px-4 py-4 md:py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12 mb-8 md:mb-12">
+      <main className="px-4 py-4">
+        {/* Mobile-First Layout */}
+        <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-12 lg:max-w-7xl lg:mx-auto">
           {/* Product Images */}
-          <div className="w-full min-w-0">
+          <div className="w-full">
             <ImageGallery images={images} productName={product.name} />
           </div>
 
           {/* Product Info */}
-          <div className="w-full min-w-0 space-y-4 md:space-y-6">
-            <div className="w-full">
-              <p className="text-sm text-red-700 font-medium mb-2 break-words">{product.categories?.name}</p>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 break-words">{product.name}</h1>
-              <p className="text-gray-600 text-base md:text-lg break-words">{product.description}</p>
+          <div className="space-y-4 lg:space-y-6">
+            <div>
+              <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
+              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight">{product.name}</h1>
+              <p className="text-gray-600 text-sm lg:text-lg leading-relaxed">{product.description}</p>
             </div>
 
             {/* Rating */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
-              <div className="flex items-center flex-shrink-0">
-                <Star className="w-5 h-5 fill-yellow-400 stroke-yellow-500" />
-                <span className="ml-1 font-semibold">4.5</span>
-                <span className="ml-2 text-gray-600 text-sm">(No reviews yet)</span>
+            <div className="space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
+              <div className="flex items-center">
+                <Star className="w-4 h-4 lg:w-5 lg:h-5 fill-yellow-400 stroke-yellow-500" />
+                <span className="ml-1 font-semibold text-sm lg:text-base">4.5</span>
+                <span className="ml-2 text-gray-600 text-xs lg:text-sm">(No reviews yet)</span>
               </div>
-              <span className="text-gray-600 text-sm break-words">Brand: {product.brand}</span>
+              <span className="text-gray-600 text-xs lg:text-sm block lg:inline">Brand: {product.brand}</span>
             </div>
 
             {/* Price */}
-            <div className="flex items-center gap-4 w-full">
-              <span className="text-2xl md:text-3xl font-bold text-red-700">₵{product.price}</span>
+            <div className="flex items-center">
+              <span className="text-2xl lg:text-3xl font-bold text-red-700">₵{product.price}</span>
             </div>
 
             {/* Stock Status */}
-            <div className="flex items-center gap-2 w-full">
-              <div className={`w-3 h-3 rounded-full flex-shrink-0 ${product.stock_quantity > 0 ? "bg-green-500" : "bg-red-500"}`} />
-              <span className={`font-medium text-sm md:text-base break-words ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${product.stock_quantity > 0 ? "bg-green-500" : "bg-red-500"}`} />
+              <span className={`font-medium text-sm lg:text-base ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
                 {product.stock_quantity > 0 ? `In Stock (${product.stock_quantity} available)` : "Out of Stock"}
               </span>
             </div>
 
             {/* Quantity and Add to Cart */}
-            <div className="w-full space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <span className="font-medium text-sm md:text-base flex-shrink-0">Quantity:</span>
-                <div className="flex items-center border border-gray-300 rounded-lg flex-shrink-0">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="font-medium text-sm lg:text-base">Qty:</span>
+                <div className="flex items-center border border-gray-300 rounded-lg">
                   <button
                     onClick={() => handleQuantityChange("decrease")}
-                    className="p-2 hover:bg-gray-100 touch-manipulation"
+                    className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
                     disabled={quantity <= 1}
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="px-4 py-2 font-medium min-w-[3rem] text-center">{quantity}</span>
+                  <span className="px-3 py-2 font-medium min-w-[2.5rem] text-center text-sm lg:text-base">{quantity}</span>
                   <button
                     onClick={() => handleQuantityChange("increase")}
-                    className="p-2 hover:bg-gray-100 touch-manipulation"
+                    className="p-2 hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
                     disabled={quantity >= product.stock_quantity}
                   >
                     <Plus className="w-4 h-4" />
@@ -212,51 +210,51 @@ const ProductDetail = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2 md:gap-4 w-full">
+              <div className="flex gap-2">
                 <Button 
                   onClick={handleAddToCart}
-                  className="flex-1 min-w-0 bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2 text-sm md:text-base py-2 md:py-3 touch-manipulation"
+                  className="flex-1 bg-red-700 hover:bg-red-800 active:bg-red-900 text-white flex items-center justify-center gap-2 text-sm lg:text-base py-3 lg:py-3 touch-manipulation transition-colors"
                   disabled={product.stock_quantity === 0}
                 >
-                  <ShoppingCart className="w-4 h-4 md:w-5 md:h-5 flex-shrink-0" />
-                  <span className="truncate">{product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
+                  <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
+                  <span>{product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
                 </Button>
-                <Button variant="outline" size="icon" className="flex-shrink-0 touch-manipulation">
-                  <Heart className="w-4 h-4 md:w-5 md:h-5" />
+                <Button variant="outline" size="icon" className="p-3 touch-manipulation">
+                  <Heart className="w-4 h-4 lg:w-5 lg:h-5" />
                 </Button>
-                <Button variant="outline" size="icon" className="flex-shrink-0 touch-manipulation">
-                  <Share2 className="w-4 h-4 md:w-5 md:h-5" />
+                <Button variant="outline" size="icon" className="p-3 touch-manipulation">
+                  <Share2 className="w-4 h-4 lg:w-5 lg:h-5" />
                 </Button>
               </div>
             </div>
 
             {/* Features */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 border-t w-full">
-              <div className="flex items-center gap-2 min-w-0">
-                <Truck className="w-5 h-5 text-red-700 flex-shrink-0" />
-                <span className="text-sm truncate">Free Delivery</span>
+            <div className="grid grid-cols-1 gap-3 pt-4 border-t lg:grid-cols-3 lg:gap-4 lg:pt-6">
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 lg:w-5 lg:h-5 text-red-700" />
+                <span className="text-xs lg:text-sm">Free Delivery</span>
               </div>
-              <div className="flex items-center gap-2 min-w-0">
-                <Shield className="w-5 h-5 text-red-700 flex-shrink-0" />
-                <span className="text-sm truncate">2 Year Warranty</span>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 lg:w-5 lg:h-5 text-red-700" />
+                <span className="text-xs lg:text-sm">2 Year Warranty</span>
               </div>
-              <div className="flex items-center gap-2 min-w-0">
-                <RotateCcw className="w-5 h-5 text-red-700 flex-shrink-0" />
-                <span className="text-sm truncate">30 Day Returns</span>
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 lg:w-5 lg:h-5 text-red-700" />
+                <span className="text-xs lg:text-sm">30 Day Returns</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Product Details Tabs */}
-        <div className="bg-white rounded-lg shadow-md w-full overflow-hidden">
-          <div className="border-b overflow-hidden">
-            <nav className="flex gap-4 md:gap-8 px-4 md:px-6 overflow-x-auto scrollbar-hide">
+        <div className="bg-white rounded-lg shadow-md mt-6 lg:mt-12 lg:max-w-7xl lg:mx-auto">
+          <div className="border-b">
+            <nav className="flex px-4 overflow-x-auto scrollbar-hide">
               {["description", "specifications", "reviews"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-2 border-b-2 font-medium capitalize text-sm md:text-base whitespace-nowrap flex-shrink-0 touch-manipulation ${
+                  className={`py-4 px-3 border-b-2 font-medium capitalize text-sm whitespace-nowrap touch-manipulation transition-colors ${
                     activeTab === tab
                       ? "border-red-700 text-red-700"
                       : "border-transparent text-gray-500 hover:text-gray-700"
@@ -268,18 +266,18 @@ const ProductDetail = () => {
             </nav>
           </div>
 
-          <div className="p-4 md:p-6 w-full overflow-hidden">
+          <div className="p-4 lg:p-6">
             {activeTab === "description" && (
-              <div className="w-full">
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 mb-6 text-sm md:text-base break-words">{product.description}</p>
+              <div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-4">Product Description</h3>
+                <p className="text-gray-700 mb-4 text-sm lg:text-base leading-relaxed">{product.description}</p>
                 {product.model && (
-                  <div className="mb-4 text-sm md:text-base break-words">
+                  <div className="mb-3 text-sm lg:text-base">
                     <strong>Model:</strong> {product.model}
                   </div>
                 )}
                 {product.brand && (
-                  <div className="mb-4 text-sm md:text-base break-words">
+                  <div className="mb-3 text-sm lg:text-base">
                     <strong>Brand:</strong> {product.brand}
                   </div>
                 )}
@@ -287,34 +285,34 @@ const ProductDetail = () => {
             )}
 
             {activeTab === "specifications" && (
-              <div className="w-full">
-                <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Technical Specifications</h3>
+              <div>
+                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-4">Technical Specifications</h3>
                 {Object.keys(specifications).length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4 w-full">
+                  <div className="space-y-3">
                     {Object.entries(specifications).map(([key, value]) => (
-                      <div key={key} className="border-b border-gray-200 pb-2 w-full min-w-0">
-                        <dt className="font-medium text-gray-900 capitalize text-sm md:text-base break-words">{key.replace(/_/g, ' ')}</dt>
-                        <dd className="text-gray-700 text-sm md:text-base break-words">{String(value)}</dd>
+                      <div key={key} className="border-b border-gray-200 pb-2">
+                        <dt className="font-medium text-gray-900 capitalize text-sm lg:text-base">{key.replace(/_/g, ' ')}</dt>
+                        <dd className="text-gray-700 text-sm lg:text-base">{String(value)}</dd>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-sm md:text-base">No specifications available for this product.</p>
+                  <p className="text-gray-500 text-sm lg:text-base">No specifications available for this product.</p>
                 )}
               </div>
             )}
 
             {activeTab === "reviews" && (
-              <div className="space-y-6 md:space-y-8 w-full">
-                <div className="w-full">
-                  <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-4">Customer Reviews</h3>
                   <ReviewsList 
                     productId={product.id} 
                     refreshTrigger={refreshReviews}
                   />
                 </div>
                 
-                <div className="w-full">
+                <div>
                   <ReviewForm 
                     productId={product.id}
                     onReviewSubmitted={handleReviewSubmitted}
