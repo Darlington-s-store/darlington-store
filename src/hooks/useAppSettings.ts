@@ -27,19 +27,19 @@ export interface AppSettings {
 }
 
 // Fetches the single row of settings from the database
-const fetchSettings = async (): Promise<AppSettings> => {
+const fetchSettings = async (): Promise<AppSettings | null> => {
   const { data, error } = await supabase
     .from('app_settings')
     .select('*')
     .eq('id', 1)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error fetching settings:', error);
     throw new Error(error.message);
   }
 
-  return data as AppSettings;
+  return data;
 };
 
 // Updates the settings in the database
@@ -67,7 +67,7 @@ export const useAppSettings = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
 
-    const { data: settings, isLoading, isError, error } = useQuery<AppSettings>({
+    const { data: settings, isLoading, isError, error } = useQuery<AppSettings | null>({
         queryKey: ['appSettings'],
         queryFn: fetchSettings,
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -75,8 +75,8 @@ export const useAppSettings = () => {
 
     const mutation = useMutation({
         mutationFn: updateSettings,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['appSettings'] });
+        onSuccess: (data) => {
+            queryClient.setQueryData(['appSettings'], data);
             toast({
                 title: 'Success!',
                 description: 'Settings have been saved successfully.',
