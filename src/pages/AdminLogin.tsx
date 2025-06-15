@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("admin@darlingtonstore.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -55,16 +55,39 @@ const AdminLogin = () => {
     }
   };
 
-  const setupAdminUser = async () => {
+  const setupAdminUser = async (userId: string) => {
     try {
-      const { error } = await supabase.rpc('setup_admin_user');
-      if (error) {
-        console.error('Error setting up admin user:', error);
+      console.log('Setting up admin user for:', userId);
+      
+      // First, ensure the profile exists
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: userId,
+          first_name: 'Admin',
+          last_name: 'User',
+          email: 'admin@darlingtonstore.com'
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+      }
+
+      // Then, assign the admin role
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({
+          user_id: userId,
+          role: 'admin'
+        });
+
+      if (roleError) {
+        console.error('Error assigning admin role:', roleError);
       } else {
-        console.log('Admin user setup completed');
+        console.log('Admin role assigned successfully');
       }
     } catch (err) {
-      console.error('Error calling setup_admin_user:', err);
+      console.error('Error in setupAdminUser:', err);
     }
   };
 
@@ -89,6 +112,15 @@ const AdminLogin = () => {
       return;
     }
 
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -98,10 +130,11 @@ const AdminLogin = () => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/admin`,
+          emailRedirectTo: `${window.location.origin}/admin/login`,
           data: {
             first_name: 'Admin',
-            last_name: 'User'
+            last_name: 'User',
+            email: 'admin@darlingtonstore.com'
           }
         }
       });
@@ -128,22 +161,25 @@ const AdminLogin = () => {
       }
 
       if (data.user) {
-        // Set up admin user after successful signup
-        await setupAdminUser();
+        console.log('Admin user created:', data.user.id);
+        
+        // Set up admin user immediately after signup
+        await setupAdminUser(data.user.id);
         
         toast({
           title: "Success",
           description: "Admin account created successfully! You can now log in.",
         });
         
-        // Switch to login mode
+        // Switch to login mode and clear password
         setIsSignUp(false);
+        setPassword("");
       }
     } catch (err) {
       console.error('Signup error:', err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "An unexpected error occurred during signup.",
         variant: "destructive"
       });
     } finally {
@@ -176,12 +212,11 @@ const AdminLogin = () => {
       if (error) {
         console.error('Login error:', error);
         
-        // Handle specific error cases
         if (error.message.includes('Invalid login credentials')) {
           if (email === 'admin@darlingtonstore.com') {
             toast({
               title: "Login Failed",
-              description: "Invalid credentials. If you haven't created an admin account yet, use the 'Create Admin Account' option.",
+              description: "Invalid credentials. If you haven't created an admin account yet, use the 'Create Admin Account' option below.",
               variant: "destructive"
             });
           } else {
@@ -212,10 +247,9 @@ const AdminLogin = () => {
         
         // Set up admin user if this is the admin email
         if (email === 'admin@darlingtonstore.com') {
-          await setupAdminUser();
+          await setupAdminUser(data.user.id);
         }
         
-        // The useAuth hook will handle the redirect via the useEffect above
         toast({
           title: "Success",
           description: "Login successful! Redirecting to admin panel...",
@@ -225,7 +259,7 @@ const AdminLogin = () => {
       console.error('Login error:', err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "An unexpected error occurred during login.",
         variant: "destructive"
       });
     } finally {
@@ -271,6 +305,7 @@ const AdminLogin = () => {
                   placeholder="admin@darlingtonstore.com"
                   required
                   className="w-full"
+                  disabled={isSignUp} // Lock email for admin signup
                 />
                 {isSignUp && (
                   <p className="text-xs text-gray-500 mt-1">
@@ -289,9 +324,10 @@ const AdminLogin = () => {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder={isSignUp ? "Create a secure password (min 6 chars)" : "Enter your password"}
                     required
                     className="w-full pr-10"
+                    minLength={isSignUp ? 6 : undefined}
                   />
                   <button
                     type="button"
@@ -303,7 +339,7 @@ const AdminLogin = () => {
                 </div>
                 {isSignUp && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Choose a secure password for your admin account
+                    Choose a secure password (minimum 6 characters)
                   </p>
                 )}
               </div>
@@ -329,13 +365,24 @@ const AdminLogin = () => {
 
             <div className="mt-4 text-center">
               <button
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setPassword(""); // Clear password when switching modes
+                }}
                 className="text-red-600 hover:text-red-700 text-sm font-medium"
                 disabled={loading}
               >
                 {isSignUp ? '← Back to Login' : 'Need to create admin account? →'}
               </button>
             </div>
+
+            {!isSignUp && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>First time?</strong> If you haven't created an admin account yet, click "Need to create admin account?" above.
+                </p>
+              </div>
+            )}
 
             <div className="mt-6 text-center">
               <button
