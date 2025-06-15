@@ -48,12 +48,20 @@ const UserMenu = () => {
 
   if (!user) {
     return (
-      <Link to="/auth">
-        <Button variant="outline" className="ml-1 flex items-center gap-1 border">
-          <User className="mr-1 h-4 w-4" />
-          Sign In
-        </Button>
-      </Link>
+      <div className="flex items-center gap-2">
+        <Link to="/admin">
+          <Button variant="outline" className="flex items-center gap-1">
+            <Shield className="h-4 w-4" />
+            Admin
+          </Button>
+        </Link>
+        <Link to="/auth">
+          <Button variant="outline" className="flex items-center gap-1 border">
+            <User className="mr-1 h-4 w-4" />
+            Sign In
+          </Button>
+        </Link>
+      </div>
     );
   }
 
@@ -84,10 +92,6 @@ const UserMenu = () => {
     return user.email;
   };
 
-  // Simple email-based admin check
-  const isAdmin = user.email === 'admin@darlingtonstore.com';
-  console.log('UserMenu - Admin check:', { userEmail: user.email, isAdmin });
-
   return (
     <div className="relative">
       <Button
@@ -111,9 +115,6 @@ const UserMenu = () => {
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
                 <p className="text-xs text-gray-500">Email: {user.email}</p>
-                {isAdmin && (
-                  <p className="text-xs text-blue-600">Administrator</p>
-                )}
               </div>
               
               <div className="py-1">
@@ -144,19 +145,15 @@ const UserMenu = () => {
                   <span>Wishlist</span>
                 </Link>
 
-                {isAdmin && (
-                  <>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <Link
-                      to="/admin"
-                      className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  </>
-                )}
+                <div className="border-t border-gray-100 my-1"></div>
+                <Link
+                  to="/admin"
+                  className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
+                  <span>Admin Panel</span>
+                </Link>
                 
                 <div className="border-t border-gray-100 my-1"></div>
                 
