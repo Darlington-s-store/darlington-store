@@ -178,6 +178,12 @@
     }
   }
 
+  @keyframes loading-bar {
+    0% { width: 0%; }
+    50% { width: 60%; }
+    100% { width: 100%; }
+  }
+
   .animate-fade-in {
     animation: fade-in 0.6s ease-out;
   }
@@ -188,6 +194,10 @@
 
   .animate-slide-up {
     animation: slide-up 0.8s ease-out;
+  }
+
+  .animate-loading-bar {
+    animation: loading-bar 2s ease-in-out;
   }
 }
 
