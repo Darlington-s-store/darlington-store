@@ -674,6 +674,7 @@ export type Database = {
           id: string
           product_id: number
           rating: number
+          status: string
           title: string | null
           updated_at: string
           user_id: string
@@ -686,6 +687,7 @@ export type Database = {
           id?: string
           product_id: number
           rating: number
+          status?: string
           title?: string | null
           updated_at?: string
           user_id: string
@@ -698,6 +700,7 @@ export type Database = {
           id?: string
           product_id?: number
           rating?: number
+          status?: string
           title?: string | null
           updated_at?: string
           user_id?: string
