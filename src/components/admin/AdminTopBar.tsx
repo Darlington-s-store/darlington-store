@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, LogOut, User, Bell, Settings } from "lucide-react";
@@ -6,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } = "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AdminTopBarProps {
   onMenuClick: () => void;
