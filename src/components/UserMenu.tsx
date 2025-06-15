@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, User, Heart, Package, Settings, Shield } from "lucide-react";
+import { LogOut, User, Heart, Package, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,9 +84,6 @@ const UserMenu = () => {
     return user.email;
   };
 
-  // Simple email-based admin check instead of role system
-  const isAdmin = user.email === 'admin@darlingtonstore.com';
-
   return (
     <div className="relative">
       <Button
@@ -109,9 +106,6 @@ const UserMenu = () => {
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
-                {isAdmin && (
-                  <p className="text-xs text-blue-600">Administrator</p>
-                )}
               </div>
               
               <div className="py-1">
@@ -141,20 +135,6 @@ const UserMenu = () => {
                   <Heart className="mr-3 h-4 w-4 flex-shrink-0" />
                   <span>Wishlist</span>
                 </Link>
-
-                {isAdmin && (
-                  <>
-                    <div className="border-t border-gray-100 my-1"></div>
-                    <Link
-                      to="/admin"
-                      className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  </>
-                )}
                 
                 <div className="border-t border-gray-100 my-1"></div>
                 
