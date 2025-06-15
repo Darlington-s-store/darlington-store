@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Header from "../components/Header";
@@ -93,9 +94,17 @@ const Contact = () => {
               </div>
             </div>
 
-            {/* Map Placeholder */}
-            <div className="mt-8 bg-gray-300 h-64 rounded-lg flex items-center justify-center">
-              <p className="text-gray-600">Interactive Map Coming Soon</p>
+            {/* Google Map */}
+            <div className="mt-8 rounded-lg overflow-hidden shadow-md h-[450px]">
+              <iframe
+                title="Google Map of our location"
+                className="w-full h-full"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src="https://www.google.com/maps/embed/v1/place?q=123%20Oxford%20Street%2C%20Osu%2C%20Accra%2C%20Ghana&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+              ></iframe>
             </div>
           </div>
 
