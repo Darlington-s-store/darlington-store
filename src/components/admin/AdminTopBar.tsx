@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, LogOut, User, Bell, Settings } from "lucide-react";
@@ -95,8 +96,8 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 fixed top-0 right-0 left-0 lg:left-64 z-30 h-16 flex items-center">
+      <div className="flex items-center justify-between w-full">
         {/* Left side - Menu button and title */}
         <div className="flex items-center space-x-4">
           <Button

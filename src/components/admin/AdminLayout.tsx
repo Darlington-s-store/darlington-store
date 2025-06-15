@@ -25,7 +25,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       <div className="lg:pl-64">
         <AdminTopBar onMenuClick={toggleSidebar} />
         
-        <main className="p-6 pt-20 md:pt-6">
+        <main className="p-6 pt-20">
           {children}
         </main>
       </div>
