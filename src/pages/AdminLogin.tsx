@@ -20,29 +20,89 @@ const AdminLogin = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user is already authenticated and redirect
     if (user) {
-      checkUserRole();
+      checkAndSetupAdmin();
     }
   }, [user, navigate]);
 
-  const checkUserRole = async () => {
+  const checkAndSetupAdmin = async () => {
     if (!user) return;
 
     try {
-      const { data: roleData, error } = await supabase
+      console.log('Checking admin setup for user:', user.id);
+      
+      // First, ensure the user has a profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log('Creating profile for admin user');
+        const { error: createProfileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            first_name: 'Admin',
+            last_name: 'User',
+            email: user.email
+          });
+
+        if (createProfileError) {
+          console.error('Error creating profile:', createProfileError);
+        }
+      }
+
+      // Check if user has admin role
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
+        .eq('role', 'admin')
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking user role:', error);
-        return;
+      if (roleError && roleError.code === 'PGRST116') {
+        // No admin role found, create it for admin email
+        if (user.email === 'admin@darlingtonstore.com') {
+          console.log('Assigning admin role to user');
+          const { error: assignRoleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: user.id,
+              role: 'admin'
+            });
+
+          if (assignRoleError) {
+            console.error('Error assigning admin role:', assignRoleError);
+            toast({
+              title: "Setup Error",
+              description: "Could not assign admin role. Please try again.",
+              variant: "destructive"
+            });
+            return;
+          }
+        }
       }
 
-      if (roleData && roleData.role === 'admin') {
+      // Final check - verify admin role
+      const { data: finalRoleCheck } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .single();
+
+      if (finalRoleCheck && finalRoleCheck.role === 'admin') {
+        console.log('Admin role confirmed, redirecting to admin panel');
         navigate('/admin');
+      } else if (user.email === 'admin@darlingtonstore.com') {
+        toast({
+          title: "Setup Required",
+          description: "Admin role assignment failed. Please contact support.",
+          variant: "destructive"
+        });
       } else {
         toast({
           title: "Access Denied",
@@ -51,43 +111,12 @@ const AdminLogin = () => {
         });
       }
     } catch (err) {
-      console.error('Error checking role:', err);
-    }
-  };
-
-  const setupAdminUser = async (userId: string) => {
-    try {
-      console.log('Setting up admin user for:', userId);
-      
-      // First, ensure the profile exists
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userId,
-          first_name: 'Admin',
-          last_name: 'User',
-          email: 'admin@darlingtonstore.com'
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-      }
-
-      // Then, assign the admin role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: userId,
-          role: 'admin'
-        });
-
-      if (roleError) {
-        console.error('Error assigning admin role:', roleError);
-      } else {
-        console.log('Admin role assigned successfully');
-      }
-    } catch (err) {
-      console.error('Error in setupAdminUser:', err);
+      console.error('Error in admin setup:', err);
+      toast({
+        title: "Error",
+        description: "An error occurred during admin setup.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -161,19 +190,13 @@ const AdminLogin = () => {
       }
 
       if (data.user) {
-        console.log('Admin user created:', data.user.id);
-        
-        // Set up admin user immediately after signup
-        await setupAdminUser(data.user.id);
-        
+        console.log('Admin user created successfully');
         toast({
           title: "Success",
-          description: "Admin account created successfully! You can now log in.",
+          description: "Admin account created successfully! You are now logged in.",
         });
         
-        // Switch to login mode and clear password
-        setIsSignUp(false);
-        setPassword("");
+        // The user will be automatically logged in and useEffect will handle setup
       }
     } catch (err) {
       console.error('Signup error:', err);
@@ -243,17 +266,13 @@ const AdminLogin = () => {
       }
 
       if (data.user) {
-        console.log('User logged in successfully, setting up admin...');
-        
-        // Set up admin user if this is the admin email
-        if (email === 'admin@darlingtonstore.com') {
-          await setupAdminUser(data.user.id);
-        }
-        
+        console.log('User logged in successfully');
         toast({
           title: "Success",
-          description: "Login successful! Redirecting to admin panel...",
+          description: "Login successful! Setting up admin access...",
         });
+        
+        // The useEffect will handle admin setup and redirection
       }
     } catch (err) {
       console.error('Login error:', err);
