@@ -13,13 +13,15 @@ const PlaceholderAvatar = ({ name = 'User', size = 'md', className = '' }: Place
   };
 
   const getInitials = (fullName: string) => {
-    if (!fullName || fullName.trim() === '') {
+    // Handle null, undefined, or empty strings
+    if (!fullName || typeof fullName !== 'string' || fullName.trim() === '') {
       return 'U';
     }
     
     return fullName
       .trim()
       .split(' ')
+      .filter(word => word.length > 0) // Filter out empty strings
       .map(word => word.charAt(0))
       .join('')
       .toUpperCase()

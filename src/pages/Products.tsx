@@ -30,7 +30,7 @@ const Products = () => {
         throw error;
       }
       console.log('Categories fetched:', data);
-      return data;
+      return data || [];
     }
   });
 
@@ -67,20 +67,23 @@ const Products = () => {
 
   // Filter products on the client side with proper null safety
   const products = allProducts.filter((product) => {
-    // Category filter
-    if (selectedCategory !== "All" && categories.length > 0) {
-      const category = categories.find(cat => cat.name === selectedCategory);
+    // Ensure product exists
+    if (!product) return false;
+
+    // Category filter with enhanced null safety
+    if (selectedCategory !== "All" && categories && categories.length > 0) {
+      const category = categories.find(cat => cat && cat.name === selectedCategory);
       if (category && product.category_id !== category.id) {
         return false;
       }
     }
 
-    // Search filter with null safety
-    if (searchTerm) {
+    // Search filter with comprehensive null safety
+    if (searchTerm && searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase();
-      const name = product.name || '';
-      const description = product.description || '';
-      const brand = product.brand || '';
+      const name = (product.name || '').toString();
+      const description = (product.description || '').toString();
+      const brand = (product.brand || '').toString();
       
       const matchesSearch = 
         name.toLowerCase().includes(searchLower) ||
@@ -131,7 +134,8 @@ const Products = () => {
     }
   }, [searchParams]);
 
-  const categoryOptions = ["All", ...categories.map(cat => cat.name)];
+  // Ensure categories exist and have valid names before creating options
+  const categoryOptions = ["All", ...(categories || []).filter(cat => cat && cat.name).map(cat => cat.name)];
 
   const handleCategoryChange = (category: string) => {
     console.log('Category changed to:', category);
