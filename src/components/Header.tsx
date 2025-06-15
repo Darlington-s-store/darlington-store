@@ -1,11 +1,12 @@
 
-import { ShoppingCart, Search, Store, Menu, X } from "lucide-react";
+import { ShoppingCart, Search, Store, Menu, X, Heart } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import Cart from "./Cart";
 import UserMenu from "./UserMenu";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Home", href: "/", color: "bg-red-700 text-white" },
@@ -18,9 +19,11 @@ const navLinks = [
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [wishlistItemCount, setWishlistItemCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -30,19 +33,33 @@ export default function Header() {
       setCartItemCount(totalItems);
     };
 
+    const updateWishlistCount = () => {
+      if (user) {
+        const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
+        setWishlistItemCount(wishlist.length);
+      } else {
+        setWishlistItemCount(0);
+      }
+    };
+
     updateCartCount();
+    updateWishlistCount();
     
     // Listen for storage changes
     window.addEventListener('storage', updateCartCount);
+    window.addEventListener('storage', updateWishlistCount);
     
-    // Custom event for cart updates
+    // Custom events for cart and wishlist updates
     window.addEventListener('cartUpdated', updateCartCount);
+    window.addEventListener('wishlistUpdated', updateWishlistCount);
 
     return () => {
       window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('storage', updateWishlistCount);
       window.removeEventListener('cartUpdated', updateCartCount);
+      window.removeEventListener('wishlistUpdated', updateWishlistCount);
     };
-  }, []);
+  }, [user]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +71,14 @@ export default function Header() {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
+  };
+
+  const handleWishlistClick = () => {
+    if (!user) {
+      navigate('/auth');
+    } else {
+      navigate('/wishlist');
+    }
   };
 
   return (
@@ -89,7 +114,7 @@ export default function Header() {
             })}
           </ul>
           
-          {/* Search/Cart/User section */}
+          {/* Search/Cart/Wishlist/User section */}
           <div className="flex items-center gap-2">
             <form onSubmit={handleSearch} className="relative flex">
               <input
@@ -103,6 +128,21 @@ export default function Header() {
                 <Search size={18} />
               </button>
             </form>
+            
+            <Button
+              variant="ghost"
+              className="rounded-full px-2 py-2 relative"
+              size="icon"
+              aria-label="Wishlist"
+              onClick={handleWishlistClick}
+            >
+              <Heart className="text-gray-700" />
+              {wishlistItemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {wishlistItemCount}
+                </span>
+              )}
+            </Button>
             
             <Button
               variant="ghost"
@@ -199,9 +239,24 @@ export default function Header() {
         <div className="h-2 w-full bg-red-700" />
       </header>
 
-      {/* Mobile Bottom Cart - Fixed at bottom of screen */}
+      {/* Mobile Bottom Navigation - Fixed at bottom of screen */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
-        <div className="flex justify-center py-3">
+        <div className="flex justify-center gap-8 py-3">
+          <Button
+            variant="ghost"
+            className="rounded-full p-3 relative bg-red-700 hover:bg-red-800"
+            size="icon"
+            aria-label="Wishlist"
+            onClick={handleWishlistClick}
+          >
+            <Heart size={24} className="text-white" />
+            {wishlistItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                {wishlistItemCount}
+              </span>
+            )}
+          </Button>
+          
           <Button
             variant="ghost"
             className="rounded-full p-3 relative bg-red-700 hover:bg-red-800"

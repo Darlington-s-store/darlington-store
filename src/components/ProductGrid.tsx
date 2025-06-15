@@ -82,6 +82,10 @@ export default function ProductGrid() {
 
     const updatedWishlist = [...existingWishlist, wishlistItem];
     localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
+    
+    // Dispatch custom event to update wishlist count
+    window.dispatchEvent(new Event('wishlistUpdated'));
+    
     alert(`Added ${product.name} to wishlist!`);
   };
 

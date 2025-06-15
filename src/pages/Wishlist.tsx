@@ -27,17 +27,30 @@ const Wishlist = () => {
       return;
     }
 
-    // Load wishlist from localStorage
-    const savedWishlist = localStorage.getItem(`wishlist_${user?.id}`);
-    if (savedWishlist) {
-      setWishlistItems(JSON.parse(savedWishlist));
+    if (user) {
+      // Load wishlist from localStorage
+      const savedWishlist = localStorage.getItem(`wishlist_${user.id}`);
+      if (savedWishlist) {
+        try {
+          const parsedWishlist = JSON.parse(savedWishlist);
+          setWishlistItems(parsedWishlist);
+        } catch (error) {
+          console.error('Error parsing wishlist from localStorage:', error);
+          setWishlistItems([]);
+        }
+      }
     }
   }, [user, loading, navigate]);
 
   const removeFromWishlist = (productId: number) => {
+    if (!user) return;
+    
     const updatedWishlist = wishlistItems.filter(item => item.id !== productId);
     setWishlistItems(updatedWishlist);
-    localStorage.setItem(`wishlist_${user?.id}`, JSON.stringify(updatedWishlist));
+    localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
+    
+    // Dispatch custom event to update wishlist count
+    window.dispatchEvent(new Event('wishlistUpdated'));
   };
 
   const addToCart = (item: WishlistItem) => {
@@ -73,34 +86,9 @@ const Wishlist = () => {
     alert(`Added ${item.name} to cart!`);
   };
 
-  const addToWishlist = (product: any) => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    const wishlistItem: WishlistItem = {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      brand: product.brand,
-      rating: product.rating
-    };
-
-    const existingWishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
-    const isAlreadyInWishlist = existingWishlist.some((item: WishlistItem) => item.id === product.id);
-
-    if (!isAlreadyInWishlist) {
-      const updatedWishlist = [...existingWishlist, wishlistItem];
-      localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
-      setWishlistItems(updatedWishlist);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
         <Header />
         <div className="flex items-center justify-center py-12">
           <div className="text-center">Loading...</div>
@@ -110,8 +98,25 @@ const Wishlist = () => {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+        <Header />
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">Please sign in to view your wishlist</p>
+            <Button onClick={() => navigate('/auth')} className="bg-red-700 hover:bg-red-800">
+              Sign In
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Header />
       <main className="max-w-6xl mx-auto py-8 px-4">
         <div className="mb-8">
