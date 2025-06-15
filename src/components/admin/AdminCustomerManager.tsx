@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Customer {
   id: string;
@@ -33,6 +34,7 @@ interface CustomerStats {
 }
 
 const AdminCustomerManager = () => {
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [stats, setStats] = useState<CustomerStats>({
     total_customers: 0,
@@ -44,24 +46,34 @@ const AdminCustomerManager = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchCustomers();
-    fetchStats();
-  }, []);
+    if (user) {
+      fetchCustomers();
+      fetchStats();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
 
   const fetchCustomers = async () => {
     try {
+      console.log('Fetching customers...');
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching customers:', error);
+        throw error;
+      }
+
+      console.log('Customers fetched:', data?.length || 0);
       setCustomers(data || []);
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch customers",
+        description: "Failed to fetch customers. Please check your permissions.",
         variant: "destructive"
       });
     } finally {
@@ -71,37 +83,58 @@ const AdminCustomerManager = () => {
 
   const fetchStats = async () => {
     try {
+      console.log('Fetching customer stats...');
+      
       // Get total customers
-      const { count: totalCount } = await supabase
+      const { count: totalCount, error: totalError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
+
+      if (totalError) {
+        console.error('Error fetching total count:', totalError);
+        return;
+      }
 
       // Get customers from this month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const { count: monthlyCount } = await supabase
+      const { count: monthlyCount, error: monthlyError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfMonth.toISOString());
+
+      if (monthlyError) {
+        console.error('Error fetching monthly count:', monthlyError);
+      }
 
       setStats({
         total_customers: totalCount || 0,
         new_this_month: monthlyCount || 0,
         active_customers: totalCount || 0 // For now, consider all as active
       });
+
+      console.log('Stats updated:', { totalCount, monthlyCount });
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
   };
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    customer.phone?.includes(searchTerm)
-  );
+  const filteredCustomers = customers.filter(customer => {
+    if (!customer) return false;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const email = (customer.email || '').toLowerCase();
+    const firstName = (customer.first_name || '').toLowerCase();
+    const lastName = (customer.last_name || '').toLowerCase();
+    const phone = (customer.phone || '').toLowerCase();
+    
+    return email.includes(searchLower) ||
+           firstName.includes(searchLower) ||
+           lastName.includes(searchLower) ||
+           phone.includes(searchLower);
+  });
 
   const getInitials = (firstName: string | null, lastName: string | null, email: string) => {
     if (firstName && lastName) {
@@ -122,6 +155,17 @@ const AdminCustomerManager = () => {
     }
     return 'N/A';
   };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <UserX className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-gray-600">Please log in to access customer management.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
