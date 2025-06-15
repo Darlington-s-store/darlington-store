@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -183,7 +182,7 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <Header />
-      <main className="w-full px-4 py-6 md:py-12">
+      <main className="w-full px-4 pt-32 pb-12 md:pt-20">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold text-center md:text-left mb-6">
             Account Settings
