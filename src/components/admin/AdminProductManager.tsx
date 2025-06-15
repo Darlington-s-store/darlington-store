@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Package, Plus, Edit, Trash2, Search, Filter } from "lucide-react";
+import { Package, Plus, Edit, Trash2, Search, Settings, Tags } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import ProductVariantsManager from "./ProductVariantsManager";
+import ProductTagsManager from "./ProductTagsManager";
 
 interface Product {
   id: number;
@@ -56,6 +58,10 @@ interface Product {
   stock_quantity: number | null;
   is_active: boolean | null;
   image_url: string | null;
+  sku: string | null;
+  weight: number | null;
+  featured: boolean | null;
+  status: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -74,6 +80,10 @@ interface ProductFormData {
   category_id: string;
   stock_quantity: string;
   image_url: string;
+  sku: string;
+  weight: string;
+  featured: boolean;
+  status: string;
 }
 
 const AdminProductManager = () => {
@@ -82,7 +92,9 @@ const AdminProductManager = () => {
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isManageDialogOpen, setIsManageDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [managingProduct, setManagingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -92,7 +104,11 @@ const AdminProductManager = () => {
     model: '',
     category_id: '',
     stock_quantity: '',
-    image_url: ''
+    image_url: '',
+    sku: '',
+    weight: '',
+    featured: false,
+    status: 'draft'
   });
   const { toast } = useToast();
 
@@ -145,7 +161,11 @@ const AdminProductManager = () => {
       model: '',
       category_id: '',
       stock_quantity: '',
-      image_url: ''
+      image_url: '',
+      sku: '',
+      weight: '',
+      featured: false,
+      status: 'draft'
     });
   };
 
@@ -160,7 +180,11 @@ const AdminProductManager = () => {
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
         image_url: formData.image_url || null,
-        is_active: true
+        sku: formData.sku || null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        featured: formData.featured,
+        status: formData.status,
+        is_active: formData.status === 'active'
       };
 
       const { error } = await supabase
@@ -200,6 +224,11 @@ const AdminProductManager = () => {
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
         image_url: formData.image_url || null,
+        sku: formData.sku || null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        featured: formData.featured,
+        status: formData.status,
+        is_active: formData.status === 'active',
         updated_at: new Date().toISOString()
       };
 
@@ -263,21 +292,44 @@ const AdminProductManager = () => {
       model: product.model || '',
       category_id: product.category_id?.toString() || '',
       stock_quantity: product.stock_quantity?.toString() || '0',
-      image_url: product.image_url || ''
+      image_url: product.image_url || '',
+      sku: product.sku || '',
+      weight: product.weight?.toString() || '',
+      featured: product.featured || false,
+      status: product.status || 'draft'
     });
     setIsEditDialogOpen(true);
+  };
+
+  const openManageDialog = (product: Product) => {
+    setManagingProduct(product);
+    setIsManageDialogOpen(true);
   };
 
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.model?.toLowerCase().includes(searchTerm.toLowerCase())
+    product.model?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.sku?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getCategoryName = (categoryId: number | null) => {
     if (!categoryId) return 'No Category';
     const category = categories.find(cat => cat.id === categoryId);
     return category?.name || 'Unknown';
+  };
+
+  const getStatusBadge = (status: string | null) => {
+    switch (status) {
+      case 'active':
+        return <Badge variant="default">Active</Badge>;
+      case 'inactive':
+        return <Badge variant="secondary">Inactive</Badge>;
+      case 'discontinued':
+        return <Badge variant="destructive">Discontinued</Badge>;
+      default:
+        return <Badge variant="outline">Draft</Badge>;
+    }
   };
 
   return (
@@ -299,6 +351,7 @@ const AdminProductManager = () => {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/* Basic Information */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">Name *</Label>
                 <Input
@@ -349,6 +402,15 @@ const AdminProductManager = () => {
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="sku" className="text-right">SKU</Label>
+                <Input
+                  id="sku"
+                  value={formData.sku}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="category" className="text-right">Category</Label>
                 <Select
                   value={formData.category_id}
@@ -375,6 +437,34 @@ const AdminProductManager = () => {
                   onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                   className="col-span-3"
                 />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="weight" className="text-right">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  step="0.01"
+                  value={formData.weight}
+                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="discontinued">Discontinued</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image_url" className="text-right">Image URL</Label>
@@ -427,6 +517,7 @@ const AdminProductManager = () => {
                 <TableHead>Price</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Featured</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -450,6 +541,7 @@ const AdminProductManager = () => {
                         <div className="font-medium">{product.name}</div>
                         <div className="text-sm text-gray-500">
                           {product.brand} {product.model}
+                          {product.sku && <span className="ml-2 text-xs bg-gray-100 px-1 rounded">SKU: {product.sku}</span>}
                         </div>
                       </div>
                     </div>
@@ -461,10 +553,9 @@ const AdminProductManager = () => {
                       {product.stock_quantity || 0} in stock
                     </Badge>
                   </TableCell>
+                  <TableCell>{getStatusBadge(product.status)}</TableCell>
                   <TableCell>
-                    <Badge variant={product.is_active ? "default" : "secondary"}>
-                      {product.is_active ? "Active" : "Inactive"}
-                    </Badge>
+                    {product.featured && <Badge variant="outline">Featured</Badge>}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center space-x-2">
@@ -474,6 +565,13 @@ const AdminProductManager = () => {
                         onClick={() => openEditDialog(product)}
                       >
                         <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openManageDialog(product)}
+                      >
+                        <Settings className="w-4 h-4" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -518,6 +616,7 @@ const AdminProductManager = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            {/* Same form fields as add dialog but with edit_ prefixes and formData values */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit_name" className="text-right">Name *</Label>
               <Input
@@ -568,6 +667,15 @@ const AdminProductManager = () => {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit_sku" className="text-right">SKU</Label>
+              <Input
+                id="edit_sku"
+                value={formData.sku}
+                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit_category" className="text-right">Category</Label>
               <Select
                 value={formData.category_id}
@@ -583,7 +691,7 @@ const AdminProductManager = () => {
                     </SelectItem>
                   ))}
                 </SelectContent>
-                </Select>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit_stock" className="text-right">Stock Quantity</Label>
@@ -594,6 +702,34 @@ const AdminProductManager = () => {
                 onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit_weight" className="text-right">Weight (kg)</Label>
+              <Input
+                id="edit_weight"
+                type="number"
+                step="0.01"
+                value={formData.weight}
+                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="edit_status" className="text-right">Status</Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="discontinued">Discontinued</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit_image_url" className="text-right">Image URL</Label>
@@ -610,6 +746,38 @@ const AdminProductManager = () => {
               Update Product
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Product Dialog */}
+      <Dialog open={isManageDialogOpen} onOpenChange={setIsManageDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Manage Product: {managingProduct?.name}</DialogTitle>
+            <DialogDescription>
+              Manage variants, tags, and other product details.
+            </DialogDescription>
+          </DialogHeader>
+          {managingProduct && (
+            <Tabs defaultValue="variants" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="variants">Variants</TabsTrigger>
+                <TabsTrigger value="tags">Tags</TabsTrigger>
+              </TabsList>
+              <TabsContent value="variants" className="space-y-4">
+                <ProductVariantsManager 
+                  productId={managingProduct.id} 
+                  productName={managingProduct.name}
+                />
+              </TabsContent>
+              <TabsContent value="tags" className="space-y-4">
+                <ProductTagsManager 
+                  productId={managingProduct.id} 
+                  productName={managingProduct.name}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
         </DialogContent>
       </Dialog>
     </div>

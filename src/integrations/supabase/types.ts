@@ -69,6 +69,60 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_movements: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          movement_type: string
+          notes: string | null
+          product_id: number
+          quantity: number
+          reason: string | null
+          reference_id: string | null
+          variant_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          movement_type: string
+          notes?: string | null
+          product_id: number
+          quantity: number
+          reason?: string | null
+          reference_id?: string | null
+          variant_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          movement_type?: string
+          notes?: string | null
+          product_id?: number
+          quantity?: number
+          reason?: string | null
+          reference_id?: string | null
+          variant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -217,54 +271,182 @@ export type Database = {
           },
         ]
       }
+      product_tag_assignments: {
+        Row: {
+          created_at: string | null
+          id: string
+          product_id: number
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          product_id: number
+          tag_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          product_id?: number
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_tag_assignments_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "product_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_tags: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      product_variants: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          price_adjustment: number | null
+          product_id: number
+          sku: string | null
+          stock_quantity: number | null
+          updated_at: string | null
+          variant_name: string
+          variant_value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          price_adjustment?: number | null
+          product_id: number
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          variant_name: string
+          variant_value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          price_adjustment?: number | null
+          product_id?: number
+          sku?: string | null
+          stock_quantity?: number | null
+          updated_at?: string | null
+          variant_name?: string
+          variant_value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           brand: string | null
           category_id: number | null
           created_at: string
           description: string | null
+          dimensions: Json | null
+          featured: boolean | null
           id: number
           image_url: string | null
           images: Json | null
           is_active: boolean | null
+          meta_description: string | null
+          meta_title: string | null
           model: string | null
           name: string
           price: number
+          sku: string | null
           specifications: Json | null
+          status: string | null
           stock_quantity: number | null
           updated_at: string
+          weight: number | null
         }
         Insert: {
           brand?: string | null
           category_id?: number | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
+          featured?: boolean | null
           id?: number
           image_url?: string | null
           images?: Json | null
           is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
           model?: string | null
           name: string
           price: number
+          sku?: string | null
           specifications?: Json | null
+          status?: string | null
           stock_quantity?: number | null
           updated_at?: string
+          weight?: number | null
         }
         Update: {
           brand?: string | null
           category_id?: number | null
           created_at?: string
           description?: string | null
+          dimensions?: Json | null
+          featured?: boolean | null
           id?: number
           image_url?: string | null
           images?: Json | null
           is_active?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
           model?: string | null
           name?: string
           price?: number
+          sku?: string | null
           specifications?: Json | null
+          status?: string | null
           stock_quantity?: number | null
           updated_at?: string
+          weight?: number | null
         }
         Relationships: [
           {
