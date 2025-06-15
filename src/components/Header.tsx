@@ -83,7 +83,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-full border-b bg-white sticky top-0 z-50 shadow-sm">
+      <header className="w-full border-b bg-white fixed top-0 left-0 right-0 z-50 shadow-sm">
         {/* Desktop Header */}
         <nav className="hidden md:flex items-center justify-between px-4 lg:px-8 py-4">
           {/* Logo Section */}
@@ -167,25 +167,25 @@ export default function Header() {
         </nav>
 
         {/* Mobile Header */}
-        <nav className="md:hidden flex items-center justify-between px-4 py-3 relative bg-white">
+        <nav className="md:hidden flex items-center justify-between px-4 py-3 relative bg-white min-h-[60px]">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 z-50"
+            className="p-2 z-50 flex-shrink-0"
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </Button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
+          <Link to="/" className="flex items-center gap-2 flex-1 justify-center" onClick={closeMobileMenu}>
             <Store size={24} className="text-red-700" />
             <span className="font-bold text-lg text-gray-900">Darlington Store</span>
           </Link>
 
           {/* Cart/Wishlist/User section for Mobile */}
-          <div className="flex items-center gap-1 relative z-50">
+          <div className="flex items-center gap-1 relative z-50 flex-shrink-0">
             <Button
               variant="ghost"
               className="rounded-full px-2 py-2 relative"
@@ -193,9 +193,9 @@ export default function Header() {
               aria-label="Wishlist"
               onClick={handleWishlistClick}
             >
-              <Heart className="text-gray-700" />
+              <Heart className="text-gray-700" size={20} />
               {wishlistItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
                   {wishlistItemCount}
                 </span>
               )}
@@ -208,9 +208,9 @@ export default function Header() {
               aria-label="Cart"
               onClick={() => setIsCartOpen(true)}
             >
-              <ShoppingCart className="text-gray-700" />
+              <ShoppingCart className="text-gray-700" size={20} />
               {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
                   {cartItemCount}
                 </span>
               )}
@@ -229,8 +229,8 @@ export default function Header() {
               onClick={closeMobileMenu}
             />
             {/* Menu content */}
-            <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b shadow-lg z-40 pt-16">
-              <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="md:hidden fixed top-[72px] left-0 right-0 bg-white border-b shadow-lg z-40">
+              <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-5rem)] overflow-y-auto">
                 {/* Mobile Search */}
                 <form onSubmit={handleSearch} className="relative">
                   <input

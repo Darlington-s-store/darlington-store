@@ -11,7 +11,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0">
       <Header />
-      <main className="w-full">
+      <main className="w-full pt-[72px]">
         <HeroSection />
         <div className="px-4 md:px-6 lg:px-8 space-y-8 md:space-y-12 py-8">
           <CategoryGrid />
