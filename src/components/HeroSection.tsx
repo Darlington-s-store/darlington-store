@@ -36,7 +36,7 @@ export default function HeroSection() {
       <div className="flex-1 flex justify-center">
         <div className="rounded-2xl bg-white/10 p-3 shadow-2xl border-2 border-white/10 backdrop-blur-lg">
           <img
-            src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=560&q=80"
+            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=560&q=80"
             alt="Ghana Electronics"
             className="rounded-xl object-cover w-[390px] h-[265px] md:w-[405px] md:h-[275px] shadow"
             style={{ background: "#eee" }}
