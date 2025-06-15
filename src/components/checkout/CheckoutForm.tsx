@@ -8,13 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 const CheckoutForm = () => {
   const {
     items,
+    getCartTotal,
     getTotalPrice,
     navigate,
     isSubmitting,
     register,
     handleSubmit,
     errors,
-    onSubmit
+    onSubmit,
+    deliveryLocations,
+    isLoadingLocations,
+    selectedLocation,
+    deliveryFee,
   } = useCheckout();
 
   if (items.length === 0) {
@@ -110,28 +115,44 @@ const CheckoutForm = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="city">City</Label>
-                  <Input
+                  <select
                     id="city"
                     {...register("city", { required: "City is required" })}
-                    className={errors.city ? "border-red-500" : ""}
-                  />
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-transparent"
+                    disabled={isLoadingLocations}
+                  >
+                    <option value="">{isLoadingLocations ? 'Loading cities...' : 'Select your city'}</option>
+                    {deliveryLocations?.map(loc => (
+                        <option key={loc.id} value={loc.city}>{loc.city} ({loc.region})</option>
+                    ))}
+                  </select>
                   {errors.city && (
                     <p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
                   )}
                 </div>
                 
                 <div>
-                  <Label htmlFor="state">State</Label>
+                  <Label htmlFor="state">State / Region</Label>
                   <Input
                     id="state"
                     {...register("state", { required: "State is required" })}
                     className={errors.state ? "border-red-500" : ""}
+                    value={selectedLocation?.region || ''}
+                    readOnly
                   />
                   {errors.state && (
                     <p className="text-red-500 text-sm mt-1">{errors.state.message}</p>
                   )}
                 </div>
               </div>
+
+              {selectedLocation && (
+                <div className="p-3 bg-gray-50 rounded-lg text-sm border">
+                    <p className="font-medium">Delivery Information</p>
+                    <p className="text-gray-600"><strong>Fee:</strong> ₵{selectedLocation.fee.toFixed(2)}</p>
+                    <p className="text-gray-600"><strong>Estimated Arrival:</strong> {selectedLocation.estimated_days_min} - {selectedLocation.estimated_days_max} business days</p>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="postalCode">Postal Code</Label>
@@ -163,7 +184,7 @@ const CheckoutForm = () => {
 
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !selectedLocation}
                 className="w-full bg-red-700 hover:bg-red-800"
               >
                 {isSubmitting ? "Processing..." : "Place Order"}
@@ -189,7 +210,15 @@ const CheckoutForm = () => {
                 </div>
               ))}
               
-              <div className="border-t pt-4">
+              <div className="border-t pt-4 space-y-2">
+                 <div className="flex justify-between items-center text-md">
+                    <span>Subtotal:</span>
+                    <span>₵{getCartTotal().toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center text-md">
+                    <span>Delivery Fee:</span>
+                    <span>{selectedLocation ? `₵${deliveryFee.toFixed(2)}` : 'Select a city'}</span>
+                </div>
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total:</span>
                   <span className="text-red-700">₵{getTotalPrice().toFixed(2)}</span>

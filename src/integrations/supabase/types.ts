@@ -129,6 +129,42 @@ export type Database = {
         }
         Relationships: []
       }
+      delivery_locations: {
+        Row: {
+          city: string
+          created_at: string
+          estimated_days_max: number
+          estimated_days_min: number
+          fee: number
+          id: string
+          is_active: boolean | null
+          region: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          estimated_days_max?: number
+          estimated_days_min?: number
+          fee: number
+          id?: string
+          is_active?: boolean | null
+          region: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          estimated_days_max?: number
+          estimated_days_min?: number
+          fee?: number
+          id?: string
+          is_active?: boolean | null
+          region?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       inventory_movements: {
         Row: {
           created_at: string | null
@@ -246,6 +282,8 @@ export type Database = {
         Row: {
           billing_address: Json | null
           created_at: string
+          delivery_fee: number | null
+          delivery_method: string | null
           id: string
           order_number: string
           payment_method: string | null
@@ -261,6 +299,8 @@ export type Database = {
         Insert: {
           billing_address?: Json | null
           created_at?: string
+          delivery_fee?: number | null
+          delivery_method?: string | null
           id?: string
           order_number: string
           payment_method?: string | null
@@ -276,6 +316,8 @@ export type Database = {
         Update: {
           billing_address?: Json | null
           created_at?: string
+          delivery_fee?: number | null
+          delivery_method?: string | null
           id?: string
           order_number?: string
           payment_method?: string | null

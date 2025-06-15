@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useCart } from "@/hooks/useCart";
@@ -7,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { usePaystackPayment } from "react-paystack";
 import { useSMS } from "@/hooks/useSMS";
+import { useDelivery, DeliveryLocation } from "@/hooks/useDelivery";
 
 interface CheckoutFormData {
   firstName: string;
@@ -21,19 +23,38 @@ interface CheckoutFormData {
 }
 
 export const useCheckout = () => {
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items, getTotalPrice: getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const { sendOrderConfirmationSMS, sendOwnerNotificationSMS } = useSMS();
+  const { locations: deliveryLocations, isLoading: isLoadingLocations } = useDelivery();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<any>(null);
+  const [selectedLocation, setSelectedLocation] = useState<DeliveryLocation | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutFormData>({
+  const { register, handleSubmit, formState: { errors }, watch } = useForm<CheckoutFormData>({
     defaultValues: {
       email: user?.email,
     },
   });
+
+  const city = watch("city");
+
+  useEffect(() => {
+    if (deliveryLocations && city) {
+      const location = deliveryLocations.find(loc => loc.city === city);
+      setSelectedLocation(location || null);
+    } else {
+      setSelectedLocation(null);
+    }
+  }, [city, deliveryLocations]);
+
+  const deliveryFee = selectedLocation?.fee ?? 0;
+
+  const getTotalPrice = useCallback(() => {
+    return getCartTotal() + deliveryFee;
+  }, [getCartTotal, deliveryFee]);
 
   const [paystackConfig, setPaystackConfig] = useState({
     reference: new Date().getTime().toString(),
@@ -43,6 +64,13 @@ export const useCheckout = () => {
     publicKey: 'pk_live_595150e66d3a90b005ff10b96fbeeb4d59560058',
     channels: ['card', 'mobile_money', 'bank'],
   });
+
+  useEffect(() => {
+    setPaystackConfig(prev => ({
+        ...prev,
+        amount: getTotalPrice() * 100,
+    }));
+  }, [getTotalPrice]);
 
   const onPaymentSuccess = useCallback(async (reference: { reference: string }) => {
     console.log("Payment successful, verifying...", reference);
@@ -169,6 +197,8 @@ export const useCheckout = () => {
           shipping_address: shippingAddress,
           billing_address: shippingAddress,
           paystack_reference: data.paymentMethod === 'paystack' ? orderNumber : null,
+          delivery_fee: deliveryFee,
+          delivery_method: selectedLocation ? `${selectedLocation.region} - ${selectedLocation.city}` : null,
         })
         .select()
         .single();
@@ -229,6 +259,7 @@ export const useCheckout = () => {
 
   return {
     items,
+    getCartTotal,
     getTotalPrice,
     navigate,
     isSubmitting,
@@ -236,5 +267,9 @@ export const useCheckout = () => {
     handleSubmit,
     errors,
     onSubmit,
+    deliveryLocations,
+    isLoadingLocations,
+    selectedLocation,
+    deliveryFee,
   };
 };
