@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { User, Shield, UserCheck, UserX } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +29,8 @@ interface UserWithRole {
   created_at: string;
   role: string | null;
 }
+
+type AppRole = 'admin' | 'moderator' | 'user';
 
 const AdminUserRoles = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
@@ -87,12 +88,12 @@ const AdminUserRoles = () => {
         .delete()
         .eq('user_id', userId);
 
-      // Add new role
+      // Add new role - cast newRole to AppRole type
       const { error } = await supabase
         .from('user_roles')
         .insert({
           user_id: userId,
-          role: newRole
+          role: newRole as AppRole
         });
 
       if (error) throw error;

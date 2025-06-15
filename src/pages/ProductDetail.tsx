@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -31,7 +30,7 @@ const ProductDetail = () => {
         .from('products')
         .select(`
           *,
-          categories (
+          categories!products_category_id_fkey (
             name
           )
         `)
