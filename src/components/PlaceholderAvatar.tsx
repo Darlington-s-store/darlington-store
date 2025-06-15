@@ -13,7 +13,12 @@ const PlaceholderAvatar = ({ name = 'User', size = 'md', className = '' }: Place
   };
 
   const getInitials = (fullName: string) => {
+    if (!fullName || fullName.trim() === '') {
+      return 'U';
+    }
+    
     return fullName
+      .trim()
       .split(' ')
       .map(word => word.charAt(0))
       .join('')

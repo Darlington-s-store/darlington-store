@@ -35,10 +35,10 @@ const Products = () => {
   });
 
   // Fetch products - fixed the relationship conflict
-  const { data: products = [], isLoading, refetch } = useQuery({
-    queryKey: ['products', selectedCategory, searchTerm],
+  const { data: allProducts = [], isLoading, refetch } = useQuery({
+    queryKey: ['products'],
     queryFn: async () => {
-      console.log('Fetching products...', { selectedCategory, searchTerm });
+      console.log('Fetching products...');
       
       let query = supabase
         .from('products')
@@ -52,22 +52,6 @@ const Products = () => {
 
       console.log('Base query with is_active = true');
 
-      // Filter by category if not "All"
-      if (selectedCategory !== "All" && categories.length > 0) {
-        const category = categories.find(cat => cat.name === selectedCategory);
-        console.log('Selected category:', selectedCategory, 'Found category:', category);
-        if (category) {
-          query = query.eq('category_id', category.id);
-          console.log('Filtering by category_id:', category.id);
-        }
-      }
-
-      // Search filter
-      if (searchTerm) {
-        query = query.or(`name.ilike.%${searchTerm}%, description.ilike.%${searchTerm}%, brand.ilike.%${searchTerm}%`);
-        console.log('Applied search filter:', searchTerm);
-      }
-
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) {
@@ -77,8 +61,38 @@ const Products = () => {
       
       console.log('Products fetched:', data?.length, 'products');
       console.log('Sample product:', data?.[0]);
-      return data;
+      return data || [];
     }
+  });
+
+  // Filter products on the client side with proper null safety
+  const products = allProducts.filter((product) => {
+    // Category filter
+    if (selectedCategory !== "All" && categories.length > 0) {
+      const category = categories.find(cat => cat.name === selectedCategory);
+      if (category && product.category_id !== category.id) {
+        return false;
+      }
+    }
+
+    // Search filter with null safety
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const name = product.name || '';
+      const description = product.description || '';
+      const brand = product.brand || '';
+      
+      const matchesSearch = 
+        name.toLowerCase().includes(searchLower) ||
+        description.toLowerCase().includes(searchLower) ||
+        brand.toLowerCase().includes(searchLower);
+      
+      if (!matchesSearch) {
+        return false;
+      }
+    }
+
+    return true;
   });
 
   // Listen for real-time product updates
@@ -173,7 +187,8 @@ const Products = () => {
   // Debug information
   console.log('Products page state:', {
     isLoading,
-    productsCount: products?.length,
+    allProductsCount: allProducts?.length,
+    filteredProductsCount: products?.length,
     categoriesCount: categories?.length,
     selectedCategory,
     searchTerm
