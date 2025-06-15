@@ -14,6 +14,7 @@ import {
   Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 interface AdminSidebarProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ interface AdminSidebarProps {
 const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { settings, isLoading } = useAppSettings();
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -63,9 +65,15 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">D</span>
-            </div>
+            {isLoading ? (
+              <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
+            ) : settings?.logo_url ? (
+              <img src={settings.logo_url} alt="Logo" className="h-8 w-auto object-contain" />
+            ) : (
+              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">D</span>
+              </div>
+            )}
             <span className="font-semibold text-sidebar-foreground">Admin Panel</span>
           </div>
           <button

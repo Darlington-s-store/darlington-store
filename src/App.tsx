@@ -29,6 +29,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
+import FaviconUpdater from "./components/FaviconUpdater";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
         <AuthProvider>
           <CartProvider>
             <BrowserRouter>
+              <FaviconUpdater />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/products" element={<Products />} />

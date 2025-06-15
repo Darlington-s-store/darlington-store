@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +20,8 @@ export interface AppSettings {
   allow_guest_checkout: boolean;
   require_email_verification: boolean;
   auto_approve_reviews: boolean;
+  logo_url: string | null;
+  favicon_url: string | null;
   created_at?: string;
   updated_at?: string;
 }

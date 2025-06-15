@@ -47,7 +47,9 @@ export type Database = {
           contact_email: string
           created_at: string
           email_notifications: boolean
+          favicon_url: string | null
           id: number
+          logo_url: string | null
           maintenance_mode: boolean
           order_updates: boolean
           phone: string
@@ -66,7 +68,9 @@ export type Database = {
           contact_email?: string
           created_at?: string
           email_notifications?: boolean
+          favicon_url?: string | null
           id?: number
+          logo_url?: string | null
           maintenance_mode?: boolean
           order_updates?: boolean
           phone?: string
@@ -85,7 +89,9 @@ export type Database = {
           contact_email?: string
           created_at?: string
           email_notifications?: boolean
+          favicon_url?: string | null
           id?: number
+          logo_url?: string | null
           maintenance_mode?: boolean
           order_updates?: boolean
           phone?: string

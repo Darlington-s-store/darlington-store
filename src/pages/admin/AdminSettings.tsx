@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Save, Upload, Mail, Globe, Shield, Loader2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
@@ -11,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAppSettings, AppSettings } from "@/hooks/useAppSettings";
 import { Skeleton } from "@/components/ui/skeleton";
+import SiteAssetUpload from "@/components/admin/SiteAssetUpload";
 
 const AdminSettings = () => {
   const { settings, isLoading, isError, updateSettings, isUpdating } = useAppSettings();
@@ -28,13 +28,17 @@ const AdminSettings = () => {
     }
   };
 
-  const handleInputChange = (field: keyof AppSettings, value: string | boolean) => {
+  const handleInputChange = (field: keyof AppSettings, value: string | boolean | null) => {
     if (localSettings) {
         setLocalSettings(prev => ({
             ...prev!,
             [field]: value
         }));
     }
+  };
+
+  const handleAssetUploadSuccess = (field: 'logo_url' | 'favicon_url', url: string) => {
+    handleInputChange(field, url);
   };
   
   if (isLoading) {
@@ -274,27 +278,18 @@ const AdminSettings = () => {
                 <CardTitle>Site Appearance</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <Label>Logo Upload</Label>
-                  <div className="mt-2 flex items-center space-x-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <span className="text-2xl font-bold text-red-700">D</span>
-                    </div>
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Logo
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label>Favicon Upload</Label>
-                  <div className="mt-2">
-                    <Button variant="outline">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Favicon
-                    </Button>
-                  </div>
-                </div>
+                <SiteAssetUpload
+                  label="Logo Upload"
+                  currentUrl={localSettings.logo_url}
+                  onUploadSuccess={(url) => handleAssetUploadSuccess('logo_url', url)}
+                  bucket="site-assets"
+                />
+                <SiteAssetUpload
+                  label="Favicon Upload"
+                  currentUrl={localSettings.favicon_url}
+                  onUploadSuccess={(url) => handleAssetUploadSuccess('favicon_url', url)}
+                  bucket="site-assets"
+                />
                 <div>
                   <Label>Color Scheme</Label>
                   <div className="mt-2 grid grid-cols-4 gap-2">
