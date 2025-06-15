@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Header from "../components/Header";
@@ -51,9 +50,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Our Location</h3>
                   <p className="text-gray-600">
-                    123 Oxford Street<br />
-                    Osu, Accra<br />
-                    Ghana
+                    Kumasi Tanoso Market<br />
+                    Ashanti, Ghana
                   </p>
                 </div>
               </div>
@@ -103,7 +101,7 @@ const Contact = () => {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps/embed/v1/place?q=123%20Oxford%20Street%2C%20Osu%2C%20Accra%2C%20Ghana&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
+                src="https://www.google.com/maps/embed/v1/place?q=Kumasi%20Tanoso%20Market%2C%20Ashanti%20Ghana&key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8"
               ></iframe>
             </div>
           </div>

@@ -1,4 +1,3 @@
-
 import { Store, Phone, Mail, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -109,8 +108,8 @@ const Footer = () => {
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-red-500 mt-0.5" />
                 <span className="text-gray-300">
-                  123 Oxford Street<br />
-                  Accra, Ghana
+                  Kumasi Tanoso Market<br />
+                  Ashanti, Ghana
                 </span>
               </div>
             </div>
