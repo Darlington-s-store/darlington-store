@@ -134,7 +134,8 @@ const AdminProductManager = () => {
   const handleAddProduct = async (formData: ProductFormData) => {
     setIsSubmitting(true);
     try {
-      console.log('Adding product with images:', formData.images);
+      console.log('Adding product with form data:', formData);
+      console.log('User authenticated:', !!supabase.auth.getUser());
       
       const productData = {
         name: formData.name,
@@ -153,11 +154,19 @@ const AdminProductManager = () => {
         is_active: formData.status === 'active'
       };
 
-      const { error } = await supabase
-        .from('products')
-        .insert(productData);
+      console.log('Processed product data:', productData);
 
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from('products')
+        .insert(productData)
+        .select();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Product added successfully:', data);
 
       toast({
         title: "Success",
@@ -170,7 +179,7 @@ const AdminProductManager = () => {
       console.error('Error adding product:', error);
       toast({
         title: "Error",
-        description: "Failed to add product",
+        description: "Failed to add product. Please check your permissions.",
         variant: "destructive"
       });
     } finally {

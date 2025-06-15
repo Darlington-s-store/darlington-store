@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Upload, AlertCircle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,6 +46,7 @@ export default function ImageUpload({
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
+    console.log('Files selected:', files.length);
     setUploading(true);
     const newImages: string[] = [];
     const errors: string[] = [];
@@ -102,7 +102,9 @@ export default function ImageUpload({
     }
 
     if (newImages.length > 0) {
-      onChange([...images, ...newImages]);
+      const updatedImages = [...images, ...newImages];
+      console.log('Calling onChange with images:', updatedImages);
+      onChange(updatedImages);
       toast({
         title: "Success",
         description: `${newImages.length} image(s) uploaded successfully`,
@@ -126,7 +128,9 @@ export default function ImageUpload({
   };
 
   const handleRemoveImage = (index: number) => {
+    console.log('Removing image at index:', index);
     const updatedImages = images.filter((_, i) => i !== index);
+    console.log('Updated images after removal:', updatedImages);
     onChange(updatedImages);
     toast({
       title: "Image Removed",
