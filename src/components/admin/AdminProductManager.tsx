@@ -1,11 +1,10 @@
+
 import { useState, useEffect } from "react";
-import { Package, Plus, Edit, Trash2, Search, Settings, Tags } from "lucide-react";
+import { Package, Plus, Edit, Trash2, Search, Settings, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -18,18 +17,10 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +37,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ProductVariantsManager from "./ProductVariantsManager";
 import ProductTagsManager from "./ProductTagsManager";
+import ProductForm from "./ProductForm";
 
 interface Product {
   id: number;
@@ -58,6 +50,7 @@ interface Product {
   stock_quantity: number | null;
   is_active: boolean | null;
   image_url: string | null;
+  images: any;
   sku: string | null;
   weight: number | null;
   featured: boolean | null;
@@ -79,11 +72,11 @@ interface ProductFormData {
   model: string;
   category_id: string;
   stock_quantity: string;
-  image_url: string;
   sku: string;
   weight: string;
   featured: boolean;
   status: string;
+  images: string[];
 }
 
 const AdminProductManager = () => {
@@ -96,20 +89,7 @@ const AdminProductManager = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [managingProduct, setManagingProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [formData, setFormData] = useState<ProductFormData>({
-    name: '',
-    description: '',
-    price: '',
-    brand: '',
-    model: '',
-    category_id: '',
-    stock_quantity: '',
-    image_url: '',
-    sku: '',
-    weight: '',
-    featured: false,
-    status: 'draft'
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -152,24 +132,8 @@ const AdminProductManager = () => {
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      brand: '',
-      model: '',
-      category_id: '',
-      stock_quantity: '',
-      image_url: '',
-      sku: '',
-      weight: '',
-      featured: false,
-      status: 'draft'
-    });
-  };
-
-  const handleAddProduct = async () => {
+  const handleAddProduct = async (formData: ProductFormData) => {
+    setIsSubmitting(true);
     try {
       const productData = {
         name: formData.name,
@@ -179,7 +143,8 @@ const AdminProductManager = () => {
         model: formData.model || null,
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
-        image_url: formData.image_url || null,
+        image_url: formData.images[0] || null,
+        images: formData.images,
         sku: formData.sku || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
@@ -195,11 +160,10 @@ const AdminProductManager = () => {
 
       toast({
         title: "Success",
-        description: "Product added successfully"
+        description: "Product added successfully and is now visible on the website"
       });
 
       setIsAddDialogOpen(false);
-      resetForm();
       fetchProducts();
     } catch (error) {
       console.error('Error adding product:', error);
@@ -208,12 +172,15 @@ const AdminProductManager = () => {
         description: "Failed to add product",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleEditProduct = async () => {
+  const handleEditProduct = async (formData: ProductFormData) => {
     if (!editingProduct) return;
 
+    setIsSubmitting(true);
     try {
       const productData = {
         name: formData.name,
@@ -223,7 +190,8 @@ const AdminProductManager = () => {
         model: formData.model || null,
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
-        image_url: formData.image_url || null,
+        image_url: formData.images[0] || null,
+        images: formData.images,
         sku: formData.sku || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
@@ -254,6 +222,8 @@ const AdminProductManager = () => {
         description: "Failed to update product",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -284,20 +254,6 @@ const AdminProductManager = () => {
 
   const openEditDialog = (product: Product) => {
     setEditingProduct(product);
-    setFormData({
-      name: product.name,
-      description: product.description || '',
-      price: product.price.toString(),
-      brand: product.brand || '',
-      model: product.model || '',
-      category_id: product.category_id?.toString() || '',
-      stock_quantity: product.stock_quantity?.toString() || '0',
-      image_url: product.image_url || '',
-      sku: product.sku || '',
-      weight: product.weight?.toString() || '',
-      featured: product.featured || false,
-      status: product.status || 'draft'
-    });
     setIsEditDialogOpen(true);
   };
 
@@ -332,6 +288,21 @@ const AdminProductManager = () => {
     }
   };
 
+  const parseImages = (images: any): string[] => {
+    if (Array.isArray(images)) {
+      return images.map(img => String(img)).filter(img => img && img.trim() !== '');
+    }
+    if (typeof images === 'string') {
+      try {
+        const parsed = JSON.parse(images);
+        return Array.isArray(parsed) ? parsed.map(img => String(img)).filter(img => img && img.trim() !== '') : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -339,148 +310,23 @@ const AdminProductManager = () => {
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Product
+              <Upload className="w-4 h-4" />
+              Upload Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
+              <DialogTitle>Upload New Product</DialogTitle>
               <DialogDescription>
-                Create a new product in your inventory.
+                Add a new product to your inventory and make it available on the website.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {/* Basic Information */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">Price *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  className="col-span-3"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="brand" className="text-right">Brand</Label>
-                <Input
-                  id="brand"
-                  value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="model" className="text-right">Model</Label>
-                <Input
-                  id="model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sku" className="text-right">SKU</Label>
-                <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">Category</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock" className="text-right">Stock Quantity</Label>
-                <Input
-                  id="stock"
-                  type="number"
-                  value={formData.stock_quantity}
-                  onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="weight" className="text-right">Weight (kg)</Label>
-                <Input
-                  id="weight"
-                  type="number"
-                  step="0.01"
-                  value={formData.weight}
-                  onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="status" className="text-right">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="discontinued">Discontinued</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="image_url" className="text-right">Image URL</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button onClick={handleAddProduct} disabled={!formData.name || !formData.price}>
-                Add Product
-              </Button>
-            </DialogFooter>
+            <ProductForm
+              categories={categories}
+              onSubmit={handleAddProduct}
+              isLoading={isSubmitting}
+              submitLabel="Upload Product"
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -506,7 +352,7 @@ const AdminProductManager = () => {
         ) : filteredProducts.length === 0 ? (
           <div className="p-8 text-center">
             <Package className="mx-auto h-12 w-12 text-gray-400" />
-            <p className="text-gray-600 mt-2">No products found. Add your first product above.</p>
+            <p className="text-gray-600 mt-2">No products found. Upload your first product above.</p>
           </div>
         ) : (
           <Table>
@@ -547,7 +393,7 @@ const AdminProductManager = () => {
                     </div>
                   </TableCell>
                   <TableCell>{getCategoryName(product.category_id)}</TableCell>
-                  <TableCell>₦{product.price.toLocaleString()}</TableCell>
+                  <TableCell>₵{product.price.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge variant={product.stock_quantity && product.stock_quantity > 0 ? "default" : "destructive"}>
                       {product.stock_quantity || 0} in stock
@@ -608,144 +454,35 @@ const AdminProductManager = () => {
 
       {/* Edit Product Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
-              Update product details.
+              Update product details and settings.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {/* Same form fields as add dialog but with edit_ prefixes and formData values */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_name" className="text-right">Name *</Label>
-              <Input
-                id="edit_name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="col-span-3"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_description" className="text-right">Description</Label>
-              <Textarea
-                id="edit_description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_price" className="text-right">Price *</Label>
-              <Input
-                id="edit_price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="col-span-3"
-                required
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_brand" className="text-right">Brand</Label>
-              <Input
-                id="edit_brand"
-                value={formData.brand}
-                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_model" className="text-right">Model</Label>
-              <Input
-                id="edit_model"
-                value={formData.model}
-                onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_sku" className="text-right">SKU</Label>
-              <Input
-                id="edit_sku"
-                value={formData.sku}
-                onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_category" className="text-right">Category</Label>
-              <Select
-                value={formData.category_id}
-                onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_stock" className="text-right">Stock Quantity</Label>
-              <Input
-                id="edit_stock"
-                type="number"
-                value={formData.stock_quantity}
-                onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_weight" className="text-right">Weight (kg)</Label>
-              <Input
-                id="edit_weight"
-                type="number"
-                step="0.01"
-                value={formData.weight}
-                onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_status" className="text-right">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="discontinued">Discontinued</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit_image_url" className="text-right">Image URL</Label>
-              <Input
-                id="edit_image_url"
-                value={formData.image_url}
-                onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleEditProduct} disabled={!formData.name || !formData.price}>
-              Update Product
-            </Button>
-          </DialogFooter>
+          {editingProduct && (
+            <ProductForm
+              categories={categories}
+              onSubmit={handleEditProduct}
+              isLoading={isSubmitting}
+              submitLabel="Update Product"
+              initialData={{
+                name: editingProduct.name,
+                description: editingProduct.description || '',
+                price: editingProduct.price.toString(),
+                brand: editingProduct.brand || '',
+                model: editingProduct.model || '',
+                category_id: editingProduct.category_id?.toString() || '',
+                stock_quantity: editingProduct.stock_quantity?.toString() || '0',
+                sku: editingProduct.sku || '',
+                weight: editingProduct.weight?.toString() || '',
+                featured: editingProduct.featured || false,
+                status: editingProduct.status || 'draft',
+                images: parseImages(editingProduct.images)
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 

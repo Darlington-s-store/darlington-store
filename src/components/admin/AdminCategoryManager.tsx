@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Folder } from "lucide-react";
+import { Plus, Edit, Trash2, Folder, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import ProductForm from "./ProductForm";
 
 interface Category {
   id: number;
@@ -33,11 +34,29 @@ interface Category {
   image_url: string | null;
 }
 
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  brand: string;
+  model: string;
+  category_id: string;
+  stock_quantity: string;
+  sku: string;
+  weight: string;
+  featured: boolean;
+  status: string;
+  images: string[];
+}
+
 const AdminCategoryManager = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [productDialogOpen, setProductDialogOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -151,6 +170,58 @@ const AdminCategoryManager = () => {
       image_url: category.image_url || ''
     });
     setDialogOpen(true);
+  };
+
+  const handleAddProductToCategory = (categoryId: number) => {
+    setSelectedCategoryId(categoryId);
+    setProductDialogOpen(true);
+  };
+
+  const handleAddProduct = async (formData: ProductFormData) => {
+    setIsSubmitting(true);
+    try {
+      const productData = {
+        name: formData.name,
+        description: formData.description || null,
+        price: parseFloat(formData.price),
+        brand: formData.brand || null,
+        model: formData.model || null,
+        category_id: selectedCategoryId,
+        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
+        image_url: formData.images[0] || null,
+        images: formData.images,
+        sku: formData.sku || null,
+        weight: formData.weight ? parseFloat(formData.weight) : null,
+        featured: formData.featured,
+        status: formData.status,
+        is_active: formData.status === 'active'
+      };
+
+      const { error } = await supabase
+        .from('products')
+        .insert(productData);
+
+      if (error) throw error;
+
+      const categoryName = categories.find(cat => cat.id === selectedCategoryId)?.name || 'category';
+
+      toast({
+        title: "Success",
+        description: `Product added to ${categoryName} successfully and is now visible on the website`
+      });
+
+      setProductDialogOpen(false);
+      setSelectedCategoryId(null);
+    } catch (error) {
+      console.error('Error adding product:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add product",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const toggleCategoryStatus = async (category: Category) => {
@@ -312,6 +383,14 @@ const AdminCategoryManager = () => {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => handleAddProductToCategory(category.id)}
+                        disabled={!category.is_active}
+                      >
+                        <Upload className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => toggleCategoryStatus(category)}
                       >
                         {category.is_active ? (
@@ -328,6 +407,27 @@ const AdminCategoryManager = () => {
           </Table>
         )}
       </div>
+
+      {/* Add Product to Category Dialog */}
+      <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Upload Product to Category</DialogTitle>
+          </DialogHeader>
+          {selectedCategoryId && (
+            <ProductForm
+              categories={categories.filter(cat => cat.is_active)}
+              onSubmit={handleAddProduct}
+              isLoading={isSubmitting}
+              submitLabel="Upload Product"
+              initialData={{
+                category_id: selectedCategoryId.toString(),
+                status: 'active'
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

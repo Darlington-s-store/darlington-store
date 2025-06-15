@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Filter, Search } from "lucide-react";
@@ -29,8 +28,8 @@ const Products = () => {
     }
   });
 
-  // Fetch products
-  const { data: products = [], isLoading } = useQuery({
+  // Fetch products with real-time updates
+  const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['products', selectedCategory, searchTerm],
     queryFn: async () => {
       let query = supabase
@@ -41,7 +40,7 @@ const Products = () => {
             name
           )
         `)
-        .eq('is_active', true);
+        .eq('status', 'active'); // Only show active products
 
       // Filter by category if not "All"
       if (selectedCategory !== "All") {
@@ -61,8 +60,32 @@ const Products = () => {
       if (error) throw error;
       return data;
     },
-    enabled: categories.length > 0
+    enabled: categories.length > 0,
+    refetchInterval: 30000 // Refetch every 30 seconds to show new products
   });
+
+  // Listen for real-time product updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('products-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          console.log('Product updated, refetching...');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   // Update products with proper images
   useEffect(() => {
