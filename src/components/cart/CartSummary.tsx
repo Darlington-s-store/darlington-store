@@ -30,7 +30,7 @@ const CartSummary = () => {
 
       <div className="space-y-4">
         {items.map((item) => (
-          <div key={`${item.id}-${item.variant || 'default'}`} className="flex items-center space-x-4 bg-white p-4 rounded-lg border border-gray-200">
+          <div key={item.id} className="flex items-center space-x-4 bg-white p-4 rounded-lg border border-gray-200">
             <img
               src={item.image_url || '/placeholder.svg'}
               alt={item.name}
@@ -39,9 +39,6 @@ const CartSummary = () => {
             
             <div className="flex-1">
               <h3 className="font-semibold text-gray-900">{item.name}</h3>
-              {item.variant && (
-                <p className="text-sm text-gray-600">Variant: {item.variant}</p>
-              )}
               <p className="text-lg font-bold text-red-700">₵{item.price.toFixed(2)}</p>
             </div>
 
@@ -49,7 +46,7 @@ const CartSummary = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => updateQuantity(item.id, item.variant, Math.max(0, item.quantity - 1))}
+                onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
                 disabled={item.quantity <= 1}
               >
                 <Minus className="w-4 h-4" />
@@ -60,7 +57,7 @@ const CartSummary = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => updateQuantity(item.id, item.variant, item.quantity + 1)}
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -71,7 +68,7 @@ const CartSummary = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => removeItem(item.id, item.variant)}
+                onClick={() => removeItem(item.id)}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="w-4 h-4" />

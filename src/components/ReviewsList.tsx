@@ -24,7 +24,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
         .from('reviews')
         .select(`
           *,
-          profiles!inner (
+          profiles (
             first_name,
             last_name
           )

@@ -7,7 +7,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  image: string;
+  image_url: string;
   brand?: string;
   sku?: string;
   maxStock: number;
@@ -98,7 +98,7 @@ export const CartProvider = ({ children }: CartProviderProps) => {
           name: product.name,
           price: product.price,
           quantity,
-          image: product.image_url || product.images?.[0] || '',
+          image_url: product.image_url || product.images?.[0] || '',
           brand: product.brand,
           sku: product.sku,
           maxStock: product.stock_quantity || 0

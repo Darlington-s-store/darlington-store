@@ -106,7 +106,9 @@ const WishlistGrid = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {wishlistItems.map((item) => (
           <div key={item.id} className="relative">
-            <ProductCard product={item.products} />
+            {item.products && (
+              <ProductCard product={item.products} />
+            )}
             <Button
               onClick={() => removeFromWishlist(item.product_id)}
               variant="ghost"

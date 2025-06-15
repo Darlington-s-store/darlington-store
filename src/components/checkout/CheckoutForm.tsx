@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useCart } from "@/hooks/useCart";
@@ -291,10 +290,9 @@ const CheckoutForm = () => {
           <CardContent>
             <div className="space-y-4">
               {items.map((item) => (
-                <div key={`${item.id}-${item.variant || 'default'}`} className="flex justify-between items-center">
+                <div key={item.id} className="flex justify-between items-center">
                   <div>
                     <p className="font-semibold">{item.name}</p>
-                    {item.variant && <p className="text-sm text-gray-600">{item.variant}</p>}
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
                   <p className="font-semibold">₵{(item.price * item.quantity).toFixed(2)}</p>
