@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LogOut, User, Heart, Package, Settings } from "lucide-react";
+import { LogOut, User, Heart, Package, Settings, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,15 +11,21 @@ interface UserProfile {
   last_name: string | null;
 }
 
+interface UserRole {
+  role: string;
+}
+
 const UserMenu = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+      fetchUserRole();
     }
   }, [user]);
 
@@ -40,6 +46,29 @@ const UserMenu = () => {
 
       if (data) {
         setProfile(data);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
+
+  const fetchUserRole = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user role:', error);
+        return;
+      }
+
+      if (data) {
+        setUserRole(data.role);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -84,6 +113,8 @@ const UserMenu = () => {
     return user.email;
   };
 
+  const isAdmin = userRole === 'admin';
+
   return (
     <div className="relative">
       <Button
@@ -106,6 +137,9 @@ const UserMenu = () => {
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
                 <p className="text-sm font-medium text-gray-900 truncate">{getDisplayName()}</p>
+                {userRole && (
+                  <p className="text-xs text-blue-600 capitalize">{userRole}</p>
+                )}
               </div>
               
               <div className="py-1">
@@ -135,6 +169,20 @@ const UserMenu = () => {
                   <Heart className="mr-3 h-4 w-4 flex-shrink-0" />
                   <span>Wishlist</span>
                 </Link>
+
+                {isAdmin && (
+                  <>
+                    <div className="border-t border-gray-100 my-1"></div>
+                    <Link
+                      to="/admin"
+                      className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  </>
+                )}
                 
                 <div className="border-t border-gray-100 my-1"></div>
                 

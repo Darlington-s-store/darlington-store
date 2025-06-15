@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { User, Shield, UserCheck, UserX, Plus, Edit, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -85,6 +84,45 @@ const AdminUserRoles = () => {
 
   useEffect(() => {
     fetchUsersWithRoles();
+
+    // Set up real-time subscription to profiles table to auto-refresh when new users sign up
+    const profilesSubscription = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          console.log('Profile change detected, refreshing users...');
+          fetchUsersWithRoles();
+        }
+      )
+      .subscribe();
+
+    // Set up real-time subscription to user_roles table 
+    const rolesSubscription = supabase
+      .channel('user-roles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_roles'
+        },
+        () => {
+          console.log('User role change detected, refreshing users...');
+          fetchUsersWithRoles();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profilesSubscription);
+      supabase.removeChannel(rolesSubscription);
+    };
   }, []);
 
   const fetchUsersWithRoles = async () => {
