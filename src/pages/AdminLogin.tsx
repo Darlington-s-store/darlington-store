@@ -36,9 +36,13 @@ const AdminLogin = () => {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (profileError && profileError.code === 'PGRST116') {
+      if (profileError) {
+        console.error('Error checking profile:', profileError);
+      }
+
+      if (!profileData) {
         // Profile doesn't exist, create it
         console.log('Creating profile for admin user');
         const { error: createProfileError } = await supabase
@@ -61,28 +65,30 @@ const AdminLogin = () => {
         .select('role')
         .eq('user_id', user.id)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
-      if (roleError && roleError.code === 'PGRST116') {
+      if (roleError) {
+        console.error('Error checking user role:', roleError);
+      }
+
+      if (!roleData && user.email === 'admin@darlingtonstore.com') {
         // No admin role found, create it for admin email
-        if (user.email === 'admin@darlingtonstore.com') {
-          console.log('Assigning admin role to user');
-          const { error: assignRoleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: user.id,
-              role: 'admin'
-            });
+        console.log('Assigning admin role to user');
+        const { error: assignRoleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: user.id,
+            role: 'admin'
+          });
 
-          if (assignRoleError) {
-            console.error('Error assigning admin role:', assignRoleError);
-            toast({
-              title: "Setup Error",
-              description: "Could not assign admin role. Please try again.",
-              variant: "destructive"
-            });
-            return;
-          }
+        if (assignRoleError) {
+          console.error('Error assigning admin role:', assignRoleError);
+          toast({
+            title: "Setup Error",
+            description: "Could not assign admin role. Please try again.",
+            variant: "destructive"
+          });
+          return;
         }
       }
 
@@ -92,7 +98,7 @@ const AdminLogin = () => {
         .select('role')
         .eq('user_id', user.id)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
       if (finalRoleCheck && finalRoleCheck.role === 'admin') {
         console.log('Admin role confirmed, redirecting to admin panel');

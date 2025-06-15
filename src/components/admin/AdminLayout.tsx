@@ -35,30 +35,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     try {
       console.log('Checking admin access for user:', user.id);
       
-      // Check if user has admin role using the updated RLS-safe approach
+      // Check if user has admin role using maybeSingle to avoid 406 errors
       const { data: roleData, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
         .eq('role', 'admin')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error checking user role:', error);
-        
-        // If it's a "not found" error, the user doesn't have admin role
-        if (error.code === 'PGRST116') {
-          console.log('No admin role found for user');
-          toast({
-            title: "Access Denied",
-            description: "You don't have admin privileges.",
-            variant: "destructive"
-          });
-          navigate('/admin/login');
-          return;
-        }
-        
-        // For other errors, show error message and redirect
         toast({
           title: "Error",
           description: "Failed to verify admin privileges.",
