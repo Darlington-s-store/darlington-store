@@ -140,8 +140,8 @@ export default function ProductCard({ product, onAddToCart, onAddToWishlist }: P
         )}
       </div>
       <div className="flex flex-col px-4 py-3 grow">
-        <div className="font-semibold text-lg mb-1">{product.name}</div>
-        <div className="text-gray-600 text-sm mb-2">{product.description}</div>
+        <div className="font-semibold text-lg mb-1 truncate" title={product.name}>{product.name}</div>
+        <div className="text-gray-600 text-sm mb-2 h-10 overflow-hidden">{product.description}</div>
         <div className="flex items-center justify-between mt-auto mb-1">
           <div className="text-red-700 font-bold text-lg">₵{product.price}</div>
           <div className="flex items-center text-yellow-500 text-base font-semibold ml-2">
