@@ -14,6 +14,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -54,6 +55,79 @@ const AdminLogin = () => {
     }
   };
 
+  const setupAdminUser = async () => {
+    try {
+      const { error } = await supabase.rpc('setup_admin_user');
+      if (error) {
+        console.error('Error setting up admin user:', error);
+      } else {
+        console.log('Admin user setup completed');
+      }
+    } catch (err) {
+      console.error('Error calling setup_admin_user:', err);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      console.log('Attempting admin signup...');
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/admin`,
+          data: {
+            first_name: 'Admin',
+            last_name: 'User'
+          }
+        }
+      });
+
+      if (error) {
+        console.error('Signup error:', error);
+        toast({
+          title: "Signup Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (data.user) {
+        // Set up admin user after successful signup
+        await setupAdminUser();
+        
+        toast({
+          title: "Success",
+          description: "Admin account created! Please check your email to confirm your account.",
+        });
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,6 +152,17 @@ const AdminLogin = () => {
 
       if (error) {
         console.error('Login error:', error);
+        
+        // If it's an invalid credentials error and the email is admin@darlingtonstore.com, suggest signup
+        if (error.message.includes('Invalid login credentials') && email === 'admin@darlingtonstore.com') {
+          toast({
+            title: "Admin Account Not Found",
+            description: "The admin account hasn't been created yet. Click 'Create Admin Account' to set it up.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         toast({
           title: "Login Failed",
           description: error.message,
@@ -87,7 +172,12 @@ const AdminLogin = () => {
       }
 
       if (data.user) {
-        console.log('User logged in, checking admin role...');
+        console.log('User logged in, setting up admin and checking role...');
+        
+        // Set up admin user if this is the admin email
+        if (email === 'admin@darlingtonstore.com') {
+          await setupAdminUser();
+        }
         
         // Check if user has admin role
         const { data: roleData, error: roleError } = await supabase
@@ -153,11 +243,15 @@ const AdminLogin = () => {
             <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="w-8 h-8 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900">Admin Login</CardTitle>
-            <p className="text-gray-600 mt-2">Access the admin dashboard</p>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              {isSignUp ? 'Create Admin Account' : 'Admin Login'}
+            </CardTitle>
+            <p className="text-gray-600 mt-2">
+              {isSignUp ? 'Set up your admin account' : 'Access the admin dashboard'}
+            </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address
@@ -167,7 +261,7 @@ const AdminLogin = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="admin@darlingtonstore.com"
                   required
                   className="w-full"
                 />
@@ -205,16 +299,25 @@ const AdminLogin = () => {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Signing In...
+                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
                   </div>
                 ) : (
                   <div className="flex items-center justify-center">
                     <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
+                    {isSignUp ? 'Create Admin Account' : 'Sign In'}
                   </div>
                 )}
               </Button>
             </form>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-red-600 hover:text-red-700 text-sm font-medium"
+              >
+                {isSignUp ? '← Back to Login' : 'Create Admin Account →'}
+              </button>
+            </div>
 
             <div className="mt-6 text-center">
               <button
