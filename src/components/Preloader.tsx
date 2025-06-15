@@ -26,13 +26,21 @@ const Preloader = () => {
           <p className="text-white/80 text-lg">Ghana's Premier Electronics Store</p>
         </div>
         <div className="w-64 h-1 bg-white/20 rounded-full mx-auto overflow-hidden">
-          <div className="h-full bg-white rounded-full animate-pulse" style={{ 
-            animation: 'loading-bar 2s ease-in-out' 
-          }}></div>
+          <div 
+            className="h-full bg-white rounded-full animate-pulse"
+            style={{ 
+              animation: 'loading-bar 2s ease-in-out',
+              '@keyframes loading-bar': {
+                '0%': { width: '0%' },
+                '50%': { width: '60%' },
+                '100%': { width: '100%' }
+              }
+            }}
+          ></div>
         </div>
       </div>
       
-      <style jsx>{`
+      <style>{`
         @keyframes loading-bar {
           0% { width: 0%; }
           50% { width: 60%; }
