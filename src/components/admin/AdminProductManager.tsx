@@ -134,8 +134,10 @@ const AdminProductManager = () => {
   const handleAddProduct = async (formData: ProductFormData) => {
     setIsSubmitting(true);
     try {
+      const user = await supabase.auth.getUser();
+      console.log('Attempting to add product as user:', user.data.user?.email);
       console.log('Adding product with form data:', formData);
-      console.log('User authenticated:', !!supabase.auth.getUser());
+      console.log('User authenticated:', !!(user.data.user));
       
       const productData = {
         name: formData.name,
@@ -154,7 +156,7 @@ const AdminProductManager = () => {
         is_active: formData.status === 'active'
       };
 
-      console.log('Processed product data:', productData);
+      console.log('Processed product data for insert:', productData);
 
       const { data, error } = await supabase
         .from('products')
@@ -162,7 +164,7 @@ const AdminProductManager = () => {
         .select();
 
       if (error) {
-        console.error('Supabase error:', error);
+        console.error('Supabase error on insert:', error);
         throw error;
       }
 
@@ -243,22 +245,22 @@ const AdminProductManager = () => {
     try {
       const { error } = await supabase
         .from('products')
-        .delete()
+        .update({ is_active: false, status: 'archived' })
         .eq('id', productId);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: `Product "${productName}" deleted successfully`
+        description: `Product "${productName}" has been archived.`
       });
 
       fetchProducts();
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error('Error archiving product:', error);
       toast({
         title: "Error",
-        description: "Failed to delete product",
+        description: "Failed to archive product",
         variant: "destructive"
       });
     }
@@ -288,6 +290,9 @@ const AdminProductManager = () => {
   };
 
   const getStatusBadge = (status: string | null, isActive: boolean | null) => {
+    if (status === 'archived') {
+      return <Badge variant="outline" className="border-yellow-600 text-yellow-600">Archived</Badge>;
+    }
     if (isActive === false) {
       return <Badge variant="destructive">Inactive</Badge>;
     }
@@ -442,18 +447,18 @@ const AdminProductManager = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogTitle>Are you sure you want to archive this product?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will permanently delete "{product.name}". This action cannot be undone.
+                              This will archive "{product.name}". It will no longer appear on the storefront but its data will be preserved.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDeleteProduct(product.id, product.name)}
-                              className="bg-red-600 hover:bg-red-700"
+                              className="bg-yellow-600 hover:bg-yellow-700"
                             >
-                              Delete
+                              Archive
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
