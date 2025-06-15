@@ -1,7 +1,11 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
+import { Star, ThumbsUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReviewsListProps {
   productId: number;
@@ -9,11 +13,15 @@ interface ReviewsListProps {
 }
 
 const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [votingReviewId, setVotingReviewId] = useState<string | null>(null);
+
   const { data: reviews = [], isLoading } = useQuery({
-    queryKey: ['product-reviews', productId, refreshTrigger],
+    queryKey: ['reviews', productId, refreshTrigger],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_reviews')
+        .from('reviews')
         .select(`
           *,
           profiles (
@@ -29,11 +37,28 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
     }
   });
 
+  const { data: userVotes = [] } = useQuery({
+    queryKey: ['user-helpful-votes', productId, user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('review_helpful_votes')
+        .select('review_id')
+        .eq('user_id', user.id)
+        .in('review_id', reviews.map(r => r.id));
+      
+      if (error) throw error;
+      return data.map(v => v.review_id);
+    },
+    enabled: !!user && reviews.length > 0
+  });
+
   const { data: reviewStats } = useQuery({
-    queryKey: ['product-review-stats', productId, refreshTrigger],
+    queryKey: ['review-stats', productId, refreshTrigger],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('product_reviews')
+        .from('reviews')
         .select('rating')
         .eq('product_id', productId);
       
@@ -52,6 +77,70 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
       };
     }
   });
+
+  const handleHelpfulVote = async (reviewId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to vote on reviews",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setVotingReviewId(reviewId);
+
+    try {
+      const hasVoted = userVotes.includes(reviewId);
+
+      if (hasVoted) {
+        // Remove vote
+        const { error } = await supabase
+          .from('review_helpful_votes')
+          .delete()
+          .eq('review_id', reviewId)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+        
+        toast({
+          title: "Vote Removed",
+          description: "Your helpful vote has been removed"
+        });
+      } else {
+        // Add vote
+        const { error } = await supabase
+          .from('review_helpful_votes')
+          .insert({
+            review_id: reviewId,
+            user_id: user.id
+          });
+
+        if (error) throw error;
+        
+        toast({
+          title: "Vote Added",
+          description: "Thank you for marking this review as helpful!"
+        });
+      }
+
+      // Refresh queries
+      await Promise.all([
+        supabase.from('reviews').select('*').eq('product_id', productId),
+        user && supabase.from('review_helpful_votes').select('review_id').eq('user_id', user.id)
+      ]);
+
+    } catch (error) {
+      console.error('Error voting on review:', error);
+      toast({
+        title: "Error",
+        description: "Failed to record your vote. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVotingReviewId(null);
+    }
+  };
 
   const renderStars = (rating: number) => {
     return (
@@ -114,12 +203,17 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
           {reviews.map((review) => (
             <div key={review.id} className="border border-gray-200 rounded-lg p-4">
               <div className="flex items-start justify-between mb-2">
-                <div>
+                <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     {renderStars(review.rating)}
                     <span className="font-medium text-gray-900">
                       {review.profiles?.first_name} {review.profiles?.last_name}
                     </span>
+                    {review.verified_purchase && (
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                        Verified Purchase
+                      </span>
+                    )}
                   </div>
                   {review.title && (
                     <h4 className="font-semibold text-gray-900 mb-1">{review.title}</h4>
@@ -129,9 +223,29 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
                   {new Date(review.created_at).toLocaleDateString()}
                 </span>
               </div>
+              
               {review.comment && (
-                <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+                <p className="text-gray-700 leading-relaxed mb-3">{review.comment}</p>
               )}
+
+              {/* Helpful voting */}
+              <div className="flex items-center gap-2 pt-2 border-t">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleHelpfulVote(review.id)}
+                  disabled={votingReviewId === review.id}
+                  className={`flex items-center gap-1 ${
+                    userVotes.includes(review.id) ? 'text-blue-600' : 'text-gray-500'
+                  }`}
+                >
+                  <ThumbsUp className="w-4 h-4" />
+                  Helpful ({review.helpful_count})
+                </Button>
+                <span className="text-sm text-gray-500">
+                  Was this review helpful?
+                </span>
+              </div>
             </div>
           ))}
         </div>

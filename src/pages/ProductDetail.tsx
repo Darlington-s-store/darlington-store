@@ -1,7 +1,10 @@
+
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
@@ -13,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const { user } = useAuth();
+  const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [refreshReviews, setRefreshReviews] = useState(0);
@@ -22,7 +27,6 @@ const ProductDetail = () => {
     queryFn: async () => {
       if (!id) throw new Error('Product ID is required');
       
-      // Convert string ID to number for the database query
       const productId = parseInt(id, 10);
       if (isNaN(productId)) throw new Error('Invalid product ID');
       
@@ -54,37 +58,37 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     if (!product) return;
-    
-    const cartItem = {
+    addItem(product, quantity);
+  };
+
+  const handleAddToWishlist = () => {
+    if (!user || !product) {
+      alert('Please sign in to add items to your wishlist');
+      return;
+    }
+
+    const wishlistItem = {
       id: product.id,
       name: product.name,
-      price: `₵${product.price}`,
-      quantity: quantity,
-      image: product.image_url
+      price: product.price,
+      image: product.image_url,
+      brand: product.brand,
+      rating: 4.5
     };
-    
-    // Get existing cart from localStorage
-    const existingCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    
-    // Check if item already exists in cart
-    const existingItemIndex = existingCart.findIndex((item: any) => item.id === product.id);
-    
-    if (existingItemIndex > -1) {
-      // Update quantity if item exists
-      existingCart[existingItemIndex].quantity += quantity;
-    } else {
-      // Add new item to cart
-      existingCart.push(cartItem);
+
+    const existingWishlist = JSON.parse(localStorage.getItem(`wishlist_${user.id}`) || '[]');
+    const isAlreadyInWishlist = existingWishlist.some((item: any) => item.id === product.id);
+
+    if (isAlreadyInWishlist) {
+      alert('Item is already in your wishlist!');
+      return;
     }
+
+    const updatedWishlist = [...existingWishlist, wishlistItem];
+    localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(updatedWishlist));
     
-    // Save updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(existingCart));
-    
-    // Dispatch custom event to update cart count
-    window.dispatchEvent(new Event('cartUpdated'));
-    
-    // Show success message
-    alert(`Added ${quantity} ${product.name} to cart!`);
+    window.dispatchEvent(new Event('wishlistUpdated'));
+    alert(`Added ${product.name} to wishlist!`);
   };
 
   const handleReviewSubmitted = () => {
@@ -125,7 +129,6 @@ const ProductDetail = () => {
     );
   }
 
-  // Parse images from JSON array or use single image, with proper type handling
   const parseImages = (images: any): string[] => {
     if (Array.isArray(images)) {
       return images.map(img => String(img)).filter(img => img && img.trim() !== '');
@@ -148,14 +151,11 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="px-4 py-4">
-        {/* Mobile-First Layout */}
         <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-12 lg:max-w-7xl lg:mx-auto">
-          {/* Product Images */}
           <div className="w-full">
             <ImageGallery images={images} productName={product.name} />
           </div>
 
-          {/* Product Info */}
           <div className="space-y-4 lg:space-y-6">
             <div>
               <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
@@ -163,22 +163,19 @@ const ProductDetail = () => {
               <p className="text-gray-600 text-sm lg:text-lg leading-relaxed">{product.description}</p>
             </div>
 
-            {/* Rating */}
             <div className="space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
               <div className="flex items-center">
                 <Star className="w-4 h-4 lg:w-5 lg:h-5 fill-yellow-400 stroke-yellow-500" />
                 <span className="ml-1 font-semibold text-sm lg:text-base">4.5</span>
-                <span className="ml-2 text-gray-600 text-xs lg:text-sm">(No reviews yet)</span>
+                <span className="ml-2 text-gray-600 text-xs lg:text-sm">(See reviews below)</span>
               </div>
               <span className="text-gray-600 text-xs lg:text-sm block lg:inline">Brand: {product.brand}</span>
             </div>
 
-            {/* Price */}
             <div className="flex items-center">
               <span className="text-2xl lg:text-3xl font-bold text-red-700">₵{product.price}</span>
             </div>
 
-            {/* Stock Status */}
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 lg:w-3 lg:h-3 rounded-full ${product.stock_quantity > 0 ? "bg-green-500" : "bg-red-500"}`} />
               <span className={`font-medium text-sm lg:text-base ${product.stock_quantity > 0 ? "text-green-600" : "text-red-600"}`}>
@@ -186,7 +183,6 @@ const ProductDetail = () => {
               </span>
             </div>
 
-            {/* Quantity and Add to Cart */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <span className="font-medium text-sm lg:text-base">Qty:</span>
@@ -218,7 +214,12 @@ const ProductDetail = () => {
                   <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
                   <span>{product.stock_quantity > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
                 </Button>
-                <Button variant="outline" size="icon" className="p-3 touch-manipulation">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="p-3 touch-manipulation"
+                  onClick={handleAddToWishlist}
+                >
                   <Heart className="w-4 h-4 lg:w-5 lg:h-5" />
                 </Button>
                 <Button variant="outline" size="icon" className="p-3 touch-manipulation">
@@ -227,7 +228,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Features */}
             <div className="grid grid-cols-1 gap-3 pt-4 border-t lg:grid-cols-3 lg:gap-4 lg:pt-6">
               <div className="flex items-center gap-2">
                 <Truck className="w-4 h-4 lg:w-5 lg:h-5 text-red-700" />
@@ -245,7 +245,6 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Product Details Tabs */}
         <div className="bg-white rounded-lg shadow-md mt-6 lg:mt-12 lg:max-w-7xl lg:mx-auto">
           <div className="border-b">
             <nav className="flex px-4 overflow-x-auto scrollbar-hide">

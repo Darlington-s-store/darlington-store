@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 interface ReviewFormProps {
   productId: number;
@@ -14,6 +15,7 @@ interface ReviewFormProps {
 
 const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [title, setTitle] = useState("");
@@ -24,12 +26,20 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
     e.preventDefault();
     
     if (!user) {
-      alert("Please sign in to leave a review");
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to leave a review",
+        variant: "destructive"
+      });
       return;
     }
 
     if (rating === 0) {
-      alert("Please select a rating");
+      toast({
+        title: "Rating Required",
+        description: "Please select a rating",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -37,18 +47,23 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
 
     try {
       const { error } = await supabase
-        .from('product_reviews')
+        .from('reviews')
         .insert({
           product_id: productId,
           user_id: user.id,
           rating,
           title: title.trim() || null,
-          comment: comment.trim() || null
+          comment: comment.trim() || null,
+          verified_purchase: false // This could be enhanced to check actual purchases
         });
 
       if (error) {
         console.error('Error submitting review:', error);
-        alert('Failed to submit review. Please try again.');
+        toast({
+          title: "Error",
+          description: "Failed to submit review. Please try again.",
+          variant: "destructive"
+        });
         return;
       }
 
@@ -57,10 +72,18 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
       setTitle("");
       setComment("");
       onReviewSubmitted();
-      alert("Review submitted successfully!");
+      
+      toast({
+        title: "Success",
+        description: "Review submitted successfully!"
+      });
     } catch (err) {
       console.error('Error submitting review:', err);
-      alert('Failed to submit review. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to submit review. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
