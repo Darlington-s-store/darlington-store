@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useCart } from "@/hooks/useCart";
@@ -67,18 +66,18 @@ const CheckoutForm = () => {
       if (updateError) throw updateError;
       
       try {
-        await sendOrderConfirmationSMS({
-          to: currentOrder.shipping_address.phone,
-          orderNumber: currentOrder.order_number,
-          totalAmount: currentOrder.total_amount,
-          customerName: currentOrder.shipping_address.firstName
-        });
-        await sendOwnerNotificationSMS({
-          orderNumber: currentOrder.order_number,
-          totalAmount: currentOrder.total_amount,
-          customerName: `${currentOrder.shipping_address.firstName} ${currentOrder.shipping_address.lastName}`,
-          phone: currentOrder.shipping_address.phone
-        });
+        await sendOrderConfirmationSMS(
+          currentOrder.shipping_address.phone,
+          currentOrder.order_number,
+          currentOrder.total_amount,
+          currentOrder.shipping_address.firstName
+        );
+        await sendOwnerNotificationSMS(
+          currentOrder.order_number,
+          currentOrder.total_amount,
+          `${currentOrder.shipping_address.firstName} ${currentOrder.shipping_address.lastName}`,
+          currentOrder.shipping_address.phone
+        );
       } catch (smsError) {
         console.error("Failed to send SMS, but order is processed.", smsError);
       }
@@ -117,10 +116,10 @@ const CheckoutForm = () => {
   const [shouldInitializePayment, setShouldInitializePayment] = useState(false);
   useEffect(() => {
     if (shouldInitializePayment) {
-      initializePayment(onPaymentSuccess, onPaymentClose);
+      initializePayment({onSuccess: onPaymentSuccess, onClose: onPaymentClose});
       setShouldInitializePayment(false);
     }
-  }, [shouldInitializePayment, initializePayment]);
+  }, [shouldInitializePayment, initializePayment, onPaymentSuccess, onPaymentClose]);
 
   const onSubmit = async (data: CheckoutFormData) => {
     if (!user) {
@@ -177,18 +176,18 @@ const CheckoutForm = () => {
         setShouldInitializePayment(true);
       } else { // cash_on_delivery
         try {
-          await sendOrderConfirmationSMS({
-            to: shippingAddress.phone,
-            orderNumber: order.order_number,
-            totalAmount: order.total_amount,
-            customerName: shippingAddress.firstName
-          });
-          await sendOwnerNotificationSMS({
-            orderNumber: order.order_number,
-            totalAmount: order.total_amount,
-            customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
-            phone: shippingAddress.phone
-          });
+          await sendOrderConfirmationSMS(
+            shippingAddress.phone,
+            order.order_number,
+            order.total_amount,
+            shippingAddress.firstName
+          );
+          await sendOwnerNotificationSMS(
+            order.order_number,
+            order.total_amount,
+            `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+            shippingAddress.phone
+          );
         } catch (smsError) {
           console.error("Failed to send SMS for cash on delivery", smsError);
         }
