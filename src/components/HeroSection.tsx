@@ -2,9 +2,14 @@
 import { ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useProductImage } from "@/hooks/useProductImage";
 
 export default function HeroSection() {
   const navigate = useNavigate();
+  const { data: productImage, isLoading } = useProductImage();
+
+  // Fallback image if no product image is available
+  const fallbackImage = "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=560&q=80";
 
   return (
     <section className="w-full bg-red-700 text-white py-16 px-6 flex flex-col md:flex-row items-center justify-between gap-10">
@@ -35,12 +40,16 @@ export default function HeroSection() {
       </div>
       <div className="flex-1 flex justify-center">
         <div className="rounded-2xl bg-white/10 p-3 shadow-2xl border-2 border-white/10 backdrop-blur-lg">
-          <img
-            src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=560&q=80"
-            alt="Ghana Electronics"
-            className="rounded-xl object-cover w-[390px] h-[265px] md:w-[405px] md:h-[275px] shadow"
-            style={{ background: "#eee" }}
-          />
+          {isLoading ? (
+            <div className="rounded-xl bg-gray-300 animate-pulse w-[390px] h-[265px] md:w-[405px] md:h-[275px]" />
+          ) : (
+            <img
+              src={productImage?.image_url || fallbackImage}
+              alt={productImage?.name || "Ghana Electronics"}
+              className="rounded-xl object-cover w-[390px] h-[265px] md:w-[405px] md:h-[275px] shadow"
+              style={{ background: "#eee" }}
+            />
+          )}
         </div>
       </div>
     </section>
