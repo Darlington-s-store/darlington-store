@@ -14,7 +14,6 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -126,96 +125,6 @@ const AdminLogin = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (email !== 'admin@darlingtonstore.com') {
-      toast({
-        title: "Error",
-        description: "Admin account can only be created with admin@darlingtonstore.com email.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 6 characters long.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      console.log('Attempting admin signup...');
-      
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/admin/login`,
-          data: {
-            first_name: 'Admin',
-            last_name: 'User',
-            email: 'admin@darlingtonstore.com'
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Signup error:', error);
-        
-        if (error.message.includes('User already registered')) {
-          toast({
-            title: "Account Exists",
-            description: "This admin account already exists. Please use the login form instead.",
-            variant: "destructive"
-          });
-          setIsSignUp(false);
-          return;
-        }
-        
-        toast({
-          title: "Signup Failed",
-          description: error.message,
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (data.user) {
-        console.log('Admin user created successfully');
-        toast({
-          title: "Success",
-          description: "Admin account created successfully! You are now logged in.",
-        });
-        
-        // The user will be automatically logged in and useEffect will handle setup
-      }
-    } catch (err) {
-      console.error('Signup error:', err);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred during signup.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -242,19 +151,11 @@ const AdminLogin = () => {
         console.error('Login error:', error);
         
         if (error.message.includes('Invalid login credentials')) {
-          if (email === 'admin@darlingtonstore.com') {
-            toast({
-              title: "Login Failed",
-              description: "Invalid credentials. If you haven't created an admin account yet, use the 'Create Admin Account' option below.",
-              variant: "destructive"
-            });
-          } else {
-            toast({
-              title: "Login Failed",
-              description: "Invalid email or password.",
-              variant: "destructive"
-            });
-          }
+          toast({
+            title: "Login Failed",
+            description: "Invalid email or password. If you haven't created an admin account yet, you need to sign up first.",
+            variant: "destructive"
+          });
         } else if (error.message.includes('Email not confirmed')) {
           toast({
             title: "Email Not Confirmed",
@@ -310,14 +211,14 @@ const AdminLogin = () => {
               <Shield className="w-8 h-8 text-white" />
             </div>
             <CardTitle className="text-2xl font-bold text-gray-900">
-              {isSignUp ? 'Create Admin Account' : 'Admin Login'}
+              Admin Login
             </CardTitle>
             <p className="text-gray-600 mt-2">
-              {isSignUp ? 'Set up your admin account' : 'Access the admin dashboard'}
+              Access the admin dashboard
             </p>
           </CardHeader>
           <CardContent>
-            <form onSubmit={isSignUp ? handleSignUp : handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address
@@ -330,13 +231,7 @@ const AdminLogin = () => {
                   placeholder="admin@darlingtonstore.com"
                   required
                   className="w-full"
-                  disabled={isSignUp} // Lock email for admin signup
                 />
-                {isSignUp && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Admin account must use: admin@darlingtonstore.com
-                  </p>
-                )}
               </div>
 
               <div>
@@ -349,10 +244,9 @@ const AdminLogin = () => {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder={isSignUp ? "Create a secure password (min 6 chars)" : "Enter your password"}
+                    placeholder="Enter your password"
                     required
                     className="w-full pr-10"
-                    minLength={isSignUp ? 6 : undefined}
                   />
                   <button
                     type="button"
@@ -362,11 +256,6 @@ const AdminLogin = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {isSignUp && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Choose a secure password (minimum 6 characters)
-                  </p>
-                )}
               </div>
 
               <Button
@@ -377,37 +266,22 @@ const AdminLogin = () => {
                 {loading ? (
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                    Signing In...
                   </div>
                 ) : (
                   <div className="flex items-center justify-center">
                     <LogIn className="w-4 h-4 mr-2" />
-                    {isSignUp ? 'Create Admin Account' : 'Sign In'}
+                    Sign In
                   </div>
                 )}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setPassword(""); // Clear password when switching modes
-                }}
-                className="text-red-600 hover:text-red-700 text-sm font-medium"
-                disabled={loading}
-              >
-                {isSignUp ? '← Back to Login' : 'Need to create admin account? →'}
-              </button>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>Admin Account Setup:</strong> If you need to create an admin account, please use the regular signup form at /auth with the email admin@darlingtonstore.com. After signup, return here to login.
+              </p>
             </div>
-
-            {!isSignUp && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>First time?</strong> If you haven't created an admin account yet, click "Need to create admin account?" above.
-                </p>
-              </div>
-            )}
 
             <div className="mt-6 text-center">
               <button
