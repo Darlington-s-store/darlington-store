@@ -1,86 +1,54 @@
+
 import { useState, useEffect } from "react";
-import { Users, Shield, AlertCircle } from "lucide-react";
+import { Users, Shield, AlertCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import PlaceholderAvatar from "../PlaceholderAvatar";
-import type { Database } from "@/integrations/supabase/types";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type AppRole = Database['public']['Enums']['app_role'];
-
-interface Profile {
+type Profile = {
   id: string;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
-  avatar_url: string | null;
-  created_at: string;
-}
+};
 
-interface UserRole {
-  id: string;
+type UserRole = {
   user_id: string;
-  role: AppRole;
-}
+  role: 'admin';
+};
 
-interface UserWithRole extends Profile {
-  role: AppRole | null;
-}
+type UserWithRole = Profile & {
+  role: 'admin' | null;
+};
 
-const AdminUserRoles = () => {
+const AdminUserRolesComponent = () => {
   const [users, setUsers] = useState<UserWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isUpdatingRole, setIsUpdatingRole] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
-  const roles: AppRole[] = ['admin', 'moderator', 'user'];
-
-  useEffect(() => {
-    fetchUsersWithRoles();
-  }, []);
-
-  const fetchUsersWithRoles = async () => {
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      console.log('Fetching users with roles...');
-      setLoading(true);
-
-      // Fetch all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
 
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
-      }
-
-      console.log('Profiles fetched:', profiles);
-
-      // Fetch user roles
+      if (profilesError) throw profilesError;
+      
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('*');
 
       if (rolesError) {
-        console.error('Error fetching user roles:', rolesError);
         if (rolesError.message.includes("permission denied")) {
            toast({
               title: "Permission Denied",
@@ -91,9 +59,6 @@ const AdminUserRoles = () => {
         throw rolesError;
       }
 
-      console.log('User roles fetched:', userRoles);
-
-      // Combine profiles with roles
       const usersWithRoles: UserWithRole[] = profiles?.map(profile => {
         const userRole = (userRoles || []).find(role => role.user_id === profile.id);
         return {
@@ -101,235 +66,165 @@ const AdminUserRoles = () => {
           role: userRole?.role || null
         };
       }) || [];
-
-      console.log('Combined users with roles:', usersWithRoles);
+      
       setUsers(usersWithRoles);
-
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch users. Please check your permissions.",
-        variant: "destructive"
-      });
+    } catch (err: any) {
+      console.error("Error fetching users:", err);
+      setError("Failed to fetch user data. Please check console for details.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: AppRole) => {
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+    if (currentUser?.id === userId) {
+        toast({ title: "Operation Forbidden", description: "You cannot change your own role.", variant: "destructive" });
+        return;
+    }
+
+    setIsUpdatingRole(userId);
     try {
-      setUpdating(userId);
+        const { error: deleteError } = await supabase
+            .from('user_roles')
+            .delete()
+            .eq('user_id', userId);
 
-      // Check if user already has a role
-      const existingUser = users.find(user => user.id === userId);
-      
-      if (existingUser?.role) {
-        // Update existing role
-        const { error } = await supabase
-          .from('user_roles')
-          .update({ role: newRole })
-          .eq('user_id', userId);
-
-        if (error) {
-          console.error('Error updating user role:', error);
-          throw error;
+        if (deleteError && deleteError.code !== 'PGRST204') {
+            throw deleteError;
         }
-      } else {
-        // Insert new role
-        const { error } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: newRole
-          });
 
-        if (error) {
-          console.error('Error updating user:', error);
-          throw error;
+        if (newRole === 'admin') {
+            const { error: insertError } = await supabase
+                .from('user_roles')
+                .insert({ user_id: userId, role: 'admin' });
+            
+            if (insertError) {
+                throw insertError;
+            }
         }
-      }
+        
+        setUsers(currentUsers =>
+            currentUsers.map(u => 
+                u.id === userId ? { ...u, role: newRole === 'admin' ? 'admin' : null } : u
+            )
+        );
 
-      toast({
-        title: "Success",
-        description: `User role updated to ${newRole}`
-      });
-
-      // Refresh the users list
-      await fetchUsersWithRoles();
+        toast({
+            title: "Success",
+            description: `User role has been updated successfully.`,
+        });
 
     } catch (error: any) {
-      console.error('Error updating user role:', error);
-      
-      let errorMessage = "Failed to update user role";
-      if (error?.message?.includes('permission')) {
-        errorMessage = "You don't have permission to update user roles. Please contact an administrator.";
-      } else if (error?.message?.includes('RLS')) {
-        errorMessage = "User roles system needs to be set up by an administrator.";
-      }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
+        console.error('Error updating role:', error);
+        toast({
+            title: "Error",
+            description: error.message || "Failed to update user role.",
+            variant: "destructive",
+        });
+        fetchUsers();
     } finally {
-      setUpdating(null);
+        setIsUpdatingRole(null);
     }
   };
 
-  const getRoleBadgeVariant = (role: AppRole | null) => {
-    switch (role) {
-      case 'admin':
-        return 'destructive';
-      case 'moderator':
-        return 'default';
-      case 'user':
-        return 'secondary';
-      default:
-        return 'outline';
-    }
-  };
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-        </div>
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-700"></div>
-              <span className="ml-2">Loading users...</span>
-            </div>
-          </CardContent>
+            <CardHeader>
+                <CardTitle className="flex items-center">
+                    <Users className="w-6 h-6 mr-2" />
+                    Manage User Roles
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                    <Skeleton className="h-8 w-full" />
+                </div>
+            </CardContent>
         </Card>
-      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+        <Card className="border-destructive">
+            <CardHeader>
+                <CardTitle className="flex items-center text-destructive">
+                    <AlertCircle className="w-6 h-6 mr-2" />
+                    Error
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p>{error}</p>
+            </CardContent>
+        </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-      </div>
-
-      <Card>
+    <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Users & Roles
-          </CardTitle>
+            <CardTitle className="flex items-center">
+                <Users className="w-6 h-6 mr-2" />
+                Manage User Roles
+            </CardTitle>
         </CardHeader>
         <CardContent>
-          {users.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="text-gray-600 mt-2">No users found</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
+            <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>User</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Current Role</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
+                    <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Current Role</TableHead>
+                        <TableHead className="text-right">Change Role</TableHead>
+                    </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          {user.avatar_url ? (
-                            <img 
-                              src={user.avatar_url} 
-                              alt={`${user.first_name} ${user.last_name}`}
-                              className="w-10 h-10 rounded-full object-cover"
-                              onError={(e) => {
-                                // Replace with placeholder on error
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.nextElementSibling?.classList.remove('hidden');
-                              }}
-                            />
-                          ) : null}
-                          <PlaceholderAvatar 
-                            name={`${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'}
-                            className={user.avatar_url ? 'hidden' : ''}
-                          />
-                          <div>
-                            <div className="font-medium">
-                              {user.first_name && user.last_name 
-                                ? `${user.first_name} ${user.last_name}`
-                                : user.first_name || user.last_name || 'Unknown User'
-                              }
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              ID: {user.id.slice(0, 8)}...
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email || 'No email'}</TableCell>
-                      <TableCell>
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {user.role || 'No role assigned'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Select
-                            value={user.role || ''}
-                            onValueChange={(value: AppRole) => updateUserRole(user.id, value)}
-                            disabled={updating === user.id}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue placeholder="Select role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {roles.map((role) => (
-                                <SelectItem key={role} value={role}>
-                                  <div className="flex items-center gap-2">
-                                    <Shield className="w-4 h-4" />
-                                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          {updating === user.id && (
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-700"></div>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                    {users.map((user) => (
+                        <TableRow key={user.id}>
+                            <TableCell>{user.first_name} {user.last_name}</TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                                <Badge variant={user.role === 'admin' ? 'default' : 'secondary'} className="capitalize">
+                                    {user.role === 'admin' ? <Shield className="w-4 h-4 mr-1" /> : null}
+                                    {user.role || 'user'}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                {isUpdatingRole === user.id ? (
+                                    <div className="flex justify-end items-center pr-4">
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    </div>
+                                ) : (
+                                    <Select
+                                        value={user.role === 'admin' ? 'admin' : 'user'}
+                                        onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'user')}
+                                        disabled={currentUser?.id === user.id}
+                                    >
+                                        <SelectTrigger className="w-[120px] ml-auto">
+                                            <SelectValue placeholder="Select role" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="user">User</SelectItem>
+                                            <SelectItem value="admin">Admin</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </TableCell>
+                        </TableRow>
+                    ))}
                 </TableBody>
-              </Table>
-            </div>
-          )}
+            </Table>
         </CardContent>
-      </Card>
+    </Card>
+  )
+}
 
-      {users.some(user => user.role === null) && (
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-yellow-800">
-              <AlertCircle className="w-5 h-5" />
-              <span className="font-medium">Setup Required</span>
-            </div>
-            <p className="text-yellow-700 mt-1 text-sm">
-              Some users don't have roles assigned. The user roles system may need to be configured by a super admin.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-};
-
-export default AdminUserRoles;
+export default AdminUserRolesComponent;
