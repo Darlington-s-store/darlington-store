@@ -18,21 +18,28 @@ const Products = () => {
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {
+      console.log('Fetching categories...');
       const { data, error } = await supabase
         .from('categories')
         .select('*')
         .eq('is_active', true)
         .order('name');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+      }
+      console.log('Categories fetched:', data);
       return data;
     }
   });
 
-  // Fetch products with real-time updates
+  // Fetch products - removed the categories dependency to always fetch
   const { data: products = [], isLoading, refetch } = useQuery({
     queryKey: ['products', selectedCategory, searchTerm],
     queryFn: async () => {
+      console.log('Fetching products...', { selectedCategory, searchTerm });
+      
       let query = supabase
         .from('products')
         .select(`
@@ -41,27 +48,37 @@ const Products = () => {
             name
           )
         `)
-        .eq('is_active', true); // Use is_active instead of status
+        .eq('is_active', true);
+
+      console.log('Base query with is_active = true');
 
       // Filter by category if not "All"
-      if (selectedCategory !== "All") {
+      if (selectedCategory !== "All" && categories.length > 0) {
         const category = categories.find(cat => cat.name === selectedCategory);
+        console.log('Selected category:', selectedCategory, 'Found category:', category);
         if (category) {
           query = query.eq('category_id', category.id);
+          console.log('Filtering by category_id:', category.id);
         }
       }
 
       // Search filter
       if (searchTerm) {
         query = query.or(`name.ilike.%${searchTerm}%, description.ilike.%${searchTerm}%, brand.ilike.%${searchTerm}%`);
+        console.log('Applied search filter:', searchTerm);
       }
 
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+      
+      console.log('Products fetched:', data?.length, 'products');
+      console.log('Sample product:', data?.[0]);
       return data;
-    },
-    enabled: categories.length > 0
+    }
   });
 
   // Listen for real-time product updates
@@ -75,8 +92,8 @@ const Products = () => {
           schema: 'public',
           table: 'products'
         },
-        () => {
-          console.log('Product updated, refetching...');
+        (payload) => {
+          console.log('Product change detected:', payload);
           refetch();
         }
       )
@@ -103,6 +120,7 @@ const Products = () => {
   const categoryOptions = ["All", ...categories.map(cat => cat.name)];
 
   const handleCategoryChange = (category: string) => {
+    console.log('Category changed to:', category);
     setSelectedCategory(category);
     const params = new URLSearchParams(searchParams);
     if (category === "All") {
@@ -114,6 +132,7 @@ const Products = () => {
   };
 
   const handleSearchChange = (search: string) => {
+    console.log('Search changed to:', search);
     setSearchTerm(search);
     const params = new URLSearchParams(searchParams);
     if (search) {
@@ -151,12 +170,31 @@ const Products = () => {
     alert('Please sign in to add items to your wishlist');
   };
 
+  // Debug information
+  console.log('Products page state:', {
+    isLoading,
+    productsCount: products?.length,
+    categoriesCount: categories?.length,
+    selectedCategory,
+    searchTerm
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">All Products</h1>
+          
+          {/* Debug Info - Remove this after fixing */}
+          <div className="mb-4 p-4 bg-yellow-100 border border-yellow-400 rounded">
+            <p><strong>Debug Info:</strong></p>
+            <p>Loading: {isLoading ? 'Yes' : 'No'}</p>
+            <p>Products found: {products?.length || 0}</p>
+            <p>Categories loaded: {categories?.length || 0}</p>
+            <p>Selected category: {selectedCategory}</p>
+            <p>Search term: {searchTerm || 'None'}</p>
+          </div>
           
           {/* Search and Filter Section */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
