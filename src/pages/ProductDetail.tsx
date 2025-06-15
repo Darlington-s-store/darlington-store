@@ -47,6 +47,41 @@ const ProductDetail = () => {
     enabled: !!id
   });
 
+  const { data: reviewStats } = useQuery({
+    queryKey: ['review-stats', id, refreshReviews],
+    queryFn: async () => {
+      if (!id) return { averageRating: 0, totalReviews: 0 };
+      const productId = parseInt(id, 10);
+      if (isNaN(productId)) return { averageRating: 0, totalReviews: 0 };
+      
+      const { data, error, count } = await supabase
+        .from('reviews')
+        .select('rating', { count: 'exact' })
+        .eq('product_id', productId)
+        .eq('status', 'approved');
+      
+      if (error) {
+        console.error("Error fetching review stats:", error);
+        return { averageRating: 0, totalReviews: 0 };
+      }
+
+      const totalReviews = count || 0;
+      if (totalReviews === 0) {
+        return { averageRating: 0, totalReviews: 0 };
+      }
+
+      const totalRating = data.reduce((sum, review) => sum + review.rating, 0);
+      const averageRating = totalRating / totalReviews;
+      
+      return {
+        averageRating: Math.round(averageRating * 10) / 10,
+        totalReviews: totalReviews
+      };
+    },
+    enabled: !!product,
+    initialData: { averageRating: 0, totalReviews: 0 }
+  });
+
   const handleQuantityChange = (type: "increase" | "decrease") => {
     if (type === "increase" && quantity < (product?.stock_quantity || 0)) {
       setQuantity(quantity + 1);
@@ -159,14 +194,16 @@ const ProductDetail = () => {
             <div>
               <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
               <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight break-words">{product.name}</h1>
-              <p className="text-gray-600 text-sm lg:text-lg leading-relaxed break-words">{product.description}</p>
+              <p className="text-gray-600 text-sm lg:text-base leading-relaxed break-words">{product.description}</p>
             </div>
 
             <div className="space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
               <div className="flex items-center">
                 <Star className="w-4 h-4 lg:w-5 lg:h-5 fill-yellow-400 stroke-yellow-500" />
-                <span className="ml-1 font-semibold text-sm lg:text-base">4.5</span>
-                <span className="ml-2 text-gray-600 text-xs lg:text-sm">(See reviews below)</span>
+                <span className="ml-1 font-semibold text-sm lg:text-base">{reviewStats.averageRating.toFixed(1)}</span>
+                <span className="ml-2 text-gray-600 text-xs lg:text-sm">
+                  ({reviewStats.totalReviews} review{reviewStats.totalReviews !== 1 ? 's' : ''})
+                </span>
               </div>
               <span className="text-gray-600 text-xs lg:text-sm block lg:inline">Brand: {product.brand}</span>
             </div>

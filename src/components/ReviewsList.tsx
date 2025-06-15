@@ -25,6 +25,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
         .from('reviews')
         .select(`*`)
         .eq('product_id', productId)
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
       
       if (reviewsError) throw reviewsError;
@@ -75,7 +76,8 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
       const { data, error } = await supabase
         .from('reviews')
         .select('rating')
-        .eq('product_id', productId);
+        .eq('product_id', productId)
+        .eq('status', 'approved');
       
       if (error) throw error;
       
