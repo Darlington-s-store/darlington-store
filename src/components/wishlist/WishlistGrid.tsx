@@ -106,7 +106,7 @@ const WishlistGrid = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {wishlistItems.map((item) => (
           <div key={item.id} className="relative">
-            {item.products && (
+            {item.products && typeof item.products === 'object' && 'id' in item.products && (
               <ProductCard product={item.products} />
             )}
             <Button

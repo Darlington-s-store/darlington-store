@@ -204,7 +204,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
                   <div className="flex items-center gap-2 mb-1">
                     {renderStars(review.rating)}
                     <span className="font-medium text-gray-900">
-                      {review.profiles?.first_name} {review.profiles?.last_name}
+                      {review.profiles?.first_name || 'Anonymous'} {review.profiles?.last_name || ''}
                     </span>
                     {review.verified_purchase && (
                       <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
@@ -237,7 +237,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
                   }`}
                 >
                   <ThumbsUp className="w-4 h-4" />
-                  Helpful ({review.helpful_count})
+                  Helpful ({review.helpful_count || 0})
                 </Button>
                 <span className="text-sm text-gray-500">
                   Was this review helpful?
