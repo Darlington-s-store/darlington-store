@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -105,19 +104,19 @@ const WishlistGrid = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {wishlistItems.map((item) => (
-          <div key={item.id} className="relative">
-            {item.products && typeof item.products === 'object' && 'id' in item.products && (
+          item.products && (
+            <div key={item.id} className="relative">
               <ProductCard product={item.products} />
-            )}
-            <Button
-              onClick={() => removeFromWishlist(item.product_id)}
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 bg-white/80 hover:bg-white/90 text-red-600 hover:text-red-700"
-            >
-              <Heart className="w-4 h-4 fill-current" />
-            </Button>
-          </div>
+              <Button
+                onClick={() => removeFromWishlist(item.product_id)}
+                variant="ghost"
+                size="sm"
+                className="absolute top-2 right-2 bg-white/80 hover:bg-white/90 text-red-600 hover:text-red-700"
+              >
+                <Heart className="w-4 h-4 fill-current" />
+              </Button>
+            </div>
+          )
         ))}
       </div>
     </div>

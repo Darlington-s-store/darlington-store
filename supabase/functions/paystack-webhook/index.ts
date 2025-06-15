@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,9 +16,14 @@ serve(async (req) => {
   try {
     const signature = req.headers.get('x-paystack-signature')
     const body = await req.text()
-    
-    // Verify webhook signature (optional but recommended for production)
-    // You would typically verify the signature here with your webhook secret
+    const secret = Deno.env.get('sk_live_019075696c0d1c62f3d822dccaf66b1eed7481f1')!
+
+    // Verify webhook signature
+    const hash = createHmac('sha512', secret).update(body).digest('hex')
+    if (hash !== signature) {
+      console.warn('Invalid webhook signature');
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 400, headers: corsHeaders })
+    }
     
     const event = JSON.parse(body)
     
@@ -27,7 +33,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     if (event.event === 'charge.success') {
-      const { reference, status, amount, currency } = event.data
+      const { reference } = event.data
       
       // Update order status in database
       const { error } = await supabase
@@ -36,7 +42,6 @@ serve(async (req) => {
           payment_status: 'completed',
           status: 'processing',
           payment_reference: reference,
-          paystack_reference: reference
         })
         .eq('paystack_reference', reference)
 

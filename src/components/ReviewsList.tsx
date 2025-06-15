@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star, ThumbsUp } from "lucide-react";
@@ -24,7 +23,7 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
         .from('reviews')
         .select(`
           *,
-          profiles (
+          profiles!inner (
             first_name,
             last_name
           )

@@ -24,13 +24,15 @@ serve(async (req) => {
       )
     }
 
+    const paystackSecretKey = Deno.env.get('sk_live_019075696c0d1c62f3d822dccaf66b1eed7481f1');
+
     // Verify payment with Paystack
     const paystackResponse = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer sk_live_019075696c0d1c62f3d822dccaf66b1eed7481f1`,
+          'Authorization': `Bearer ${paystackSecretKey}`,
           'Content-Type': 'application/json',
         },
       }
