@@ -1,6 +1,6 @@
 
-import { useState } from "react";
-import { Save, Upload, Mail, Globe, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Save, Upload, Mail, Globe, Shield, Loader2 } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,44 +9,70 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useAppSettings, AppSettings } from "@/hooks/useAppSettings";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AdminSettings = () => {
-  const [settings, setSettings] = useState({
-    siteName: "Darlington Store",
-    siteDescription: "Ghana's Premier Electronics Store",
-    contactEmail: "info@darlingtonstore.com",
-    supportEmail: "support@darlingtonstore.com",
-    phone: "+233 24 123 4567",
-    address: "123 Oxford Street, Osu, Accra, Ghana",
-    emailNotifications: true,
-    smsNotifications: false,
-    orderUpdates: true,
-    promotionalEmails: true,
-    maintenanceMode: false,
-    allowGuestCheckout: true,
-    requireEmailVerification: true,
-    autoApproveReviews: false
-  });
+  const { settings, isLoading, isError, updateSettings, isUpdating } = useAppSettings();
+  const [localSettings, setLocalSettings] = useState<AppSettings | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings);
+    }
+  }, [settings]);
 
   const handleSave = () => {
-    console.log("Saving settings:", settings);
-    alert("Settings saved successfully!");
+    if (localSettings) {
+      updateSettings(localSettings);
+    }
   };
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setSettings(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handleInputChange = (field: keyof AppSettings, value: string | boolean) => {
+    if (localSettings) {
+        setLocalSettings(prev => ({
+            ...prev!,
+            [field]: value
+        }));
+    }
   };
+  
+  if (isLoading) {
+    return (
+        <AdminLayout>
+            <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+                    <Button disabled className="bg-red-700 hover:bg-red-800">
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Save Changes
+                    </Button>
+                </div>
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-[450px] w-full" />
+            </div>
+        </AdminLayout>
+    );
+  }
+
+  if (isError || !localSettings) {
+      return (
+          <AdminLayout>
+              <div className="p-4 text-center bg-red-100 border border-red-400 text-red-700 rounded">
+                  <p className="font-bold">Error</p>
+                  <p>Failed to load settings. Please check your connection or permissions and try again later.</p>
+              </div>
+          </AdminLayout>
+      );
+  }
 
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <Button onClick={handleSave} className="bg-red-700 hover:bg-red-800">
-            <Save className="w-4 h-4 mr-2" />
+          <Button onClick={handleSave} disabled={isUpdating} className="bg-red-700 hover:bg-red-800">
+            {isUpdating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             Save Changes
           </Button>
         </div>
@@ -73,8 +99,8 @@ const AdminSettings = () => {
                     <Label htmlFor="siteName">Site Name</Label>
                     <Input
                       id="siteName"
-                      value={settings.siteName}
-                      onChange={(e) => handleInputChange('siteName', e.target.value)}
+                      value={localSettings.site_name}
+                      onChange={(e) => handleInputChange('site_name', e.target.value)}
                     />
                   </div>
                   <div>
@@ -82,8 +108,8 @@ const AdminSettings = () => {
                     <Input
                       id="contactEmail"
                       type="email"
-                      value={settings.contactEmail}
-                      onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                      value={localSettings.contact_email}
+                      onChange={(e) => handleInputChange('contact_email', e.target.value)}
                     />
                   </div>
                 </div>
@@ -91,8 +117,8 @@ const AdminSettings = () => {
                   <Label htmlFor="siteDescription">Site Description</Label>
                   <Textarea
                     id="siteDescription"
-                    value={settings.siteDescription}
-                    onChange={(e) => handleInputChange('siteDescription', e.target.value)}
+                    value={localSettings.site_description}
+                    onChange={(e) => handleInputChange('site_description', e.target.value)}
                     rows={3}
                   />
                 </div>
@@ -101,7 +127,7 @@ const AdminSettings = () => {
                     <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
-                      value={settings.phone}
+                      value={localSettings.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                     />
                   </div>
@@ -110,8 +136,8 @@ const AdminSettings = () => {
                     <Input
                       id="supportEmail"
                       type="email"
-                      value={settings.supportEmail}
-                      onChange={(e) => handleInputChange('supportEmail', e.target.value)}
+                      value={localSettings.support_email}
+                      onChange={(e) => handleInputChange('support_email', e.target.value)}
                     />
                   </div>
                 </div>
@@ -119,7 +145,7 @@ const AdminSettings = () => {
                   <Label htmlFor="address">Business Address</Label>
                   <Textarea
                     id="address"
-                    value={settings.address}
+                    value={localSettings.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     rows={2}
                   />
@@ -144,8 +170,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="emailNotifications"
-                    checked={settings.emailNotifications}
-                    onCheckedChange={(checked) => handleInputChange('emailNotifications', checked)}
+                    checked={localSettings.email_notifications}
+                    onCheckedChange={(checked) => handleInputChange('email_notifications', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -155,8 +181,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="smsNotifications"
-                    checked={settings.smsNotifications}
-                    onCheckedChange={(checked) => handleInputChange('smsNotifications', checked)}
+                    checked={localSettings.sms_notifications}
+                    onCheckedChange={(checked) => handleInputChange('sms_notifications', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -166,8 +192,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="orderUpdates"
-                    checked={settings.orderUpdates}
-                    onCheckedChange={(checked) => handleInputChange('orderUpdates', checked)}
+                    checked={localSettings.order_updates}
+                    onCheckedChange={(checked) => handleInputChange('order_updates', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -177,8 +203,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="promotionalEmails"
-                    checked={settings.promotionalEmails}
-                    onCheckedChange={(checked) => handleInputChange('promotionalEmails', checked)}
+                    checked={localSettings.promotional_emails}
+                    onCheckedChange={(checked) => handleInputChange('promotional_emails', checked)}
                   />
                 </div>
               </CardContent>
@@ -201,8 +227,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="maintenanceMode"
-                    checked={settings.maintenanceMode}
-                    onCheckedChange={(checked) => handleInputChange('maintenanceMode', checked)}
+                    checked={localSettings.maintenance_mode}
+                    onCheckedChange={(checked) => handleInputChange('maintenance_mode', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -212,8 +238,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="allowGuestCheckout"
-                    checked={settings.allowGuestCheckout}
-                    onCheckedChange={(checked) => handleInputChange('allowGuestCheckout', checked)}
+                    checked={localSettings.allow_guest_checkout}
+                    onCheckedChange={(checked) => handleInputChange('allow_guest_checkout', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -223,8 +249,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="requireEmailVerification"
-                    checked={settings.requireEmailVerification}
-                    onCheckedChange={(checked) => handleInputChange('requireEmailVerification', checked)}
+                    checked={localSettings.require_email_verification}
+                    onCheckedChange={(checked) => handleInputChange('require_email_verification', checked)}
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -234,8 +260,8 @@ const AdminSettings = () => {
                   </div>
                   <Switch
                     id="autoApproveReviews"
-                    checked={settings.autoApproveReviews}
-                    onCheckedChange={(checked) => handleInputChange('autoApproveReviews', checked)}
+                    checked={localSettings.auto_approve_reviews}
+                    onCheckedChange={(checked) => handleInputChange('auto_approve_reviews', checked)}
                   />
                 </div>
               </CardContent>

@@ -39,6 +39,66 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          address: string
+          allow_guest_checkout: boolean
+          auto_approve_reviews: boolean
+          contact_email: string
+          created_at: string
+          email_notifications: boolean
+          id: number
+          maintenance_mode: boolean
+          order_updates: boolean
+          phone: string
+          promotional_emails: boolean
+          require_email_verification: boolean
+          site_description: string
+          site_name: string
+          sms_notifications: boolean
+          support_email: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string
+          allow_guest_checkout?: boolean
+          auto_approve_reviews?: boolean
+          contact_email?: string
+          created_at?: string
+          email_notifications?: boolean
+          id?: number
+          maintenance_mode?: boolean
+          order_updates?: boolean
+          phone?: string
+          promotional_emails?: boolean
+          require_email_verification?: boolean
+          site_description?: string
+          site_name?: string
+          sms_notifications?: boolean
+          support_email?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          allow_guest_checkout?: boolean
+          auto_approve_reviews?: boolean
+          contact_email?: string
+          created_at?: string
+          email_notifications?: boolean
+          id?: number
+          maintenance_mode?: boolean
+          order_updates?: boolean
+          phone?: string
+          promotional_emails?: boolean
+          require_email_verification?: boolean
+          site_description?: string
+          site_name?: string
+          sms_notifications?: boolean
+          support_email?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
