@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import OrderReceipt from "@/components/checkout/OrderReceipt";
 
-interface OrderItem {
+export interface OrderItem {
   id: string;
   product_id: number;
   product_name: string;
@@ -16,7 +17,7 @@ interface OrderItem {
   price: number;
 }
 
-interface Order {
+export interface Order {
   id: string;
   order_number: string;
   created_at: string;
@@ -24,6 +25,16 @@ interface Order {
   status: string;
   payment_status: string | null;
   order_items: OrderItem[];
+  shipping_address: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    phone: string;
+    email: string;
+  };
 }
 
 const Orders = () => {
@@ -31,6 +42,7 @@ const Orders = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -51,7 +63,8 @@ const Orders = () => {
         .from('orders')
         .select(`
           *,
-          order_items (*)
+          order_items (*),
+          shipping_address
         `)
         .eq('user_id', user.id)
         .eq('payment_status', 'completed')
@@ -100,6 +113,10 @@ const Orders = () => {
         <Footer />
       </div>
     );
+  }
+  
+  if (selectedOrder) {
+    return <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />;
   }
 
   return (
@@ -165,12 +182,20 @@ const Orders = () => {
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/track?order=${order.order_number}`)}
-                  >
-                    Track Order
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate(`/track?order=${order.order_number}`)}
+                    >
+                      Track Order
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => setSelectedOrder(order)}
+                    >
+                      Print Receipt
+                    </Button>
+                  </div>
                   <Button
                     variant="ghost"
                     onClick={() => navigate('/contact')}
