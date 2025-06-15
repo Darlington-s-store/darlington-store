@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useCart } from "@/hooks/useCart";
@@ -44,6 +45,7 @@ const CheckoutForm = () => {
     email: user?.email || "",
     amount: getTotalPrice() * 100, // in kobo
     publicKey: 'pk_live_595150e66d3a90b005ff10b96fbeeb4d59560058',
+    channels: ['card', 'mobile_money', 'bank'],
   });
 
   const onPaymentSuccess = async (reference: { reference: string }) => {
@@ -172,7 +174,14 @@ const CheckoutForm = () => {
       if (itemsError) throw itemsError;
 
       if (data.paymentMethod === 'paystack') {
-        setPaystackConfig(prev => ({ ...prev, reference: order.order_number, email: data.email, amount: order.total_amount * 100, metadata: { order_id: order.id, user_id: user.id } }));
+        setPaystackConfig(prev => ({
+          ...prev,
+          reference: order.order_number,
+          email: data.email,
+          amount: order.total_amount * 100,
+          metadata: { order_id: order.id, user_id: user.id },
+          channels: ['card', 'mobile_money', 'bank'],
+        }));
         setShouldInitializePayment(true);
       } else { // cash_on_delivery
         try {
@@ -340,7 +349,7 @@ const CheckoutForm = () => {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-600 focus:border-transparent"
                 >
                   <option value="">Select Payment Method</option>
-                  <option value="paystack">Paystack (Card/Bank Transfer)</option>
+                  <option value="paystack">Paystack (Card/Bank/Mobile Money)</option>
                   <option value="cash_on_delivery">Cash on Delivery</option>
                 </select>
                 {errors.paymentMethod && (
