@@ -62,8 +62,9 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Phone Numbers</h3>
                   <p className="text-gray-600">
-                    +233 24 123 4567<br />
-                    +233 20 987 6543
+                    2552945333<br />
+                    0257501827<br />
+                    0200369947
                   </p>
                 </div>
               </div>
@@ -73,8 +74,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                   <p className="text-gray-600">
-                    info@darlingtonstore.com<br />
-                    support@darlingtonstore.com
+                    asomanirawlingsjunior5333@gmail.com<br />
+                    asomanirawlingsjunior71@gmail.com
                   </p>
                 </div>
               </div>

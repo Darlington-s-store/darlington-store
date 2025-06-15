@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShoppingCart, Star, Heart, Share2, Minus, Plus, Truck, Shield, RotateCcw } from "lucide-react";
@@ -159,8 +158,8 @@ const ProductDetail = () => {
           <div className="space-y-4 lg:space-y-6">
             <div>
               <p className="text-sm text-red-700 font-medium mb-2">{product.categories?.name}</p>
-              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight">{product.name}</h1>
-              <p className="text-gray-600 text-sm lg:text-lg leading-relaxed">{product.description}</p>
+              <h1 className="text-xl lg:text-3xl font-bold text-gray-900 mb-2 leading-tight break-words">{product.name}</h1>
+              <p className="text-gray-600 text-sm lg:text-lg leading-relaxed break-words">{product.description}</p>
             </div>
 
             <div className="space-y-2 lg:space-y-0 lg:flex lg:items-center lg:gap-4">
@@ -268,7 +267,7 @@ const ProductDetail = () => {
             {activeTab === "description" && (
               <div>
                 <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 mb-4 text-sm lg:text-base leading-relaxed">{product.description}</p>
+                <p className="text-gray-700 mb-4 text-sm lg:text-base leading-relaxed break-words">{product.description}</p>
                 {product.model && (
                   <div className="mb-3 text-sm lg:text-base">
                     <strong>Model:</strong> {product.model}

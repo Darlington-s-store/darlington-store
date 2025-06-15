@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Eye, Package, Truck, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import OrderReceipt from "@/components/checkout/OrderReceipt";
+import { OrderItem } from "@/pages/Orders";
 
 interface Order {
   id: string;
@@ -27,14 +28,26 @@ interface Order {
   created_at: string;
   total_amount: number;
   status: string;
-  payment_status: string;
+  payment_status: string | null;
   user_id: string;
+  order_items: OrderItem[];
+  shipping_address: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    phone: string;
+    email: string;
+  };
 }
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrders();
@@ -44,7 +57,7 @@ const AdminOrders = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('*, order_items(*)')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -52,7 +65,7 @@ const AdminOrders = () => {
         return;
       }
 
-      setOrders(data || []);
+      setOrders((data as any) || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -101,6 +114,14 @@ const AdminOrders = () => {
   const filteredOrders = statusFilter === "all" 
     ? orders 
     : orders.filter(order => order.status === statusFilter);
+
+  if (selectedOrder) {
+    return (
+      <AdminLayout>
+        <OrderReceipt order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -168,7 +189,7 @@ const AdminOrders = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
