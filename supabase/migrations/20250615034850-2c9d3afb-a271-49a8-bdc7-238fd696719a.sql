@@ -1,4 +1,5 @@
 
+
 -- First, let's ensure the RLS policies are set up correctly for user_roles
 -- Drop existing policies that might be too restrictive
 DROP POLICY IF EXISTS "Authenticated users can view user roles" ON public.user_roles;
@@ -6,36 +7,71 @@ DROP POLICY IF EXISTS "Admins can manage all user roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Users can view their own roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Allow authenticated users to read user_roles" ON public.user_roles;
 DROP POLICY IF EXISTS "Allow authenticated users to insert their own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users can read their own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Admins can read all roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users can insert their own roles" ON public.user_roles;
 
--- Create more permissive policies that allow proper access
--- This policy allows users to read their own roles
+-- Create a simple policy that allows users to read their own roles
+-- This avoids circular dependency issues
 CREATE POLICY "Users can read their own roles"
 ON public.user_roles
 FOR SELECT
 TO authenticated
 USING (user_id = auth.uid());
 
--- This policy allows admins to read all roles
-CREATE POLICY "Admins can read all roles"
-ON public.user_roles
-FOR SELECT
-TO authenticated
-USING (public.has_role(auth.uid(), 'admin'));
-
--- This policy allows users to insert their own roles (for admin setup)
+-- Allow users to insert their own roles (needed for admin setup)
 CREATE POLICY "Users can insert their own roles"
 ON public.user_roles
 FOR INSERT
 TO authenticated
 WITH CHECK (user_id = auth.uid());
 
--- This policy allows admins to manage all user roles
-CREATE POLICY "Admins can manage all user roles"
+-- For admin management, we'll use a separate approach that doesn't cause recursion
+-- This policy allows updates and deletes based on a simple check
+CREATE POLICY "Allow role management"
 ON public.user_roles
 FOR ALL
 TO authenticated
-USING (public.has_role(auth.uid(), 'admin'))
-WITH CHECK (public.has_role(auth.uid(), 'admin'));
+USING (
+  -- Allow if it's the user's own role OR if they have admin email
+  user_id = auth.uid() OR 
+  EXISTS (
+    SELECT 1 FROM auth.users 
+    WHERE id = auth.uid() 
+    AND email = 'admin@darlingtonstore.com'
+  )
+)
+WITH CHECK (
+  -- Same check for inserts/updates
+  user_id = auth.uid() OR 
+  EXISTS (
+    SELECT 1 FROM auth.users 
+    WHERE id = auth.uid() 
+    AND email = 'admin@darlingtonstore.com'
+  )
+);
+
+-- Update the has_role function to be more robust
+CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
+RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+STABLE
+AS $$
+BEGIN
+  -- Simple check without causing RLS recursion
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = _user_id
+      AND role = _role
+  );
+EXCEPTION
+  WHEN OTHERS THEN
+    -- If there's any error (like RLS blocking), return false
+    RETURN false;
+END;
+$$;
 
 -- Update the setup_admin_user function to be more robust
 CREATE OR REPLACE FUNCTION public.setup_admin_user()
@@ -70,6 +106,9 @@ BEGIN
     ELSE
         RAISE NOTICE 'No admin user found with email: admin@darlingtonstore.com';
     END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'Error in setup_admin_user: %', SQLERRM;
 END;
 $$;
 
@@ -109,3 +148,4 @@ BEGIN
     RETURN result_message;
 END;
 $$;
+
