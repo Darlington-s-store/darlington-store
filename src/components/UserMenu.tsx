@@ -82,10 +82,10 @@ const UserMenu = () => {
       {isOpen && (
         <>
           <div 
-            className="fixed inset-0 z-40" 
+            className="fixed inset-0 z-[100]" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-md shadow-lg border z-50 md:w-48 md:right-0">
+          <div className="absolute right-0 top-full mt-2 w-64 md:w-56 bg-white rounded-md shadow-xl border z-[101] max-h-[80vh] overflow-y-auto">
             <div className="py-1">
               <div className="px-4 py-3 border-b bg-gray-50">
                 <p className="text-xs text-gray-500 mb-1">Welcome back!</p>
