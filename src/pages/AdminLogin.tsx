@@ -80,6 +80,15 @@ const AdminLogin = () => {
       return;
     }
 
+    if (email !== 'admin@darlingtonstore.com') {
+      toast({
+        title: "Error",
+        description: "Admin account can only be created with admin@darlingtonstore.com email.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -99,6 +108,17 @@ const AdminLogin = () => {
 
       if (error) {
         console.error('Signup error:', error);
+        
+        if (error.message.includes('User already registered')) {
+          toast({
+            title: "Account Exists",
+            description: "This admin account already exists. Please use the login form instead.",
+            variant: "destructive"
+          });
+          setIsSignUp(false);
+          return;
+        }
+        
         toast({
           title: "Signup Failed",
           description: error.message,
@@ -113,8 +133,11 @@ const AdminLogin = () => {
         
         toast({
           title: "Success",
-          description: "Admin account created! Please check your email to confirm your account.",
+          description: "Admin account created successfully! You can now log in.",
         });
+        
+        // Switch to login mode
+        setIsSignUp(false);
       }
     } catch (err) {
       console.error('Signup error:', err);
@@ -153,66 +176,50 @@ const AdminLogin = () => {
       if (error) {
         console.error('Login error:', error);
         
-        // If it's an invalid credentials error and the email is admin@darlingtonstore.com, suggest signup
-        if (error.message.includes('Invalid login credentials') && email === 'admin@darlingtonstore.com') {
+        // Handle specific error cases
+        if (error.message.includes('Invalid login credentials')) {
+          if (email === 'admin@darlingtonstore.com') {
+            toast({
+              title: "Login Failed",
+              description: "Invalid credentials. If you haven't created an admin account yet, use the 'Create Admin Account' option.",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Login Failed",
+              description: "Invalid email or password.",
+              variant: "destructive"
+            });
+          }
+        } else if (error.message.includes('Email not confirmed')) {
           toast({
-            title: "Admin Account Not Found",
-            description: "The admin account hasn't been created yet. Click 'Create Admin Account' to set it up.",
+            title: "Email Not Confirmed",
+            description: "Please check your email and click the confirmation link before logging in.",
             variant: "destructive"
           });
-          return;
+        } else {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive"
+          });
         }
-        
-        toast({
-          title: "Login Failed",
-          description: error.message,
-          variant: "destructive"
-        });
         return;
       }
 
       if (data.user) {
-        console.log('User logged in, setting up admin and checking role...');
+        console.log('User logged in successfully, setting up admin...');
         
         // Set up admin user if this is the admin email
         if (email === 'admin@darlingtonstore.com') {
           await setupAdminUser();
         }
         
-        // Check if user has admin role
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', data.user.id)
-          .single();
-
-        if (roleError && roleError.code !== 'PGRST116') {
-          console.error('Error checking user role:', roleError);
-          toast({
-            title: "Error",
-            description: "Failed to verify admin privileges.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        if (!roleData || roleData.role !== 'admin') {
-          // Sign out the user since they're not an admin
-          await supabase.auth.signOut();
-          toast({
-            title: "Access Denied",
-            description: "You don't have admin privileges.",
-            variant: "destructive"
-          });
-          return;
-        }
-
+        // The useAuth hook will handle the redirect via the useEffect above
         toast({
           title: "Success",
-          description: "Welcome to the admin panel!",
+          description: "Login successful! Redirecting to admin panel...",
         });
-
-        navigate('/admin');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -265,6 +272,11 @@ const AdminLogin = () => {
                   required
                   className="w-full"
                 />
+                {isSignUp && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Admin account must use: admin@darlingtonstore.com
+                  </p>
+                )}
               </div>
 
               <div>
@@ -289,6 +301,11 @@ const AdminLogin = () => {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {isSignUp && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Choose a secure password for your admin account
+                  </p>
+                )}
               </div>
 
               <Button
@@ -314,8 +331,9 @@ const AdminLogin = () => {
               <button
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-red-600 hover:text-red-700 text-sm font-medium"
+                disabled={loading}
               >
-                {isSignUp ? '← Back to Login' : 'Create Admin Account →'}
+                {isSignUp ? '← Back to Login' : 'Need to create admin account? →'}
               </button>
             </div>
 
@@ -323,6 +341,7 @@ const AdminLogin = () => {
               <button
                 onClick={() => navigate('/')}
                 className="text-red-600 hover:text-red-700 text-sm font-medium"
+                disabled={loading}
               >
                 ← Back to Main Site
               </button>
