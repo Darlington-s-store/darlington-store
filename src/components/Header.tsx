@@ -141,22 +141,8 @@ export default function Header() {
             <span className="font-bold text-lg text-gray-900">Darlington Store</span>
           </Link>
 
-          {/* Cart and User */}
+          {/* User Menu Only - Cart moved to bottom */}
           <div className="flex items-center gap-1 relative z-50">
-            <Button
-              variant="ghost"
-              className="rounded-full p-2 relative"
-              size="icon"
-              aria-label="Cart"
-              onClick={() => setIsCartOpen(true)}
-            >
-              <ShoppingCart size={20} className="text-gray-700" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </Button>
             <UserMenu />
           </div>
         </nav>
@@ -212,6 +198,26 @@ export default function Header() {
 
         <div className="h-2 w-full bg-red-700" />
       </header>
+
+      {/* Mobile Bottom Cart - Fixed at bottom of screen */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40">
+        <div className="flex justify-center py-3">
+          <Button
+            variant="ghost"
+            className="rounded-full p-3 relative bg-red-700 hover:bg-red-800"
+            size="icon"
+            aria-label="Cart"
+            onClick={() => setIsCartOpen(true)}
+          >
+            <ShoppingCart size={24} className="text-white" />
+            {cartItemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-yellow-400 text-red-900 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                {cartItemCount}
+              </span>
+            )}
+          </Button>
+        </div>
+      </div>
       
       <Cart isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>

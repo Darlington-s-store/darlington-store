@@ -9,7 +9,7 @@ import WhatsAppButton from "../components/WhatsAppButton";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0">
       <Header />
       <main className="w-full">
         <HeroSection />
