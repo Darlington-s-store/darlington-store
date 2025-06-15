@@ -22,6 +22,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import PlaceholderAvatar from "../PlaceholderAvatar";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database['public']['Enums']['app_role'];
 
 interface Profile {
   id: string;
@@ -35,11 +38,11 @@ interface Profile {
 interface UserRole {
   id: string;
   user_id: string;
-  role: string;
+  role: AppRole;
 }
 
 interface UserWithRole extends Profile {
-  role: string | null;
+  role: AppRole | null;
 }
 
 const AdminUserRoles = () => {
@@ -48,7 +51,7 @@ const AdminUserRoles = () => {
   const [updating, setUpdating] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const roles = ['admin', 'moderator', 'user'];
+  const roles: AppRole[] = ['admin', 'moderator', 'user'];
 
   useEffect(() => {
     fetchUsersWithRoles();
@@ -116,7 +119,7 @@ const AdminUserRoles = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: string) => {
+  const updateUserRole = async (userId: string, newRole: AppRole) => {
     try {
       setUpdating(userId);
 
@@ -177,7 +180,7 @@ const AdminUserRoles = () => {
     }
   };
 
-  const getRoleBadgeVariant = (role: string | null) => {
+  const getRoleBadgeVariant = (role: AppRole | null) => {
     switch (role) {
       case 'admin':
         return 'destructive';
@@ -283,7 +286,7 @@ const AdminUserRoles = () => {
                         <div className="flex items-center space-x-2">
                           <Select
                             value={user.role || ''}
-                            onValueChange={(value) => updateUserRole(user.id, value)}
+                            onValueChange={(value: AppRole) => updateUserRole(user.id, value)}
                             disabled={updating === user.id}
                           >
                             <SelectTrigger className="w-32">
