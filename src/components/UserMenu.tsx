@@ -85,7 +85,7 @@ const UserMenu = () => {
             className="fixed inset-0 z-40" 
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-50">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border z-50 max-w-[calc(100vw-2rem)] md:max-w-none">
             <div className="py-1">
               <div className="px-4 py-2 border-b">
                 <p className="text-sm text-gray-500">Welcome back!</p>
@@ -94,37 +94,37 @@ const UserMenu = () => {
               
               <Link
                 to="/account"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                <Settings className="mr-2 h-4 w-4" />
-                Account Settings
+                <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span>Account Settings</span>
               </Link>
               
               <Link
                 to="/orders"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                <Package className="mr-2 h-4 w-4" />
-                My Orders
+                <Package className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span>My Orders</span>
               </Link>
               
               <Link
                 to="/wishlist"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                <Heart className="mr-2 h-4 w-4" />
-                Wishlist
+                <Heart className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span>Wishlist</span>
               </Link>
               
               <button
                 onClick={handleSignOut}
-                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
+                <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span>Sign Out</span>
               </button>
             </div>
           </div>

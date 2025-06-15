@@ -58,7 +58,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="w-full border-b bg-white sticky top-0 z-50">
+      <header className="w-full border-b bg-white sticky top-0 z-50 shadow-sm">
         {/* Desktop Header */}
         <nav className="hidden md:flex items-center justify-between px-4 lg:px-8 py-4">
           {/* Logo Section */}
@@ -124,13 +124,13 @@ export default function Header() {
         </nav>
 
         {/* Mobile Header */}
-        <nav className="md:hidden flex items-center justify-between px-4 py-3">
+        <nav className="md:hidden flex items-center justify-between px-4 py-3 relative bg-white">
           {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2"
+            className="p-2 z-50"
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </Button>
@@ -142,7 +142,7 @@ export default function Header() {
           </Link>
 
           {/* Cart and User */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 relative z-50">
             <Button
               variant="ghost"
               className="rounded-full p-2 relative"
@@ -163,43 +163,51 @@ export default function Header() {
 
         {/* Mobile Menu Overlay */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-white border-b shadow-lg z-40">
-            <div className="px-4 py-4 space-y-4">
-              {/* Mobile Search */}
-              <form onSubmit={handleSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-md bg-white pl-10 pr-3 py-2 border border-gray-200 focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
-                  placeholder="Search products..."
-                />
-                <button type="submit" className="absolute left-2 top-2.5 text-gray-400 hover:text-gray-600">
-                  <Search size={18} />
-                </button>
-              </form>
+          <>
+            {/* Background overlay */}
+            <div 
+              className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+              onClick={closeMobileMenu}
+            />
+            {/* Menu content */}
+            <div className="md:hidden fixed top-0 left-0 right-0 bg-white border-b shadow-lg z-40 pt-16">
+              <div className="px-4 py-4 space-y-4 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                {/* Mobile Search */}
+                <form onSubmit={handleSearch} className="relative">
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full rounded-md bg-white pl-10 pr-3 py-2 border border-gray-200 focus:ring-2 focus:ring-red-600 focus:outline-none text-sm"
+                    placeholder="Search products..."
+                  />
+                  <button type="submit" className="absolute left-2 top-2.5 text-gray-400 hover:text-gray-600">
+                    <Search size={18} />
+                  </button>
+                </form>
 
-              {/* Mobile Navigation Links */}
-              <nav className="space-y-2">
-                {navLinks.map((link) => {
-                  const isActive = location.pathname === link.href;
-                  return (
-                    <Link
-                      key={link.label}
-                      to={link.href}
-                      onClick={closeMobileMenu}
-                      className={cn(
-                        "block rounded px-4 py-3 font-medium transition-colors text-base",
-                        isActive ? "bg-red-700 text-white" : "text-gray-700 hover:bg-gray-100"
-                      )}
-                    >
-                      {link.label}
-                    </Link>
-                  );
-                })}
-              </nav>
+                {/* Mobile Navigation Links */}
+                <nav className="space-y-2">
+                  {navLinks.map((link) => {
+                    const isActive = location.pathname === link.href;
+                    return (
+                      <Link
+                        key={link.label}
+                        to={link.href}
+                        onClick={closeMobileMenu}
+                        className={cn(
+                          "block rounded px-4 py-3 font-medium transition-colors text-base",
+                          isActive ? "bg-red-700 text-white" : "text-gray-700 hover:bg-gray-100"
+                        )}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         <div className="h-2 w-full bg-red-700" />
