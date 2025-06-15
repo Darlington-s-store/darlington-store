@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { LogOut, User, Heart, Package, Settings, Shield } from "lucide-react";
@@ -143,16 +142,6 @@ const UserMenu = () => {
                 >
                   <Heart className="mr-3 h-4 w-4 flex-shrink-0" />
                   <span>Wishlist</span>
-                </Link>
-
-                <div className="border-t border-gray-100 my-1"></div>
-                <Link
-                  to="/admin"
-                  className="flex items-center px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
-                  onClick={() => setIsOpen(false)}
-                >
-                  <Shield className="mr-3 h-4 w-4 flex-shrink-0" />
-                  <span>Admin Panel</span>
                 </Link>
                 
                 <div className="border-t border-gray-100 my-1"></div>

@@ -131,7 +131,10 @@ export default function Header() {
               <UserMenu />
             ) : (
               <Button asChild variant="default">
-                <Link to="/auth">Sign In</Link>
+                <Link to="/auth">
+                  <User />
+                  Sign In
+                </Link>
               </Button>
             )}
 
@@ -191,9 +194,10 @@ export default function Header() {
               {!user && (
                 <Link
                   to="/auth"
-                  className="text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
+                  className="flex items-center text-muted-foreground hover:text-foreground px-3 py-2 rounded-md text-base font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  <User className="mr-3 h-5 w-5" />
                   Sign In
                 </Link>
               )}
