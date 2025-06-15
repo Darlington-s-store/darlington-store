@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star, ThumbsUp } from "lucide-react";
@@ -17,22 +18,37 @@ const ReviewsList = ({ productId, refreshTrigger }: ReviewsListProps) => {
   const [votingReviewId, setVotingReviewId] = useState<string | null>(null);
 
   const { data: reviews = [], isLoading } = useQuery({
-    queryKey: ['reviews', productId, refreshTrigger],
+    queryKey: ['reviews-with-profiles', productId, refreshTrigger],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // 1. Fetch reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles!inner (
-            first_name,
-            last_name
-          )
-        `)
+        .select(`*`)
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (reviewsError) throw reviewsError;
+      if (!reviewsData || reviewsData.length === 0) return [];
+
+      // 2. Get unique user IDs
+      const userIds = [...new Set(reviewsData.map(r => r.user_id))];
+
+      // 3. Fetch profiles for those user IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // 4. Create a map for easy lookup
+      const profilesMap = new Map(profilesData?.map(p => [p.id, p]));
+
+      // 5. Combine reviews with profiles
+      return reviewsData.map(review => ({
+        ...review,
+        profiles: profilesMap.get(review.user_id) || null
+      }));
     }
   });
 

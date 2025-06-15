@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,31 +12,40 @@ const WishlistGrid = () => {
   const { toast } = useToast();
 
   const { data: wishlistItems = [], isLoading, refetch } = useQuery({
-    queryKey: ['wishlist', user?.id],
+    queryKey: ['wishlist-with-products', user?.id],
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      const { data: wishlistData, error: wishlistError } = await supabase
         .from('wishlist')
-        .select(`
-          *,
-          products (
-            id,
-            name,
-            price,
-            image_url,
-            brand,
-            category_id,
-            categories (
-              name
-            )
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (wishlistError) throw wishlistError;
+      if (!wishlistData || wishlistData.length === 0) return [];
+      
+      const productIds = [...new Set(wishlistData.map((item) => item.product_id))];
+      
+      if (productIds.length === 0) return [];
+        
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select(`id, name, price, image_url, brand`)
+        .in('id', productIds);
+        
+      if (productsError) {
+        console.error('Error fetching products for wishlist:', productsError);
+        // Return wishlist items without product details if product fetch fails
+        return wishlistData.map(item => ({ ...item, products: null }));
+      }
+      
+      const productsMap = new Map(productsData?.map((p) => [p.id, p]));
+      
+      return wishlistData.map((item) => ({
+        ...item,
+        products: productsMap.get(item.product_id) || null,
+      }));
     },
     enabled: !!user
   });
@@ -106,7 +116,7 @@ const WishlistGrid = () => {
         {wishlistItems.map((item) => (
           item.products && (
             <div key={item.id} className="relative">
-              <ProductCard product={item.products} />
+              <ProductCard product={item.products as any} />
               <Button
                 onClick={() => removeFromWishlist(item.product_id)}
                 variant="ghost"
