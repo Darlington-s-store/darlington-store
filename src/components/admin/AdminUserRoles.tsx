@@ -43,6 +43,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserWithRole {
   id: string;
@@ -131,7 +132,7 @@ const AdminUserRoles = () => {
         .delete()
         .eq('user_id', userId);
 
-      // Add new role - cast newRole to AppRole type
+      // Add new role
       const { error } = await supabase
         .from('user_roles')
         .insert({
@@ -169,40 +170,25 @@ const AdminUserRoles = () => {
 
   const handleAddUser = async () => {
     try {
-      // Create user in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        user_metadata: {
-          first_name: formData.first_name,
-          last_name: formData.last_name
-        }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
+      }
+
+      const response = await fetch(`https://lomimruaagdsqbyrefwe.supabase.co/functions/v1/admin-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
       });
 
-      if (authError) throw authError;
+      const result = await response.json();
 
-      // Add user profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email: formData.email,
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          phone: formData.phone
-        });
-
-      if (profileError) throw profileError;
-
-      // Add user role
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: formData.role
-        });
-
-      if (roleError) throw roleError;
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create user');
+      }
 
       // Log the activity
       await supabase
@@ -210,7 +196,7 @@ const AdminUserRoles = () => {
         .insert({
           action: 'create_user',
           resource_type: 'user',
-          resource_id: authData.user.id,
+          resource_id: result.user.id,
           details: { 
             email: formData.email,
             role: formData.role,
@@ -237,7 +223,7 @@ const AdminUserRoles = () => {
       console.error('Error creating user:', error);
       toast({
         title: "Error",
-        description: "Failed to create user",
+        description: error instanceof Error ? error.message : "Failed to create user",
         variant: "destructive"
       });
     }
@@ -313,10 +299,23 @@ const AdminUserRoles = () => {
 
   const handleDeleteUser = async (userId: string, userEmail: string) => {
     try {
-      // Delete user from auth (this will cascade to profiles and user_roles)
-      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No active session');
+      }
 
-      if (authError) throw authError;
+      const response = await fetch(`https://lomimruaagdsqbyrefwe.supabase.co/functions/v1/admin-users?userId=${userId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to delete user');
+      }
 
       // Log the activity
       await supabase
@@ -338,7 +337,7 @@ const AdminUserRoles = () => {
       console.error('Error deleting user:', error);
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: error instanceof Error ? error.message : "Failed to delete user",
         variant: "destructive"
       });
     }
@@ -372,6 +371,19 @@ const AdminUserRoles = () => {
       case 'moderator': return <UserCheck className="w-4 h-4" />;
       default: return <User className="w-4 h-4" />;
     }
+  };
+
+  const getInitials = (firstName: string | null, lastName: string | null, email: string) => {
+    if (firstName && lastName) {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    }
+    if (firstName) {
+      return firstName.charAt(0).toUpperCase();
+    }
+    if (lastName) {
+      return lastName.charAt(0).toUpperCase();
+    }
+    return email.charAt(0).toUpperCase();
   };
 
   return (
@@ -498,13 +510,22 @@ const AdminUserRoles = () => {
               {users.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>
-                    <div className="font-medium">
-                      {user.first_name || user.last_name 
-                        ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
-                        : 'N/A'
-                      }
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
+                          {getInitials(user.first_name, user.last_name, user.email)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">
+                          {user.first_name || user.last_name 
+                            ? `${user.first_name || ''} ${user.last_name || ''}`.trim()
+                            : 'N/A'
+                          }
+                        </div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
                     </div>
-                    <div className="text-sm text-gray-500">{user.email}</div>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm text-gray-600">
