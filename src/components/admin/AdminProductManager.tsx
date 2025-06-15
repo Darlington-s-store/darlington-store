@@ -134,6 +134,8 @@ const AdminProductManager = () => {
   const handleAddProduct = async (formData: ProductFormData) => {
     setIsSubmitting(true);
     try {
+      console.log('Adding product with images:', formData.images);
+      
       const productData = {
         name: formData.name,
         description: formData.description || null,
@@ -143,12 +145,12 @@ const AdminProductManager = () => {
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
         image_url: formData.images[0] || null,
-        images: formData.images,
+        images: formData.images.length > 0 ? formData.images : [],
         sku: formData.sku || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
         status: formData.status,
-        is_active: formData.status === 'active' // Set is_active based on status
+        is_active: formData.status === 'active'
       };
 
       const { error } = await supabase
@@ -159,7 +161,7 @@ const AdminProductManager = () => {
 
       toast({
         title: "Success",
-        description: "Product added successfully and is now visible on the website"
+        description: "Product added successfully with images"
       });
 
       setIsAddDialogOpen(false);
@@ -181,6 +183,8 @@ const AdminProductManager = () => {
 
     setIsSubmitting(true);
     try {
+      console.log('Updating product with images:', formData.images);
+      
       const productData = {
         name: formData.name,
         description: formData.description || null,
@@ -190,12 +194,12 @@ const AdminProductManager = () => {
         category_id: formData.category_id ? parseInt(formData.category_id) : null,
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : 0,
         image_url: formData.images[0] || null,
-        images: formData.images,
+        images: formData.images.length > 0 ? formData.images : [],
         sku: formData.sku || null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
         featured: formData.featured,
         status: formData.status,
-        is_active: formData.status === 'active', // Set is_active based on status
+        is_active: formData.status === 'active',
         updated_at: new Date().toISOString()
       };
 
@@ -208,7 +212,7 @@ const AdminProductManager = () => {
 
       toast({
         title: "Success",
-        description: "Product updated successfully"
+        description: "Product and images updated successfully"
       });
 
       setIsEditDialogOpen(false);
@@ -460,7 +464,7 @@ const AdminProductManager = () => {
           <DialogHeader>
             <DialogTitle>Edit Product</DialogTitle>
             <DialogDescription>
-              Update product details and settings.
+              Update product details and manage images.
             </DialogDescription>
           </DialogHeader>
           {editingProduct && (
