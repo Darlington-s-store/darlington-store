@@ -17,13 +17,15 @@ type Profile = {
   email: string | null;
 };
 
+type AppRole = 'admin' | 'moderator' | 'user';
+
 type UserRole = {
   user_id: string;
-  role: 'admin';
+  role: AppRole;
 };
 
 type UserWithRole = Profile & {
-  role: 'admin' | null;
+  role: Exclude<AppRole, 'user'> | null;
 };
 
 const AdminUserRolesComponent = () => {
@@ -46,7 +48,7 @@ const AdminUserRolesComponent = () => {
       
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('*');
+        .select('user_id, role');
 
       if (rolesError) {
         if (rolesError.message.includes("permission denied")) {
@@ -63,7 +65,7 @@ const AdminUserRolesComponent = () => {
         const userRole = (userRoles || []).find(role => role.user_id === profile.id);
         return {
           ...profile,
-          role: userRole?.role || null
+          role: (userRole?.role as Exclude<AppRole, 'user'>) || null
         };
       }) || [];
       
@@ -80,7 +82,7 @@ const AdminUserRolesComponent = () => {
     fetchUsers();
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: 'admin' | 'user') => {
+  const handleRoleChange = async (userId: string, newRole: AppRole) => {
     if (currentUser?.id === userId) {
         toast({ title: "Operation Forbidden", description: "You cannot change your own role.", variant: "destructive" });
         return;
@@ -97,10 +99,10 @@ const AdminUserRolesComponent = () => {
             throw deleteError;
         }
 
-        if (newRole === 'admin') {
+        if (newRole !== 'user') {
             const { error: insertError } = await supabase
                 .from('user_roles')
-                .insert({ user_id: userId, role: 'admin' });
+                .insert({ user_id: userId, role: newRole });
             
             if (insertError) {
                 throw insertError;
@@ -109,7 +111,7 @@ const AdminUserRolesComponent = () => {
         
         setUsers(currentUsers =>
             currentUsers.map(u => 
-                u.id === userId ? { ...u, role: newRole === 'admin' ? 'admin' : null } : u
+                u.id === userId ? { ...u, role: newRole === 'user' ? null : newRole } : u
             )
         );
 
@@ -204,8 +206,8 @@ const AdminUserRolesComponent = () => {
                                     </div>
                                 ) : (
                                     <Select
-                                        value={user.role === 'admin' ? 'admin' : 'user'}
-                                        onValueChange={(value) => handleRoleChange(user.id, value as 'admin' | 'user')}
+                                        value={user.role || 'user'}
+                                        onValueChange={(value) => handleRoleChange(user.id, value as AppRole)}
                                         disabled={currentUser?.id === user.id}
                                     >
                                         <SelectTrigger className="w-[120px] ml-auto">
@@ -214,6 +216,7 @@ const AdminUserRolesComponent = () => {
                                         <SelectContent>
                                             <SelectItem value="user">User</SelectItem>
                                             <SelectItem value="admin">Admin</SelectItem>
+                                            <SelectItem value="moderator">Moderator</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 )}
