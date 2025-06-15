@@ -6,39 +6,28 @@ const AdminDashboard = () => {
   const stats = [
     {
       title: "Total Revenue",
-      value: "₵45,231.89",
-      change: "+20.1% from last month",
+      value: "₵0.00",
+      change: "No data yet",
       icon: DollarSign,
-      trend: "up"
     },
     {
       title: "Orders",
-      value: "234",
-      change: "+12% from last month",
+      value: "0",
+      change: "No orders yet",
       icon: ShoppingCart,
-      trend: "up"
     },
     {
       title: "Products",
-      value: "1,429",
-      change: "+8 new products",
+      value: "0",
+      change: "No products yet",
       icon: Package,
-      trend: "up"
     },
     {
       title: "Active Users",
-      value: "573",
-      change: "+201 since last hour",
+      value: "0",
+      change: "No users yet",
       icon: Users,
-      trend: "up"
     }
-  ];
-
-  const recentOrders = [
-    { id: "ORD-001", customer: "John Doe", product: "iPhone 15 Pro", amount: "₵8,999", status: "Completed" },
-    { id: "ORD-002", customer: "Jane Smith", product: "MacBook Air", amount: "₵12,499", status: "Processing" },
-    { id: "ORD-003", customer: "Mike Johnson", product: "AirPods Pro", amount: "₵2,299", status: "Shipped" },
-    { id: "ORD-004", customer: "Sarah Wilson", product: "iPad Air", amount: "₵5,799", status: "Pending" },
   ];
 
   return (
@@ -46,7 +35,7 @@ const AdminDashboard = () => {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your store today.</p>
+        <p className="text-gray-600 mt-2">Welcome to your admin dashboard overview.</p>
       </div>
 
       {/* Stats Cards */}
@@ -63,8 +52,7 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <p className="text-xs text-green-600 flex items-center mt-1">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                <p className="text-xs text-gray-500 mt-1">
                   {stat.change}
                 </p>
               </CardContent>
@@ -73,70 +61,28 @@ const AdminDashboard = () => {
         })}
       </div>
 
-      {/* Content Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent Orders */}
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>
-              You have {recentOrders.length} orders this week.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-gray-900">{order.id}</p>
-                    <p className="text-sm text-gray-600">{order.customer}</p>
-                    <p className="text-xs text-gray-500">{order.product}</p>
-                  </div>
-                  <div className="text-right space-y-1">
-                    <p className="text-sm font-medium text-gray-900">{order.amount}</p>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'Processing' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'Shipped' ? 'bg-purple-100 text-purple-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {order.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
+      {/* Welcome Message */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Getting Started</CardTitle>
+          <CardDescription>
+            Your admin dashboard is ready. Use the sidebar to navigate to different sections.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="p-4 border border-gray-200 rounded-lg">
+              <h3 className="font-medium text-gray-900 mb-2">Quick Actions</h3>
+              <ul className="text-sm text-gray-600 space-y-1">
+                <li>• Manage products in the Products section</li>
+                <li>• View and process orders in Orders</li>
+                <li>• Monitor customer activity in Customers</li>
+                <li>• Check analytics and reports in Analytics</li>
+              </ul>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>
-              Common tasks and shortcuts
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <button className="w-full flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Package className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-900">Add New Product</span>
-            </button>
-            <button className="w-full flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <ShoppingCart className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-900">View All Orders</span>
-            </button>
-            <button className="w-full flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <Users className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-900">Manage Customers</span>
-            </button>
-            <button className="w-full flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <BarChart3 className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-900">View Analytics</span>
-            </button>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
