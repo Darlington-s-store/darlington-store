@@ -96,7 +96,7 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 fixed top-0 right-0 left-0 lg:left-64 z-30 h-16 flex items-center">
+    <header className="bg-background border-b border-border px-6 fixed top-0 right-0 left-0 lg:left-64 z-30 h-16 flex items-center">
       <div className="flex items-center justify-between w-full">
         {/* Left side - Menu button and title */}
         <div className="flex items-center space-x-4">
@@ -108,7 +108,7 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold text-gray-900">Admin Dashboard</h1>
+          <h1 className="text-xl font-semibold text-foreground">Admin Dashboard</h1>
         </div>
 
         {/* Right side - Notifications and user menu */}
@@ -130,7 +130,7 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-medium text-gray-700 hidden md:block">
+              <span className="text-sm font-medium text-foreground/80 hidden md:block">
                 {getDisplayName()}
               </span>
             </Button>
@@ -142,11 +142,11 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
                   className="fixed inset-0 z-10" 
                   onClick={() => setIsDropdownOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-popover text-popover-foreground rounded-md shadow-lg border border-border z-20">
                   <div className="py-1">
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <p className="text-sm font-medium text-gray-900">{getDisplayName()}</p>
-                      <p className="text-xs text-gray-500">{user?.email}</p>
+                    <div className="px-4 py-2 border-b border-border">
+                      <p className="text-sm font-medium text-popover-foreground">{getDisplayName()}</p>
+                      <p className="text-xs text-popover-foreground/70">{user?.email}</p>
                     </div>
                     
                     <button
@@ -154,7 +154,7 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
                         setIsDropdownOpen(false);
                         navigate('/admin/settings');
                       }}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center w-full px-4 py-2 text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       Settings

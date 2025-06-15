@@ -56,21 +56,21 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
       
       {/* Sidebar */}
       <div className={cn(
-        "fixed top-0 left-0 h-full bg-white border-r border-gray-200 z-50 transition-transform duration-300 ease-in-out",
+        "fixed top-0 left-0 h-full bg-sidebar border-r border-sidebar-border text-sidebar-foreground z-50 transition-transform duration-300 ease-in-out",
         "w-64",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         {/* Sidebar Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">D</span>
             </div>
-            <span className="font-semibold text-gray-900">Admin Panel</span>
+            <span className="font-semibold text-sidebar-foreground">Admin Panel</span>
           </div>
           <button
             onClick={onToggle}
-            className="lg:hidden p-1 rounded-md hover:bg-gray-100"
+            className="lg:hidden p-1 rounded-md hover:bg-sidebar-accent"
           >
             <X className="w-5 h-5" />
           </button>
@@ -89,7 +89,7 @@ const AdminSidebar = ({ isOpen, onToggle }: AdminSidebarProps) => {
                   "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors",
                   isActive
                     ? "bg-red-50 text-red-700 border border-red-200"
-                    : "text-gray-700 hover:bg-gray-50"
+                    : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
               >
                 <Icon className="w-5 h-5" />

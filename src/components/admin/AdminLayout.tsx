@@ -18,7 +18,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   console.log('AdminLayout - Rendering admin interface (no auth required)');
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       <AdminSidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
       
       {/* Main Content */}
