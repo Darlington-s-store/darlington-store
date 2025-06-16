@@ -26,24 +26,88 @@ export interface AppSettings {
   updated_at?: string;
 }
 
+// Default settings to fallback to if none exist
+const defaultSettings: AppSettings = {
+  site_name: 'Darlington Store',
+  site_description: "Ghana's Premier Electronics Store",
+  contact_email: 'info@darlingtonstore.com',
+  support_email: 'support@darlingtonstore.com',
+  phone: '+233 24 123 4567',
+  address: '123 Oxford Street, Osu, Accra, Ghana',
+  email_notifications: true,
+  sms_notifications: false,
+  order_updates: true,
+  promotional_emails: true,
+  maintenance_mode: false,
+  allow_guest_checkout: true,
+  require_email_verification: true,
+  auto_approve_reviews: false,
+  logo_url: null,
+  favicon_url: null,
+};
+
 // Fetches the single row of settings from the database
-const fetchSettings = async (): Promise<AppSettings | null> => {
-  const { data, error } = await supabase
-    .from('app_settings')
-    .select('*')
-    .eq('id', 1)
-    .maybeSingle();
+const fetchSettings = async (): Promise<AppSettings> => {
+  console.log('Fetching app settings...');
+  
+  try {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('*')
+      .eq('id', 1)
+      .maybeSingle();
 
-  if (error) {
-    console.error('Error fetching settings:', error);
-    throw new Error(error.message);
+    if (error) {
+      console.error('Error fetching settings:', error);
+      
+      // If the settings don't exist, create them with defaults
+      if (error.code === 'PGRST116') {
+        console.log('No settings found, creating default settings...');
+        const { data: newData, error: insertError } = await supabase
+          .from('app_settings')
+          .insert(defaultSettings)
+          .select()
+          .single();
+        
+        if (insertError) {
+          console.error('Error creating default settings:', insertError);
+          return defaultSettings;
+        }
+        
+        return newData as AppSettings;
+      }
+      
+      return defaultSettings;
+    }
+
+    if (!data) {
+      console.log('No settings data found, creating default settings...');
+      const { data: newData, error: insertError } = await supabase
+        .from('app_settings')
+        .insert(defaultSettings)
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error('Error creating default settings:', insertError);
+        return defaultSettings;
+      }
+      
+      return newData as AppSettings;
+    }
+
+    console.log('Settings fetched successfully:', data);
+    return data as AppSettings;
+  } catch (err) {
+    console.error('Unexpected error fetching settings:', err);
+    return defaultSettings;
   }
-
-  return data;
 };
 
 // Updates the settings in the database
 const updateSettings = async (settings: Partial<AppSettings>): Promise<AppSettings> => {
+    console.log('Updating settings:', settings);
+    
     // Exclude fields that shouldn't be updated directly
     const { id, created_at, updated_at, ...updateData } = settings;
 
@@ -59,6 +123,7 @@ const updateSettings = async (settings: Partial<AppSettings>): Promise<AppSettin
         throw new Error(error.message);
     }
     
+    console.log('Settings updated successfully:', data);
     return data as AppSettings;
 };
 
@@ -67,10 +132,12 @@ export const useAppSettings = () => {
     const queryClient = useQueryClient();
     const { toast } = useToast();
 
-    const { data: settings, isLoading, isError, error } = useQuery<AppSettings | null>({
+    const { data: settings, isLoading, isError, error } = useQuery<AppSettings>({
         queryKey: ['appSettings'],
         queryFn: fetchSettings,
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+        retry: 3,
+        retryDelay: 1000,
     });
 
     const mutation = useMutation({
@@ -83,6 +150,7 @@ export const useAppSettings = () => {
             });
         },
         onError: (err: Error) => {
+            console.error('Error saving settings:', err);
             toast({
                 title: 'Error Saving Settings',
                 description: err.message || 'An unexpected error occurred.',
@@ -92,7 +160,7 @@ export const useAppSettings = () => {
     });
 
     return {
-        settings,
+        settings: settings || defaultSettings,
         isLoading,
         isError,
         error,

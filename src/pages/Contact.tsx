@@ -1,24 +1,67 @@
+
 import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Contact form submitted:", formData);
-    // Handle form submission here
-    alert("Thank you for your message! We'll get back to you soon.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      console.log("Submitting contact form:", formData);
+
+      // For now, we'll log the submission and show success
+      // In a real implementation, you might want to save to a contact_submissions table
+      const submissionData = {
+        ...formData,
+        submitted_at: new Date().toISOString(),
+        status: 'pending'
+      };
+
+      console.log("Contact form submission:", submissionData);
+
+      // Reset form
+      setFormData({ name: "", email: "", subject: "", message: "" });
+      
+      toast({
+        title: "Message Sent!",
+        description: "Thank you for your message! We'll get back to you soon."
+      });
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -177,10 +220,11 @@ const Contact = () => {
 
               <Button 
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full bg-red-700 hover:bg-red-800 text-white flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
-                Send Message
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>

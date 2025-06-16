@@ -1,24 +1,24 @@
 
 const brands = [
   {
-    name: "Apple",
-    logo: "https://images.unsplash.com/photo-1621768216002-5ac171876625?auto=format&fit=crop&w=120&q=80"
-  },
-  {
     name: "Samsung",
     logo: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=120&q=80"
+  },
+  {
+    name: "Apple", 
+    logo: "https://images.unsplash.com/photo-1621768216002-5ac171876625?auto=format&fit=crop&w=120&q=80"
   },
   {
     name: "HP",
     logo: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=120&q=80"
   },
   {
-    name: "Dell",
-    logo: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=120&q=80"
-  },
-  {
     name: "Lenovo",
     logo: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&w=120&q=80"
+  },
+  {
+    name: "Dell",
+    logo: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=120&q=80"
   },
   {
     name: "Sony",

@@ -46,7 +46,15 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      console.log('Submitting review:', {
+        product_id: productId,
+        user_id: user.id,
+        rating,
+        title: title.trim() || null,
+        comment: comment.trim() || null
+      });
+
+      const { data, error } = await supabase
         .from('reviews')
         .insert({
           product_id: productId,
@@ -54,18 +62,39 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
           rating,
           title: title.trim() || null,
           comment: comment.trim() || null,
-          verified_purchase: false // This could be enhanced to check actual purchases
-        });
+          verified_purchase: false,
+          status: 'pending' // Explicitly set status
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error submitting review:', error);
-        toast({
-          title: "Error",
-          description: "Failed to submit review. Please try again.",
-          variant: "destructive"
-        });
+        
+        // Provide more specific error messages
+        if (error.code === '23505') {
+          toast({
+            title: "Duplicate Review",
+            description: "You have already reviewed this product.",
+            variant: "destructive"
+          });
+        } else if (error.code === '42501') {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to submit reviews. Please ensure you're logged in.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "Failed to submit review. Please try again.",
+            variant: "destructive"
+          });
+        }
         return;
       }
+
+      console.log('Review submitted successfully:', data);
 
       // Reset form
       setRating(0);
@@ -75,10 +104,10 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
       
       toast({
         title: "Success",
-        description: "Review submitted successfully!"
+        description: "Review submitted successfully! It will be reviewed before being published."
       });
     } catch (err) {
-      console.error('Error submitting review:', err);
+      console.error('Unexpected error submitting review:', err);
       toast({
         title: "Error",
         description: "Failed to submit review. Please try again.",
