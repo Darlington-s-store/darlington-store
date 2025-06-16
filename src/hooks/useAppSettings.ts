@@ -93,55 +93,58 @@ const updateSettings = async (settings: Partial<AppSettings>): Promise<AppSettin
     // Exclude fields that shouldn't be updated directly
     const { id, created_at, updated_at, ...updateData } = settings;
 
-    // First, let's check if the record exists
-    const { data: existingData, error: checkError } = await supabase
-        .from('app_settings')
-        .select('id')
-        .eq('id', 1)
-        .maybeSingle();
-
-    if (checkError) {
-        console.error('Error checking existing settings:', checkError);
-        throw new Error(checkError.message);
-    }
-
-    if (!existingData) {
-        console.log('No existing settings found, creating new record...');
-        const { data: newData, error: insertError } = await supabase
+    try {
+        // First, try to update the existing record
+        console.log('Attempting to update existing settings...');
+        const { error: updateError } = await supabase
             .from('app_settings')
-            .insert({ ...updateData, id: 1 })
-            .select()
+            .update(updateData)
+            .eq('id', 1);
+
+        if (updateError) {
+            console.error('Update error:', updateError);
+            
+            // If update fails due to no matching row, try to insert
+            if (updateError.code === 'PGRST116') {
+                console.log('No existing record found, inserting new one...');
+                const { data: insertData, error: insertError } = await supabase
+                    .from('app_settings')
+                    .insert({ ...updateData, id: 1 })
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    console.error('Insert error:', insertError);
+                    throw new Error(insertError.message);
+                }
+                
+                console.log('Settings created successfully:', insertData);
+                return insertData as AppSettings;
+            }
+            
+            throw new Error(updateError.message);
+        }
+
+        // Now fetch the updated record
+        console.log('Fetching updated settings...');
+        const { data: updatedData, error: fetchError } = await supabase
+            .from('app_settings')
+            .select('*')
+            .eq('id', 1)
             .single();
 
-        if (insertError) {
-            console.error('Error creating settings:', insertError);
-            throw new Error(insertError.message);
+        if (fetchError) {
+            console.error('Error fetching updated settings:', fetchError);
+            throw new Error(fetchError.message);
         }
-        
-        console.log('Settings created successfully:', newData);
-        return newData as AppSettings;
-    }
 
-    // Update the existing record
-    const { data, error } = await supabase
-        .from('app_settings')
-        .update(updateData)
-        .eq('id', 1)
-        .select()
-        .maybeSingle();
+        console.log('Settings updated and fetched successfully:', updatedData);
+        return updatedData as AppSettings;
 
-    if (error) {
-        console.error('Error updating settings:', error);
-        throw new Error(error.message);
+    } catch (error: any) {
+        console.error('Error in updateSettings:', error);
+        throw new Error(error.message || 'Failed to update settings');
     }
-
-    if (!data) {
-        console.error('No data returned from update operation');
-        throw new Error('Update operation did not return any data');
-    }
-    
-    console.log('Settings updated successfully:', data);
-    return data as AppSettings;
 };
 
 // Custom hook to manage app settings state
