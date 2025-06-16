@@ -93,16 +93,51 @@ const updateSettings = async (settings: Partial<AppSettings>): Promise<AppSettin
     // Exclude fields that shouldn't be updated directly
     const { id, created_at, updated_at, ...updateData } = settings;
 
+    // First, let's check if the record exists
+    const { data: existingData, error: checkError } = await supabase
+        .from('app_settings')
+        .select('id')
+        .eq('id', 1)
+        .maybeSingle();
+
+    if (checkError) {
+        console.error('Error checking existing settings:', checkError);
+        throw new Error(checkError.message);
+    }
+
+    if (!existingData) {
+        console.log('No existing settings found, creating new record...');
+        const { data: newData, error: insertError } = await supabase
+            .from('app_settings')
+            .insert({ ...updateData, id: 1 })
+            .select()
+            .single();
+
+        if (insertError) {
+            console.error('Error creating settings:', insertError);
+            throw new Error(insertError.message);
+        }
+        
+        console.log('Settings created successfully:', newData);
+        return newData as AppSettings;
+    }
+
+    // Update the existing record
     const { data, error } = await supabase
         .from('app_settings')
         .update(updateData)
         .eq('id', 1)
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
         console.error('Error updating settings:', error);
         throw new Error(error.message);
+    }
+
+    if (!data) {
+        console.error('No data returned from update operation');
+        throw new Error('Update operation did not return any data');
     }
     
     console.log('Settings updated successfully:', data);
