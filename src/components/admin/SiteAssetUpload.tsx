@@ -34,11 +34,17 @@ export default function SiteAssetUpload({ label, currentUrl, onUploadSuccess, bu
         const fileName = `${label.toLowerCase().replace(' ', '-')}-${Date.now()}.${fileExt}`;
         const filePath = `${folder}/${fileName}`;
 
+        console.log(`Uploading file to ${bucket}/${filePath}`);
+
         const { error: uploadError } = await supabase.storage
             .from(bucket)
-            .upload(filePath, file);
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: true
+            });
 
         if (uploadError) {
+            console.error('Upload error:', uploadError);
             throw uploadError;
         }
 
@@ -46,6 +52,7 @@ export default function SiteAssetUpload({ label, currentUrl, onUploadSuccess, bu
             .from(bucket)
             .getPublicUrl(filePath);
         
+        console.log('File uploaded successfully, public URL:', publicUrl);
         onUploadSuccess(publicUrl);
 
         toast({
@@ -54,6 +61,7 @@ export default function SiteAssetUpload({ label, currentUrl, onUploadSuccess, bu
         });
 
     } catch (error: any) {
+        console.error('Error uploading file:', error);
         toast({
             title: "Upload Error",
             description: error.message || "An unexpected error occurred.",

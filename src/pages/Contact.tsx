@@ -7,9 +7,11 @@ import WhatsAppButton from "../components/WhatsAppButton";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 const Contact = () => {
   const { toast } = useToast();
+  const { settings } = useAppSettings();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -33,17 +35,31 @@ const Contact = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting contact form:", formData);
+      console.log("Submitting contact form to activity_logs:", formData);
 
-      // For now, we'll log the submission and show success
-      // In a real implementation, you might want to save to a contact_submissions table
-      const submissionData = {
-        ...formData,
-        submitted_at: new Date().toISOString(),
-        status: 'pending'
-      };
+      // Store the contact form submission in activity_logs table
+      const { data, error } = await supabase
+        .from('activity_logs')
+        .insert({
+          resource_type: 'contact_form',
+          action: 'submitted',
+          details: {
+            name: formData.name,
+            email: formData.email,
+            subject: formData.subject,
+            message: formData.message,
+            submitted_at: new Date().toISOString()
+          }
+        })
+        .select()
+        .single();
 
-      console.log("Contact form submission:", submissionData);
+      if (error) {
+        console.error("Error saving contact form:", error);
+        throw error;
+      }
+
+      console.log("Contact form saved successfully:", data);
 
       // Reset form
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -93,8 +109,7 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Our Location</h3>
                   <p className="text-gray-600">
-                    Kumasi Tanoso Market<br />
-                    Ashanti, Ghana
+                    {settings.address}
                   </p>
                 </div>
               </div>
@@ -104,9 +119,7 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Phone Numbers</h3>
                   <p className="text-gray-600">
-                    0552945333<br />
-                    0257501827<br />
-                    0200369947
+                    {settings.phone}
                   </p>
                 </div>
               </div>
@@ -116,8 +129,8 @@ const Contact = () => {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                   <p className="text-gray-600">
-                    asomanirawlingsjunior5333@gmail.com<br />
-                    asomanirawlingsjunior71@gmail.com
+                    {settings.contact_email}<br />
+                    {settings.support_email}
                   </p>
                 </div>
               </div>

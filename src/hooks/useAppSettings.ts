@@ -59,32 +59,14 @@ const fetchSettings = async (): Promise<AppSettings> => {
 
     if (error) {
       console.error('Error fetching settings:', error);
-      
-      // If the settings don't exist, create them with defaults
-      if (error.code === 'PGRST116') {
-        console.log('No settings found, creating default settings...');
-        const { data: newData, error: insertError } = await supabase
-          .from('app_settings')
-          .insert(defaultSettings)
-          .select()
-          .single();
-        
-        if (insertError) {
-          console.error('Error creating default settings:', insertError);
-          return defaultSettings;
-        }
-        
-        return newData as AppSettings;
-      }
-      
       return defaultSettings;
     }
 
     if (!data) {
-      console.log('No settings data found, creating default settings...');
+      console.log('No settings found, creating default settings...');
       const { data: newData, error: insertError } = await supabase
         .from('app_settings')
-        .insert(defaultSettings)
+        .insert({ ...defaultSettings, id: 1 })
         .select()
         .single();
       

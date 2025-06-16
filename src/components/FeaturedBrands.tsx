@@ -1,4 +1,6 @@
 
+import { useAppSettings } from "@/hooks/useAppSettings";
+
 const brands = [
   {
     name: "Samsung",
@@ -27,6 +29,8 @@ const brands = [
 ];
 
 const FeaturedBrands = () => {
+  const { settings } = useAppSettings();
+
   return (
     <section className="py-12 px-4 bg-white">
       <div className="max-w-6xl mx-auto">
@@ -46,6 +50,11 @@ const FeaturedBrands = () => {
                 src={brand.logo}
                 alt={brand.name}
                 className="h-12 w-20 object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
+                onError={(e) => {
+                  console.error(`Failed to load brand logo for ${brand.name}:`, e);
+                  e.currentTarget.style.display = 'none';
+                }}
+                loading="lazy"
               />
             </div>
           ))}

@@ -46,7 +46,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting review:', {
+      console.log('Submitting review to reviews table:', {
         product_id: productId,
         user_id: user.id,
         rating,
@@ -63,7 +63,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
           title: title.trim() || null,
           comment: comment.trim() || null,
           verified_purchase: false,
-          status: 'pending' // Explicitly set status
+          status: 'pending'
         })
         .select()
         .single();
@@ -94,7 +94,7 @@ const ReviewForm = ({ productId, onReviewSubmitted }: ReviewFormProps) => {
         return;
       }
 
-      console.log('Review submitted successfully:', data);
+      console.log('Review submitted successfully to database:', data);
 
       // Reset form
       setRating(0);
