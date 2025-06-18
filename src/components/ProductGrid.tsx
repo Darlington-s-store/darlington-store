@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "./ProductCard";
+import { ArrowRight } from "lucide-react";
 
 export default function ProductGrid() {
   const navigate = useNavigate();
@@ -16,9 +17,13 @@ export default function ProductGrid() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          categories!inner(name)
+        `)
         .eq('is_active', true)
-        .limit(4)
+        .eq('featured', true)
+        .limit(8)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -62,19 +67,22 @@ export default function ProductGrid() {
 
   if (isLoading) {
     return (
-      <section className="w-full py-10 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-6">Most Popular Products</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-gray-200 rounded-lg shadow-md border animate-pulse">
-                <div className="w-full h-44 bg-gray-300 rounded-t-lg" />
-                <div className="px-4 py-3">
-                  <div className="h-6 bg-gray-300 rounded mb-2" />
-                  <div className="h-4 bg-gray-300 rounded mb-2" />
-                  <div className="h-6 bg-gray-300 rounded mb-2" />
+      <section className="w-full py-16 px-4 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h3>
+            <p className="text-gray-600 text-lg">Our most popular and latest products</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="bg-gray-200 rounded-2xl shadow-md border animate-pulse">
+                <div className="w-full h-64 bg-gray-300 rounded-t-2xl" />
+                <div className="px-6 py-4">
+                  <div className="h-6 bg-gray-300 rounded mb-3" />
+                  <div className="h-4 bg-gray-300 rounded mb-3" />
+                  <div className="h-6 bg-gray-300 rounded mb-3" />
                   <div className="h-4 bg-gray-300 rounded mb-4" />
-                  <div className="h-10 bg-gray-300 rounded" />
+                  <div className="h-12 bg-gray-300 rounded" />
                 </div>
               </div>
             ))}
@@ -85,10 +93,17 @@ export default function ProductGrid() {
   }
 
   return (
-    <section className="w-full py-10 px-4 bg-white">
-      <div className="max-w-6xl mx-auto">
-        <h3 className="text-2xl font-semibold text-gray-800 mb-6">Most Popular Products</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+    <section className="w-full py-16 px-4 bg-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h3 className="text-3xl md:text-4xl font-bold mb-4">Featured Products</h3>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+            Discover our carefully selected featured products from top brands, 
+            offering the latest technology and exceptional value.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.map((product) => (
             <ProductCard
               key={product.id}
@@ -97,6 +112,17 @@ export default function ProductGrid() {
               onAddToWishlist={handleAddToWishlist}
             />
           ))}
+        </div>
+        
+        {/* View All Products CTA */}
+        <div className="text-center mt-12">
+          <button
+            onClick={() => navigate('/products')}
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-700 to-red-800 hover:from-red-800 hover:to-red-900 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+          >
+            View All Products
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </button>
         </div>
       </div>
     </section>
