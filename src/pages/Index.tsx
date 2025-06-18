@@ -1,8 +1,12 @@
+
 import { useState, useEffect } from "react";
 import HeroSection from "../components/HeroSection";
-import CategoryGrid from "../components/CategoryGrid";
-import ProductGrid from "../components/ProductGrid";
-import FeaturesRow from "../components/FeaturesRow";
+import CategoryShowcase from "../components/CategoryShowcase";
+import DealsOfTheDay from "../components/DealsOfTheDay";
+import NewArrivals from "../components/NewArrivals";
+import TrendingProducts from "../components/TrendingProducts";
+import TopRated from "../components/TopRated"; 
+import QuickStats from "../components/QuickStats";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
@@ -10,7 +14,6 @@ import PromoBanner from "../components/PromoBanner";
 import FeaturedBrands from "../components/FeaturedBrands";
 import Testimonials from "../components/Testimonials";
 import Newsletter from "../components/Newsletter";
-import BlogPreview from "../components/BlogPreview";
 import Preloader from "../components/Preloader";
 
 const Index = () => {
@@ -29,17 +32,19 @@ const Index = () => {
       {showPreloader && <Preloader />}
       <div className={`min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0 transition-opacity duration-500 ${showPreloader ? 'opacity-0' : 'opacity-100'}`}>
         <Header />
+        <PromoBanner />
         <main className="w-full pt-32 md:pt-20">
           <HeroSection />
-          <PromoBanner />
-          <div className="px-4 md:px-6 lg:px-8 space-y-8 md:space-y-12 py-8">
-            <CategoryGrid />
-            <ProductGrid />
-            <FeaturesRow />
-          </div>
+          
+          {/* New redesigned sections */}
+          <CategoryShowcase />
+          <DealsOfTheDay />
+          <NewArrivals />
+          <QuickStats />
+          <TrendingProducts />
+          <TopRated />
           <FeaturedBrands />
           <Testimonials />
-          <BlogPreview />
           <Newsletter />
         </main>
         <Footer />
