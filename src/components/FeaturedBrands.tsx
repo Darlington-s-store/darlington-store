@@ -1,4 +1,3 @@
-
 import { useAppSettings } from "@/hooks/useAppSettings";
 
 const brands = [

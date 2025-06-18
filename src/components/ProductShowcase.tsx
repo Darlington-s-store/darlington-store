@@ -5,13 +5,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "./ProductCard";
-import { ArrowRight, Zap, Flame, Star, TrendingUp } from "lucide-react";
-import { ComponentType } from "react";
+import { ArrowRight } from "lucide-react";
 
 interface ProductShowcaseProps {
   title: string;
   subtitle?: string;
-  icon?: ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>;
   filterCondition?: any;
   limit?: number;
   gradient?: string;
