@@ -44,9 +44,11 @@ interface Product {
   status: string | null;
   created_at: string;
   updated_at: string;
-  categories?: {
-    name: string;
-  } | null;
+}
+
+interface Category {
+  id: number;
+  name: string;
 }
 
 const defaultFilters: SearchFilters = {
@@ -93,7 +95,7 @@ export default function EnhancedProductSearch() {
         .select('id, name')
         .eq('is_active', true);
       if (error) throw error;
-      return data;
+      return data as Category[];
     }
   });
 
@@ -134,8 +136,7 @@ export default function EnhancedProductSearch() {
           featured,
           status,
           created_at,
-          updated_at,
-          categories(name)
+          updated_at
         `)
         .eq('is_active', true);
 
@@ -189,7 +190,7 @@ export default function EnhancedProductSearch() {
         console.error('Error fetching products:', error);
         throw error;
       }
-      return (data as Product[]) || [];
+      return data || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
@@ -197,7 +198,8 @@ export default function EnhancedProductSearch() {
   // Group products by category for better organization
   const productsByCategory = useMemo(() => {
     const grouped = allProducts.reduce((acc, product) => {
-      const categoryName = product.categories?.name || 'Other';
+      const category = categories.find(cat => cat.id === product.category_id);
+      const categoryName = category?.name || 'Other';
       if (!acc[categoryName]) {
         acc[categoryName] = [];
       }
@@ -206,7 +208,7 @@ export default function EnhancedProductSearch() {
     }, {} as Record<string, Product[]>);
     
     return grouped;
-  }, [allProducts]);
+  }, [allProducts, categories]);
 
   const updateFilter = useCallback((key: keyof SearchFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));

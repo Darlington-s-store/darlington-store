@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -34,9 +33,6 @@ interface Product {
   status: string | null;
   created_at: string;
   updated_at: string;
-  categories?: {
-    name: string;
-  } | null;
 }
 
 export default function ProductShowcase({ 
@@ -73,8 +69,7 @@ export default function ProductShowcase({
           featured,
           status,
           created_at,
-          updated_at,
-          categories!inner(name)
+          updated_at
         `)
         .eq('is_active', true)
         .limit(limit)
@@ -92,7 +87,7 @@ export default function ProductShowcase({
         console.error('Error fetching products:', error);
         throw error;
       }
-      return (data as Product[]) || [];
+      return data || [];
     }
   });
 
