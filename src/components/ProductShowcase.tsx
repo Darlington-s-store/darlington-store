@@ -36,7 +36,7 @@ interface Product {
   updated_at: string;
   categories?: {
     name: string;
-  };
+  } | null;
 }
 
 export default function ProductShowcase({ 
@@ -57,8 +57,24 @@ export default function ProductShowcase({
       let query = supabase
         .from('products')
         .select(`
-          *,
-          categories(name)
+          id,
+          name,
+          description,
+          price,
+          brand,
+          model,
+          category_id,
+          stock_quantity,
+          is_active,
+          image_url,
+          images,
+          sku,
+          weight,
+          featured,
+          status,
+          created_at,
+          updated_at,
+          categories!inner(name)
         `)
         .eq('is_active', true)
         .limit(limit)
@@ -72,8 +88,11 @@ export default function ProductShowcase({
       });
       
       const { data, error } = await query;
-      if (error) throw error;
-      return data as Product[];
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+      return (data as Product[]) || [];
     }
   });
 

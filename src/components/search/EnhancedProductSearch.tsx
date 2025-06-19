@@ -46,7 +46,7 @@ interface Product {
   updated_at: string;
   categories?: {
     name: string;
-  };
+  } | null;
 }
 
 const defaultFilters: SearchFilters = {
@@ -118,7 +118,23 @@ export default function EnhancedProductSearch() {
       let query = supabase
         .from('products')
         .select(`
-          *,
+          id,
+          name,
+          description,
+          price,
+          brand,
+          model,
+          category_id,
+          stock_quantity,
+          is_active,
+          image_url,
+          images,
+          sku,
+          weight,
+          featured,
+          status,
+          created_at,
+          updated_at,
           categories(name)
         `)
         .eq('is_active', true);
@@ -169,8 +185,11 @@ export default function EnhancedProductSearch() {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
-      return data as Product[];
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+      return (data as Product[]) || [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
