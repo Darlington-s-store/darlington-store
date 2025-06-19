@@ -26,6 +26,29 @@ interface SearchFilters {
   sortBy: string;
 }
 
+interface Product {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  brand: string | null;
+  model: string | null;
+  category_id: number | null;
+  stock_quantity: number | null;
+  is_active: boolean | null;
+  image_url: string | null;
+  images: any;
+  sku: string | null;
+  weight: number | null;
+  featured: boolean | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+  categories?: {
+    name: string;
+  };
+}
+
 const defaultFilters: SearchFilters = {
   searchTerm: '',
   categoryId: '',
@@ -96,7 +119,7 @@ export default function EnhancedProductSearch() {
         .from('products')
         .select(`
           *,
-          categories!inner(name)
+          categories(name)
         `)
         .eq('is_active', true);
 
@@ -147,7 +170,7 @@ export default function EnhancedProductSearch() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as Product[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes cache
   });
@@ -161,7 +184,7 @@ export default function EnhancedProductSearch() {
       }
       acc[categoryName].push(product);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Product[]>);
     
     return grouped;
   }, [allProducts]);
@@ -174,11 +197,11 @@ export default function EnhancedProductSearch() {
     setFilters(defaultFilters);
   };
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product);
   };
 
-  const handleAddToWishlist = (product: any) => {
+  const handleAddToWishlist = (product: Product) => {
     if (!user) {
       navigate('/auth');
       return;

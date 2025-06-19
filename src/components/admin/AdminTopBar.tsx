@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, LogOut, User, Bell, Settings } from "lucide-react";
+import { Menu, LogOut, User, Bell, Settings, Printer } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -79,6 +79,65 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
     }
   };
 
+  const handlePrintReceipt = () => {
+    toast({
+      title: "Print Receipt",
+      description: "Receipt printing functionality activated.",
+    });
+    
+    // Create a simple receipt template
+    const receiptContent = `
+      <div style="font-family: monospace; max-width: 300px; margin: 0 auto;">
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px;">
+          <h2>DAR STORE</h2>
+          <p>Ghana's Premier Electronics Store</p>
+          <p>Tanoso - Kumasi, Ashanti Ghana</p>
+          <p>Tel: 0552945333</p>
+        </div>
+        <div style="margin-bottom: 10px;">
+          <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+          <p><strong>Time:</strong> ${new Date().toLocaleTimeString()}</p>
+          <p><strong>Receipt #:</strong> ${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+        </div>
+        <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 10px 0;">
+          <p><strong>SAMPLE RECEIPT</strong></p>
+          <p>This is a test receipt print.</p>
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+          <p>Thank you for your business!</p>
+          <p>Visit us again soon</p>
+        </div>
+      </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt</title>
+            <style>
+              body { margin: 0; padding: 20px; }
+              @media print {
+                body { margin: 0; }
+              }
+            </style>
+          </head>
+          <body>
+            ${receiptContent}
+            <script>
+              window.onload = function() {
+                window.print();
+                window.close();
+              }
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+  };
+
   const getDisplayName = () => {
     if (profile?.first_name || profile?.last_name) {
       return `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
@@ -111,8 +170,18 @@ const AdminTopBar = ({ onMenuClick }: AdminTopBarProps) => {
           <h1 className="text-xl font-semibold text-foreground">Admin Dashboard</h1>
         </div>
 
-        {/* Right side - Notifications and user menu */}
+        {/* Right side - Print, Notifications and user menu */}
         <div className="flex items-center space-x-4">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handlePrintReceipt}
+            className="relative"
+            title="Print Receipt"
+          >
+            <Printer className="h-5 w-5" />
+          </Button>
+
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>

@@ -11,9 +11,32 @@ interface ProductShowcaseProps {
   title: string;
   subtitle?: string;
   icon?: React.ComponentType<{ className?: string }>;
-  filterCondition?: any;
+  filterCondition?: Record<string, any>;
   limit?: number;
   gradient?: string;
+}
+
+interface Product {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  brand: string | null;
+  model: string | null;
+  category_id: number | null;
+  stock_quantity: number | null;
+  is_active: boolean | null;
+  image_url: string | null;
+  images: any;
+  sku: string | null;
+  weight: number | null;
+  featured: boolean | null;
+  status: string | null;
+  created_at: string;
+  updated_at: string;
+  categories?: {
+    name: string;
+  };
 }
 
 export default function ProductShowcase({ 
@@ -35,7 +58,7 @@ export default function ProductShowcase({
         .from('products')
         .select(`
           *,
-          categories!inner(name)
+          categories(name)
         `)
         .eq('is_active', true)
         .limit(limit)
@@ -50,15 +73,15 @@ export default function ProductShowcase({
       
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as Product[];
     }
   });
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: Product) => {
     addItem(product);
   };
 
-  const handleAddToWishlist = (product: any) => {
+  const handleAddToWishlist = (product: Product) => {
     if (!user) {
       navigate('/auth');
       return;
