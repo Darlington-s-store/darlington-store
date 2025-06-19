@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,7 +50,7 @@ export default function ProductShowcase({
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', title, filterCondition],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       let query = supabase
         .from('products')
         .select(`

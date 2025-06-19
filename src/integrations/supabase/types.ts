@@ -290,6 +290,8 @@ export type Database = {
           created_at: string
           delivery_fee: number | null
           delivery_method: string | null
+          delivery_notes: string | null
+          estimated_delivery_date: string | null
           id: string
           order_number: string
           payment_method: string | null
@@ -299,6 +301,7 @@ export type Database = {
           shipping_address: Json | null
           status: string
           total_amount: number
+          tracking_number: string | null
           updated_at: string
           user_id: string | null
         }
@@ -307,6 +310,8 @@ export type Database = {
           created_at?: string
           delivery_fee?: number | null
           delivery_method?: string | null
+          delivery_notes?: string | null
+          estimated_delivery_date?: string | null
           id?: string
           order_number: string
           payment_method?: string | null
@@ -316,6 +321,7 @@ export type Database = {
           shipping_address?: Json | null
           status?: string
           total_amount: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -324,6 +330,8 @@ export type Database = {
           created_at?: string
           delivery_fee?: number | null
           delivery_method?: string | null
+          delivery_notes?: string | null
+          estimated_delivery_date?: string | null
           id?: string
           order_number?: string
           payment_method?: string | null
@@ -333,6 +341,7 @@ export type Database = {
           shipping_address?: Json | null
           status?: string
           total_amount?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
