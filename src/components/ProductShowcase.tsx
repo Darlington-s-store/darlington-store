@@ -49,7 +49,7 @@ export default function ProductShowcase({
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', title, filterCondition],
-    queryFn: async () => {
+    queryFn: async (): Promise<Product[]> => {
       let query = supabase
         .from('products')
         .select(`
@@ -87,7 +87,7 @@ export default function ProductShowcase({
         console.error('Error fetching products:', error);
         throw error;
       }
-      return data || [];
+      return (data as Product[]) || [];
     }
   });
 
