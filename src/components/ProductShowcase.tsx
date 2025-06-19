@@ -87,7 +87,7 @@ export default function ProductShowcase({
         console.error('Error fetching products:', error);
         throw error;
       }
-      return data as Product[];
+      return data || [];
     }
   });
 
