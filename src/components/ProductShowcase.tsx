@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,48 +51,39 @@ export default function ProductShowcase({
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', title, filterCondition],
     queryFn: async () => {
-      // Build query object to avoid deep type inference
-      const queryBuilder = supabase
+      // Use a simpler approach to avoid deep type inference
+      let query = supabase
         .from('products')
-        .select(`
-          id,
-          name,
-          description,
-          price,
-          brand,
-          model,
-          category_id,
-          stock_quantity,
-          is_active,
-          image_url,
-          images,
-          sku,
-          weight,
-          featured,
-          status,
-          created_at,
-          updated_at
-        `)
+        .select('*')
         .eq('is_active', true)
-        .limit(limit)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(limit);
 
-      // Apply additional filters without chaining
-      const filterEntries = Object.entries(filterCondition);
-      let query = queryBuilder;
-      
-      for (const [key, value] of filterEntries) {
-        if (key && value !== undefined) {
-          query = query.eq(key, value);
-        }
+      // Apply additional filters one by one to avoid chaining issues
+      if (filterCondition.featured !== undefined) {
+        query = query.eq('featured', filterCondition.featured);
       }
       
+      if (filterCondition.category_id !== undefined) {
+        query = query.eq('category_id', filterCondition.category_id);
+      }
+
+      if (filterCondition.brand !== undefined) {
+        query = query.eq('brand', filterCondition.brand);
+      }
+
+      if (filterCondition.status !== undefined) {
+        query = query.eq('status', filterCondition.status);
+      }
+
       const { data, error } = await query;
+      
       if (error) {
         console.error('Error fetching products:', error);
         throw error;
       }
-      return data as Product[];
+      
+      return data || [];
     }
   });
 
