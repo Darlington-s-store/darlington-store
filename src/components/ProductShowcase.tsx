@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,52 +50,48 @@ export default function ProductShowcase({
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', title, filterCondition],
     queryFn: async () => {
-      // Start with base query
-      const baseQuery = supabase.from('products');
-      
-      // Build the select query
-      const selectQuery = baseQuery.select(`
-        id,
-        name,
-        description,
-        price,
-        brand,
-        model,
-        category_id,
-        stock_quantity,
-        is_active,
-        image_url,
-        images,
-        sku,
-        weight,
-        featured,
-        status,
-        created_at,
-        updated_at
-      `);
-      
-      // Apply base filters
-      const filteredQuery = selectQuery
+      // Build query object to avoid deep type inference
+      const queryBuilder = supabase
+        .from('products')
+        .select(`
+          id,
+          name,
+          description,
+          price,
+          brand,
+          model,
+          category_id,
+          stock_quantity,
+          is_active,
+          image_url,
+          images,
+          sku,
+          weight,
+          featured,
+          status,
+          created_at,
+          updated_at
+        `)
         .eq('is_active', true)
         .limit(limit)
         .order('created_at', { ascending: false });
 
-      // Apply additional filters if they exist
-      let finalQuery = filteredQuery;
-      if (Object.keys(filterCondition).length > 0) {
-        Object.entries(filterCondition).forEach(([key, value]) => {
-          if (key && value !== undefined) {
-            finalQuery = finalQuery.eq(key as any, value);
-          }
-        });
+      // Apply additional filters without chaining
+      const filterEntries = Object.entries(filterCondition);
+      let query = queryBuilder;
+      
+      for (const [key, value] of filterEntries) {
+        if (key && value !== undefined) {
+          query = query.eq(key, value);
+        }
       }
       
-      const { data, error } = await finalQuery;
+      const { data, error } = await query;
       if (error) {
         console.error('Error fetching products:', error);
         throw error;
       }
-      return (data || []) as Product[];
+      return data as Product[];
     }
   });
 
