@@ -50,45 +50,53 @@ export default function ProductShowcase({
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products', title, filterCondition],
-    queryFn: async (): Promise<Product[]> => {
-      let query = supabase
-        .from('products')
-        .select(`
-          id,
-          name,
-          description,
-          price,
-          brand,
-          model,
-          category_id,
-          stock_quantity,
-          is_active,
-          image_url,
-          images,
-          sku,
-          weight,
-          featured,
-          status,
-          created_at,
-          updated_at
-        `)
+    queryFn: async () => {
+      // Start with base query
+      const baseQuery = supabase.from('products');
+      
+      // Build the select query
+      const selectQuery = baseQuery.select(`
+        id,
+        name,
+        description,
+        price,
+        brand,
+        model,
+        category_id,
+        stock_quantity,
+        is_active,
+        image_url,
+        images,
+        sku,
+        weight,
+        featured,
+        status,
+        created_at,
+        updated_at
+      `);
+      
+      // Apply base filters
+      const filteredQuery = selectQuery
         .eq('is_active', true)
         .limit(limit)
         .order('created_at', { ascending: false });
 
-      // Apply additional filters
-      Object.entries(filterCondition).forEach(([key, value]) => {
-        if (key && value !== undefined) {
-          query = query.eq(key, value);
-        }
-      });
+      // Apply additional filters if they exist
+      let finalQuery = filteredQuery;
+      if (Object.keys(filterCondition).length > 0) {
+        Object.entries(filterCondition).forEach(([key, value]) => {
+          if (key && value !== undefined) {
+            finalQuery = finalQuery.eq(key as any, value);
+          }
+        });
+      }
       
-      const { data, error } = await query;
+      const { data, error } = await finalQuery;
       if (error) {
         console.error('Error fetching products:', error);
         throw error;
       }
-      return data || [];
+      return (data || []) as Product[];
     }
   });
 
