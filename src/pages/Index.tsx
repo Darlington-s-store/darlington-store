@@ -17,9 +17,13 @@ import Newsletter from "../components/Newsletter";
 import Preloader from "../components/Preloader";
 import ServicesSection from "../components/ServicesSection";
 import BlogPreview from "../components/BlogPreview";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const Index = () => {
   const [showPreloader, setShowPreloader] = useState(true);
+  
+  // Initialize notification system
+  useNotifications();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,7 +39,7 @@ const Index = () => {
       <div className={`min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0 transition-opacity duration-500 ${showPreloader ? 'opacity-0' : 'opacity-100'}`}>
         <Header />
         <PromoBanner />
-        <main className="w-full pt-16 md:pt-20">
+        <main className="w-full">
           <HeroSection />
           
           {/* Enhanced homepage sections */}
