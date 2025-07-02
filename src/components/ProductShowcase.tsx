@@ -48,18 +48,18 @@ export default function ProductShowcase({
   const { user } = useAuth();
   const { addItem } = useCart();
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading, error } = useQuery({
     queryKey: ['products', title, filterCondition],
     queryFn: async () => {
-      // Use a simpler approach to avoid deep type inference
+      // Optimized query with specific fields for better performance
       let query = supabase
         .from('products')
-        .select('*')
+        .select('id, name, description, price, brand, image_url, images, stock_quantity, featured, status')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
         .limit(limit);
 
-      // Apply additional filters one by one to avoid chaining issues
+      // Apply filters efficiently
       if (filterCondition.featured !== undefined) {
         query = query.eq('featured', filterCondition.featured);
       }
@@ -84,7 +84,9 @@ export default function ProductShowcase({
       }
       
       return data || [];
-    }
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes to reduce loading delays
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const handleAddToCart = (product: Product) => {
@@ -121,6 +123,16 @@ export default function ProductShowcase({
     alert(`Added ${product.name} to wishlist!`);
   };
 
+  if (error) {
+    return (
+      <section className="w-full py-12 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-red-600">Failed to load products. Please try again later.</p>
+        </div>
+      </section>
+    );
+  }
+
   if (isLoading) {
     return (
       <section className="w-full py-12 px-4">
@@ -133,7 +145,7 @@ export default function ProductShowcase({
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: limit }).map((_, i) => (
               <div key={i} className="bg-white rounded-2xl shadow-sm border animate-pulse">
                 <div className="w-full h-48 bg-gray-200 rounded-t-2xl" />
                 <div className="p-4">
@@ -176,16 +188,22 @@ export default function ProductShowcase({
           </button>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={handleAddToCart}
-              onAddToWishlist={handleAddToWishlist}
-            />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No products found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                onAddToWishlist={handleAddToWishlist}
+              />
+            ))}
+          </div>
+        )}
         
         {/* Mobile View All Button */}
         <div className="text-center mt-8 md:hidden">
