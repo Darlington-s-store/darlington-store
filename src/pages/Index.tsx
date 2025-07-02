@@ -15,6 +15,8 @@ import FeaturedBrands from "../components/FeaturedBrands";
 import Testimonials from "../components/Testimonials";
 import Newsletter from "../components/Newsletter";
 import Preloader from "../components/Preloader";
+import ServicesSection from "../components/ServicesSection";
+import BlogPreview from "../components/BlogPreview";
 
 const Index = () => {
   const [showPreloader, setShowPreloader] = useState(true);
@@ -33,17 +35,19 @@ const Index = () => {
       <div className={`min-h-screen bg-gray-50 overflow-x-hidden pb-20 md:pb-0 transition-opacity duration-500 ${showPreloader ? 'opacity-0' : 'opacity-100'}`}>
         <Header />
         <PromoBanner />
-        <main className="w-full pt-32 md:pt-20">
+        <main className="w-full pt-16 md:pt-20">
           <HeroSection />
           
-          {/* New redesigned sections */}
+          {/* Enhanced homepage sections */}
           <CategoryShowcase />
           <DealsOfTheDay />
           <NewArrivals />
           <QuickStats />
           <TrendingProducts />
           <TopRated />
+          <ServicesSection />
           <FeaturedBrands />
+          <BlogPreview />
           <Testimonials />
           <Newsletter />
         </main>

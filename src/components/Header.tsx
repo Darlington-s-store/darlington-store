@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
@@ -9,6 +10,7 @@ import { useCart } from "@/hooks/useCart";
 import UserMenu from "./UserMenu";
 import CartDrawer from "./cart/CartDrawer";
 import { ModeToggle } from "./ModeToggle";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -16,6 +18,7 @@ export default function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const { user } = useAuth();
   const { getTotalItems } = useCart();
+  const { settings } = useAppSettings();
   const navigate = useNavigate();
   const location = useLocation();
   const isAuthPage = location.pathname === '/auth';
@@ -50,15 +53,23 @@ export default function Header() {
   return (
     <header className={`bg-background shadow-sm border-b ${!isAuthPage ? 'fixed top-0 w-full z-50' : ''}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
-              </div>
-              <span className="hidden sm:block text-xl font-bold text-foreground">
-                Darlington Store
+              {settings?.logo_url ? (
+                <img 
+                  src={settings.logo_url} 
+                  alt={settings.site_name || "Store Logo"} 
+                  className="w-8 h-8 object-contain"
+                />
+              ) : (
+                <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">D</span>
+                </div>
+              )}
+              <span className="hidden sm:block text-lg md:text-xl font-bold text-foreground">
+                {settings?.site_name || "Darlington Store"}
               </span>
             </Link>
           </div>
@@ -67,13 +78,13 @@ export default function Header() {
           <div className="hidden md:flex flex-1 max-w-md mx-8">
             <form onSubmit={handleSearch} className="w-full">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   type="text"
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 w-full"
+                  className="pl-10 pr-4 w-full h-9"
                 />
               </div>
             </form>
@@ -102,20 +113,20 @@ export default function Header() {
           </div>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 md:space-x-2">
             <ModeToggle />
             {/* Wishlist */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative h-8 w-8 md:h-10 md:w-10"
               onClick={() => navigate('/wishlist')}
             >
-              <Heart className="h-5 w-5" />
+              <Heart className="h-4 w-4 md:h-5 md:w-5" />
               {wishlistCount > 0 && (
                 <Badge 
                   variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  className="absolute -top-1 -right-1 h-4 w-4 md:h-5 md:w-5 rounded-full p-0 flex items-center justify-center text-xs"
                 >
                   {wishlistCount}
                 </Badge>
@@ -132,25 +143,25 @@ export default function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden"
+              className="md:hidden h-8 w-8"
               onClick={toggleMenu}
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Search */}
-        <div className="md:hidden pb-4">
+        <div className="md:hidden pb-3">
           <form onSubmit={handleSearch}>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 w-full"
+                className="pl-10 pr-4 w-full h-9"
               />
             </div>
           </form>

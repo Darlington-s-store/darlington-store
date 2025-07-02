@@ -100,16 +100,6 @@ const HeroSection = () => {
       image: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800&q=80",
       gradient: "from-purple-600 to-pink-600",
       productId: null
-    },
-    {
-      id: 4,
-      title: "Latest Gaming Collection",
-      subtitle: "PlayStation 5 & Xbox Series X",
-      description: "Next-gen gaming with incredible graphics and performance",
-      price: "From ₵3,799",
-      image: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=800&q=80",
-      gradient: "from-red-600 to-orange-600",
-      productId: null
     }
   ];
 
@@ -137,7 +127,7 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative h-[500px] md:h-[700px] overflow-hidden bg-gradient-to-br from-gray-900 to-black">
+    <section className="relative h-[400px] md:h-[600px] overflow-hidden bg-gradient-to-br from-gray-900 to-black">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img
@@ -152,71 +142,63 @@ const HeroSection = () => {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300"
+        className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-2 md:p-3 rounded-full transition-all duration-300"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6" />
       </button>
       
       <button
         onClick={nextSlide}
-        className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 rounded-full transition-all duration-300"
+        className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-2 md:p-3 rounded-full transition-all duration-300"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-4 h-4 md:w-6 md:h-6" />
       </button>
 
       {/* Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+      <div className="relative z-10 h-full flex items-center px-4 md:px-8">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-center">
             {/* Text Content */}
-            <div className="text-white space-y-4 md:space-y-6">
-              <div className="space-y-2">
-                <p className="text-sm md:text-lg lg:text-xl font-medium text-white/90">
+            <div className="text-white space-y-2 md:space-y-4">
+              <div className="space-y-1 md:space-y-2">
+                <p className="text-xs md:text-lg font-medium text-white/90">
                   {currentSlideData.subtitle}
                 </p>
-                <h1 className="text-2xl md:text-4xl lg:text-6xl xl:text-7xl font-bold leading-tight">
+                <h1 className="text-xl md:text-4xl lg:text-5xl font-bold leading-tight">
                   {currentSlideData.title}
                 </h1>
               </div>
               
-              <p className="text-sm md:text-lg lg:text-xl text-white/80 max-w-lg">
+              <p className="text-xs md:text-lg text-white/80 max-w-lg line-clamp-2">
                 {currentSlideData.description}
               </p>
 
-              <div className="flex items-center space-x-4">
-                <span className="text-xl md:text-3xl lg:text-4xl font-bold text-yellow-400">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 md:gap-4">
+                <span className="text-lg md:text-3xl font-bold text-yellow-400">
                   {currentSlideData.price}
                 </span>
                 <div className="flex items-center space-x-1">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3 h-3 md:w-5 md:h-5 fill-yellow-400 text-yellow-400" />
+                    <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400 text-yellow-400" />
                   ))}
-                  <span className="text-white/80 ml-2 text-sm md:text-base">(4.8)</span>
+                  <span className="text-white/80 ml-1 text-xs md:text-sm">(4.8)</span>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2 md:pt-4">
+              <div className="pt-2 md:pt-4">
                 <Button
-                  size="lg"
-                  className="bg-red-700 hover:bg-red-800 text-white px-6 md:px-8 py-2 md:py-3 text-sm md:text-lg font-semibold"
+                  size="sm"
+                  className="bg-red-700 hover:bg-red-800 text-white px-4 md:px-6 py-2 text-sm md:text-base font-semibold"
                   onClick={handleShopNow}
                 >
-                  <ShoppingBag className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                  <ShoppingBag className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
                   Shop Now
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-gray-900 px-6 md:px-8 py-2 md:py-3 text-sm md:text-lg font-semibold"
-                  onClick={() => navigate('/products')}
-                >
-                  View All Products
                 </Button>
               </div>
             </div>
 
             {/* Product Image - Enhanced for mobile */}
-            <div className="flex justify-center lg:justify-end">
+            <div className="hidden lg:flex justify-center lg:justify-end">
               <div className="relative w-full max-w-xs md:max-w-md">
                 <div className="absolute inset-0 bg-white/10 rounded-3xl backdrop-blur-sm" />
                 <img
@@ -232,42 +214,18 @@ const HeroSection = () => {
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 flex space-x-3 z-10">
+      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 ${
+            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-all duration-300 ${
               index === currentSlide
                 ? 'bg-white scale-125'
                 : 'bg-white/50 hover:bg-white/75'
             }`}
           />
         ))}
-      </div>
-
-      {/* Stats Banner */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-white">
-            <div>
-              <div className="text-lg md:text-2xl font-bold">500+</div>
-              <div className="text-xs md:text-sm opacity-80">Products</div>
-            </div>
-            <div>
-              <div className="text-lg md:text-2xl font-bold">50+</div>
-              <div className="text-xs md:text-sm opacity-80">Brands</div>
-            </div>
-            <div>
-              <div className="text-lg md:text-2xl font-bold">24/7</div>
-              <div className="text-xs md:text-sm opacity-80">Support</div>
-            </div>
-            <div>
-              <div className="text-lg md:text-2xl font-bold">2 Years</div>
-              <div className="text-xs md:text-sm opacity-80">Warranty</div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
