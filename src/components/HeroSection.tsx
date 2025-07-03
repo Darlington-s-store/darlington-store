@@ -30,7 +30,7 @@ const HeroSection = () => {
       
       return data || [];
     },
-    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    staleTime: 10 * 60 * 1000,
   });
 
   // Create slides from featured products or use fallback
@@ -197,14 +197,14 @@ const HeroSection = () => {
               </div>
             </div>
 
-            {/* Product Image - Enhanced for mobile */}
-            <div className="hidden lg:flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-xs md:max-w-md">
+            {/* Product Image - Enhanced for mobile visibility */}
+            <div className="flex justify-center lg:justify-end">
+              <div className="relative w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-full lg:max-w-md">
                 <div className="absolute inset-0 bg-white/10 rounded-3xl backdrop-blur-sm" />
                 <img
                   src={currentSlideData.image}
                   alt={currentSlideData.title}
-                  className="relative z-10 w-full h-auto object-contain rounded-2xl"
+                  className="relative z-10 w-full h-full object-contain rounded-2xl"
                   loading="eager"
                 />
               </div>

@@ -25,7 +25,7 @@ export const useCheckout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { items, getTotalPrice, clearCart } = useCart();
+  const { items, getTotalPrice: cartTotalPrice, clearCart } = useCart();
   const { locations: deliveryLocations, isLoading: isLoadingLocations } = useDelivery();
   const { createOrderNotification } = useNotifications();
   
@@ -150,7 +150,7 @@ export const useCheckout = () => {
     isLoadingLocations,
     selectedLocation,
     deliveryFee,
-    processCheckout: onSubmit, // Keep this for backward compatibility
-    isProcessing: isSubmitting // Keep this for backward compatibility
+    processCheckout: onSubmit,
+    isProcessing: isSubmitting
   };
 };
