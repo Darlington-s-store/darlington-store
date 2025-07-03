@@ -10,30 +10,38 @@ export const useNotifications = () => {
         if (!session?.user) return;
 
         try {
-          if (event === 'SIGNED_UP') {
-            // Create registration notification
-            await supabase.from('notifications').insert({
-              type: 'user_registration',
-              title: 'New User Registration',
-              message: `User ${session.user.email} has registered`,
-              user_id: session.user.id,
-              metadata: {
-                email: session.user.email,
-                timestamp: new Date().toISOString()
-              }
-            });
-          } else if (event === 'SIGNED_IN') {
-            // Create login notification
-            await supabase.from('notifications').insert({
-              type: 'user_login',
-              title: 'User Login',
-              message: `User ${session.user.email} has logged in`,
-              user_id: session.user.id,
-              metadata: {
-                email: session.user.email,
-                timestamp: new Date().toISOString()
-              }
-            });
+          if (event === 'SIGNED_IN') {
+            // Check if this is a new user registration by looking at created_at
+            const userCreatedAt = new Date(session.user.created_at);
+            const now = new Date();
+            const timeDiff = now.getTime() - userCreatedAt.getTime();
+            const isNewUser = timeDiff < 10000; // Less than 10 seconds ago = new registration
+
+            if (isNewUser) {
+              // Create registration notification
+              await supabase.from('notifications').insert({
+                type: 'user_registration',
+                title: 'New User Registration',
+                message: `User ${session.user.email} has registered`,
+                user_id: session.user.id,
+                metadata: {
+                  email: session.user.email,
+                  timestamp: new Date().toISOString()
+                }
+              });
+            } else {
+              // Create login notification
+              await supabase.from('notifications').insert({
+                type: 'user_login',
+                title: 'User Login',
+                message: `User ${session.user.email} has logged in`,
+                user_id: session.user.id,
+                metadata: {
+                  email: session.user.email,
+                  timestamp: new Date().toISOString()
+                }
+              });
+            }
           }
         } catch (error) {
           console.error('Error creating notification:', error);
