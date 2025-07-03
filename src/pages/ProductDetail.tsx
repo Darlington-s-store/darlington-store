@@ -24,14 +24,17 @@ const ProductDetail = () => {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState('space-gray');
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
+      if (!id) throw new Error('Product ID is required');
+      
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .eq('id', id)
+        .eq('id', parseInt(id, 10))
         .eq('is_active', true)
         .single();
 
@@ -119,6 +122,10 @@ const ProductDetail = () => {
       navigator.clipboard.writeText(window.location.href);
       toast.success('Product link copied to clipboard!');
     }
+  };
+
+  const handleReviewSubmitted = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   if (isLoading) {
@@ -315,21 +322,21 @@ const ProductDetail = () => {
         {/* Product Specifications */}
         <div className="mb-12">
           <ProductSpecifications
-            specifications={product.specifications || {}}
+            specifications={typeof product.specifications === 'object' && product.specifications !== null ? product.specifications as Record<string, any> : {}}
             brand={product.brand}
             weight={product.weight}
-            dimensions={product.dimensions || {}}
+            dimensions={typeof product.dimensions === 'object' && product.dimensions !== null ? product.dimensions as Record<string, any> : {}}
           />
         </div>
 
         {/* Reviews Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
-            <ReviewsList productId={product.id} />
+            <ReviewsList productId={product.id} refreshTrigger={refreshTrigger} />
           </div>
           <div>
             {user ? (
-              <ReviewForm productId={product.id} />
+              <ReviewForm productId={product.id} onReviewSubmitted={handleReviewSubmitted} />
             ) : (
               <div className="text-center p-8 bg-gray-100 rounded-lg">
                 <p className="text-gray-600 mb-4">Sign in to leave a review</p>
