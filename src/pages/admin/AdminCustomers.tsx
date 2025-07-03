@@ -1,11 +1,11 @@
 
 import AdminLayout from "@/components/admin/AdminLayout";
-import AdminCustomerManager from "@/components/admin/AdminCustomerManager";
+import EnhancedCustomerManager from "@/components/admin/EnhancedCustomerManager";
 
 const AdminCustomers = () => {
   return (
     <AdminLayout>
-      <AdminCustomerManager />
+      <EnhancedCustomerManager />
     </AdminLayout>
   );
 };
