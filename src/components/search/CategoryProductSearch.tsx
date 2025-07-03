@@ -10,6 +10,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { useNavigate } from "react-router-dom";
 
+interface CategoryWithProducts {
+  id: number;
+  name: string;
+  image_url: string;
+  products: any[];
+  productCount: number;
+}
+
 const CategoryProductSearch = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -18,7 +26,7 @@ const CategoryProductSearch = () => {
   // Fetch categories with their products
   const { data: categoriesWithProducts = [], isLoading } = useQuery({
     queryKey: ['categories-with-products'],
-    queryFn: async () => {
+    queryFn: async (): Promise<CategoryWithProducts[]> => {
       // Fetch categories
       const { data: categories, error: categoriesError } = await supabase
         .from('categories')
@@ -30,7 +38,7 @@ const CategoryProductSearch = () => {
 
       // Fetch products for each category
       const categoriesWithProducts = await Promise.all(
-        categories.map(async (category) => {
+        categories.map(async (category): Promise<CategoryWithProducts> => {
           const { data: products, error: productsError } = await supabase
             .from('products')
             .select('id, name, description, price, brand, image_url, images, stock_quantity')
@@ -41,7 +49,11 @@ const CategoryProductSearch = () => {
           
           if (productsError) {
             console.error(`Error fetching products for category ${category.id}:`, productsError);
-            return { ...category, products: [] };
+            return { 
+              ...category, 
+              products: [], 
+              productCount: 0 
+            };
           }
 
           return {
