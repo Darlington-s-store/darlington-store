@@ -47,7 +47,7 @@ const AdminNotificationManager = () => {
         throw error;
       }
       
-      return data || [];
+      return (data || []) as Notification[];
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   });
