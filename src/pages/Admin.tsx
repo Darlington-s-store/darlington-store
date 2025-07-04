@@ -5,17 +5,21 @@ import AdminReviewManager from "@/components/admin/AdminReviewManager";
 import AdminHomepageManager from "@/components/admin/AdminHomepageManager";
 import AdminHeaderFooterManager from "@/components/admin/AdminHeaderFooterManager";
 import AdminNotificationManager from "@/components/admin/AdminNotificationManager";
+import AdminTestimonialManager from "@/components/admin/AdminTestimonialManager";
+import AdminBrandManager from "@/components/admin/AdminBrandManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Admin = () => {
   return (
     <AdminLayout>
       <Tabs defaultValue="dashboard" className="w-full space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
           <TabsTrigger value="header-footer">Header & Footer</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+          <TabsTrigger value="brands">Brands</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
         <TabsContent value="dashboard">
@@ -29,6 +33,12 @@ const Admin = () => {
         </TabsContent>
         <TabsContent value="reviews">
           <AdminReviewManager />
+        </TabsContent>
+        <TabsContent value="testimonials">
+          <AdminTestimonialManager />
+        </TabsContent>
+        <TabsContent value="brands">
+          <AdminBrandManager />
         </TabsContent>
         <TabsContent value="notifications">
           <AdminNotificationManager />

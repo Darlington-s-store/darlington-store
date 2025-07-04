@@ -105,6 +105,45 @@ export type Database = {
         }
         Relationships: []
       }
+      brands: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -785,6 +824,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      testimonials: {
+        Row: {
+          comment: string
+          created_at: string
+          customer_location: string
+          customer_name: string
+          id: string
+          is_active: boolean
+          is_approved: boolean
+          product_purchased: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          customer_location: string
+          customer_name: string
+          id?: string
+          is_active?: boolean
+          is_approved?: boolean
+          product_purchased: string
+          rating?: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          customer_location?: string
+          customer_name?: string
+          id?: string
+          is_active?: boolean
+          is_approved?: boolean
+          product_purchased?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
