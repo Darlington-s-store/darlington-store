@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useDelivery } from '@/hooks/useDelivery';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useSMS } from '@/hooks/useSMS';
 import { toast } from 'sonner';
 
 interface CheckoutFormData {
@@ -28,6 +29,7 @@ export const useCheckout = () => {
   const { items, getTotalPrice: cartTotalPrice, clearCart } = useCart();
   const { locations: deliveryLocations, isLoading: isLoadingLocations } = useDelivery();
   const { createOrderNotification } = useNotifications();
+  const { sendOrderConfirmationSMS, sendOwnerNotificationSMS } = useSMS();
   
   const {
     register,
@@ -122,6 +124,30 @@ export const useCheckout = () => {
 
       // Create notification for new order
       await createOrderNotification(order.id, data.email, totalAmount);
+
+      // Send SMS notifications
+      try {
+        // Send confirmation SMS to customer
+        if (data.phone) {
+          await sendOrderConfirmationSMS(
+            data.phone, 
+            orderNumber, 
+            totalAmount, 
+            `${data.firstName} ${data.lastName}`
+          );
+        }
+
+        // Send notification SMS to owner
+        await sendOwnerNotificationSMS(
+          orderNumber,
+          totalAmount,
+          `${data.firstName} ${data.lastName}`,
+          data.phone
+        );
+      } catch (smsError) {
+        console.error('SMS sending failed:', smsError);
+        // Don't fail the order if SMS fails
+      }
 
       // Clear cart and navigate to success page
       clearCart();
