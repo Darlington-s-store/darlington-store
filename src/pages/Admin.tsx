@@ -7,19 +7,21 @@ import AdminHeaderFooterManager from "@/components/admin/AdminHeaderFooterManage
 import AdminNotificationManager from "@/components/admin/AdminNotificationManager";
 import AdminTestimonialManager from "@/components/admin/AdminTestimonialManager";
 import AdminBrandManager from "@/components/admin/AdminBrandManager";
+import AdminPaymentManager from "@/components/admin/AdminPaymentManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Admin = () => {
   return (
     <AdminLayout>
       <Tabs defaultValue="dashboard" className="w-full space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="homepage">Homepage</TabsTrigger>
           <TabsTrigger value="header-footer">Header & Footer</TabsTrigger>
           <TabsTrigger value="reviews">Reviews</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="brands">Brands</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
         <TabsContent value="dashboard">
@@ -39,6 +41,9 @@ const Admin = () => {
         </TabsContent>
         <TabsContent value="brands">
           <AdminBrandManager />
+        </TabsContent>
+        <TabsContent value="payments">
+          <AdminPaymentManager />
         </TabsContent>
         <TabsContent value="notifications">
           <AdminNotificationManager />

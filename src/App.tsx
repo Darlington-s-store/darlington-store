@@ -27,6 +27,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminUserRoles from "./pages/admin/AdminUserRoles";
 import AdminCategories from "./pages/admin/AdminCategories";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminPayments from "./pages/admin/AdminPayments";
+import PaymentVerify from "./pages/PaymentVerify";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 import FaviconUpdater from "./components/FaviconUpdater";
@@ -55,11 +57,13 @@ const App = () => (
                 <Route path="/orders" element={<Orders />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/checkout/verify" element={<PaymentVerify />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
                 <Route path="/admin/categories" element={<AdminCategories />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
+                <Route path="/admin/payments" element={<AdminPayments />} />
                 <Route path="/admin/customers" element={<AdminCustomers />} />
                 <Route path="/admin/user-roles" element={<AdminUserRoles />} />
                 <Route path="/admin/analytics" element={<AdminAnalytics />} />
