@@ -67,36 +67,50 @@ const EnhancedCustomerManager = () => {
     try {
       console.log('Fetching customers...');
       
-      // Fetch profiles with order statistics
+      // Fetch profiles with simpler query first
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          orders:orders(count)
-        `)
+        .select('*')
         .order(sortBy, { ascending: false });
 
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
-        throw profilesError;
+        // If profiles query fails, fall back to empty array
+        setCustomers([]);
+        return;
       }
 
-      // Get order statistics for each customer
+      if (!profiles || profiles.length === 0) {
+        console.log('No profiles found');
+        setCustomers([]);
+        return;
+      }
+
+      // Get order statistics for each customer with error handling
       const customersWithStats = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          const { data: orderStats } = await supabase
-            .from('orders')
-            .select('total_amount')
-            .eq('user_id', profile.id);
+        profiles.map(async (profile) => {
+          try {
+            const { data: orderStats } = await supabase
+              .from('orders')
+              .select('total_amount')
+              .eq('user_id', profile.id);
 
-          const totalOrders = orderStats?.length || 0;
-          const totalSpent = orderStats?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
+            const totalOrders = orderStats?.length || 0;
+            const totalSpent = orderStats?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0;
 
-          return {
-            ...profile,
-            total_orders: totalOrders,
-            total_spent: totalSpent
-          };
+            return {
+              ...profile,
+              total_orders: totalOrders,
+              total_spent: totalSpent
+            };
+          } catch (orderError) {
+            console.error('Error fetching orders for profile:', profile.id, orderError);
+            return {
+              ...profile,
+              total_orders: 0,
+              total_spent: 0
+            };
+          }
         })
       );
 
@@ -104,6 +118,7 @@ const EnhancedCustomerManager = () => {
       setCustomers(customersWithStats);
     } catch (error) {
       console.error('Error fetching customers:', error);
+      setCustomers([]);
       toast({
         title: "Error",
         description: "Failed to fetch customers. Please check your permissions.",
