@@ -32,6 +32,7 @@ import PaymentVerify from "./pages/PaymentVerify";
 import NotFound from "./pages/NotFound";
 import { ThemeProvider } from "./components/ThemeProvider";
 import FaviconUpdater from "./components/FaviconUpdater";
+import Preloader from "./components/Preloader";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <Preloader />
         <AuthProvider>
           <CartProvider>
             <BrowserRouter>
